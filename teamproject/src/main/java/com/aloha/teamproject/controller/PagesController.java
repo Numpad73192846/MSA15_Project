@@ -1,24 +1,21 @@
 package com.aloha.teamproject.controller;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.aloha.teamproject.common.response.ApiResponse;
+import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 
 
@@ -33,69 +30,36 @@ public class PagesController {
 	private final UserService userService;
 
 	@GetMapping()
-	public ResponseEntity<?> home() {
-		return new ResponseEntity<>("index", HttpStatus.OK);
+	public ApiResponse<String> home() {
+		return ApiResponse.ok("index", SuccessCode.OK);
 	}
-	
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> selectById(@PathVariable("id") String id) {
+	public ApiResponse<Users> selectById(@PathVariable("id") String id) throws Exception {
 		log.info("[GET] - selectById");
-		try {
-			Users user = userService.selectById(id);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(user, HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("selectById failed", e);
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		Users user = userService.selectById(id);
+		return ApiResponse.ok(user, SuccessCode.OK);
 	}
 
 	@PostMapping()
-	public ResponseEntity<?> join(@RequestBody Users user) {
+	public ApiResponse<Void> join(@RequestBody Users user) throws Exception {
 		log.info("[Post] - join");
-		try {
-			boolean result = userService.join(user);
-			if ( !result ) {
-				return new ResponseEntity<>("FAIL",HttpStatus.BAD_REQUEST);
-			}
-			return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("join failed", e);
-			return new ResponseEntity<>("EXCEPTION",HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		userService.join(user);
+		return ApiResponse.ok(SuccessCode.CREATED);
 	}
 
 	@PutMapping()
-	public ResponseEntity<?> update(@RequestBody Users user) {
+	public ApiResponse<Void> update(@RequestBody Users user) throws Exception {
 		log.info("[Put] - update");
-		try {
-			boolean result = userService.update(user);
-			if ( !result ) {
-				return new ResponseEntity<>("FAIL",HttpStatus.BAD_REQUEST);
-			}
-			return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("update failed", e);
-			return new ResponseEntity<>("EXCEPTION",HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		userService.update(user);
+		return ApiResponse.ok(SuccessCode.UPDATED);
 	}
 	
 	@DeleteMapping("/{no}")
-	public ResponseEntity<?> delete(@PathVariable("no") Long no) {
+	public ApiResponse<Void> delete(@PathVariable("no") Long no) throws Exception {
 		log.info("[Delete] - delete");
-		try {
-			boolean result = userService.delete(no);
-			if ( !result ) {
-				return new ResponseEntity<>("FAIL",HttpStatus.BAD_REQUEST);
-			}
-			return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("update failed", e);
-			return new ResponseEntity<>("EXCEPTION",HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		userService.delete(no);
+		return ApiResponse.ok(SuccessCode.DELETED);
 	}
 
 

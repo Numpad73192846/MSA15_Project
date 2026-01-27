@@ -13,8 +13,11 @@ public interface UserMapper {
 	// 전체 회원 조회
 	public List<Users> list() throws Exception;
 
-	// 회원 조회
+	// ID로 회원 조회
 	public Users selectById(String id) throws Exception;
+
+	// Username으로 회원 조회
+	public Users selectByUsername(String username) throws Exception;
 	
 	// 회원 가입
 	public int join(Users user) throws Exception;

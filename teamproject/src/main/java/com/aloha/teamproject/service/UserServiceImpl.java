@@ -6,6 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aloha.teamproject.common.service.BaseServiceImpl;
+import com.aloha.teamproject.common.exception.AppException;
+import com.aloha.teamproject.common.exception.ErrorCode;
 import com.aloha.teamproject.dto.UserAuth;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
@@ -14,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
@@ -27,19 +30,32 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Users selectById(String id) throws Exception {
+		requiredNotBlank(id, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectById(id);
+		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
+		return user;
+	}
+
+	@Override
+	public Users selectByUsername(String username) throws Exception {
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
+		Users user = userMapper.selectByUsername(username);
+		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
 		return user;
 	}
 
 	@Override
 	@Transactional
-	public boolean join(Users user) throws Exception {
-		String username = user.getId();
+	public boolean insert(Users user) throws Exception {
+		requireNotNull(user, ErrorCode.INVALID_REQUEST);
+		String username = user.getUsername();
 		String password = user.getPassword();
 
-		if ( password == null || password.isEmpty() ) {
-			return false;
-		}
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
+		requiredNotBlank(password, ErrorCode.INVALID_REQUEST);
+
+		Users existing = userMapper.selectByUsername(username);
+		require(existing == null, ErrorCode.USERNAME_DUPLICATED);
 
 		String encodedPassword = passwordEncoder.encode(password);
 		user.setPassword(encodedPassword);
@@ -48,16 +64,21 @@ public class UserServiceImpl implements UserService {
 
 		if ( result > 0 ) {
 			UserAuth userAuth = new UserAuth();
-			userAuth.setUserId(username);
+			userAuth.setUserId(user.getId());
 			userAuth.setAuth("ROLE_USER");
 			result = userMapper.insertAuth(userAuth);
 		}
 
-		return result > 0;
+		if (result <= 0) {
+			throw new AppException(ErrorCode.INTERNAL_ERROR);
+		}
+		return true;
 	}
 
 	@Override
 	public boolean update(Users user) throws Exception {
+		requireNotNull(user, ErrorCode.INVALID_REQUEST);
+		requireNotNull(user.getNo(), ErrorCode.INVALID_REQUEST);
 		String password = user.getPassword();
 		
 		if ( password != null && !password.isEmpty() ) {
@@ -66,20 +87,31 @@ public class UserServiceImpl implements UserService {
 		}
 		
 		int result = userMapper.update(user);
-		return result > 0;
+		if (result <= 0) {
+			throw new AppException(ErrorCode.NOT_FOUND);
+		}
+		return true;
 		
 	}
 
 	@Override
 	public boolean insertAuth(UserAuth userAuth) throws Exception {
+		requireNotNull(userAuth, ErrorCode.INVALID_REQUEST);
 		int result = userMapper.insertAuth(userAuth);
-		return result > 0;
+		if (result <= 0) {
+			throw new AppException(ErrorCode.INTERNAL_ERROR);
+		}
+		return true;
 	}
 
 	@Override
 	public boolean delete(Long no) throws Exception {
+		requireNotNull(no, ErrorCode.INVALID_REQUEST);
 		int result = userMapper.delete(no);
-		return result > 0;
+		if (result <= 0) {
+			throw new AppException(ErrorCode.NOT_FOUND);
+		}
+		return true;
 	}
-	
+
 }

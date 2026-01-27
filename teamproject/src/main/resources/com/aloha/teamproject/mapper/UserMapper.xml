@@ -49,6 +49,18 @@
 		ORDER BY created_at DESC
 	</select>
 
+	<select id="selectById" resultMap="userMap"> 
+		SELECT *
+		FROM users
+		WHERE id = #{id}
+	</select>
+
+	<select id="selectByUsername" resultMap="userMap"> 
+		SELECT *
+		FROM users
+		WHERE username = #{username}
+	</select>
+
 	<select id="selectAuth" resultMap="authMap">
 		SELECT *
 		FROM user_auth
