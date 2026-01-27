@@ -11,23 +11,31 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-        // 스프링 시큐리티 설정 메소드
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         /// ✅ 인가 설정
-        http.authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/**").permitAll());
+        http
+        .csrf(csrf -> csrf.ignoringRequestMatchers(
+          "/pages/**",
+          "/swagger-ui/**",
+          "/v3/api-docs/**"
+        ))
+        .authorizeHttpRequests(auth -> 
+            auth.requestMatchers("/**",
+                                            "/swagger-ui/**",
+                                            "/v3/api-docs/**",
+                                            "/swagger-ui.html"
+            ).permitAll()
+            .requestMatchers("/pages/**").permitAll()
+            .anyRequest().permitAll()
+        );
 
-                                            
         return http.build();
 
     }
     
-   /**
-     * 🍃 암호화 방식 빈 등록
-     * @return
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
