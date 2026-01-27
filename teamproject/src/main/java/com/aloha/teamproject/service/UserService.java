@@ -18,6 +18,9 @@ public interface UserService {
 	
 	// 회원 수정
 	public boolean update(Users user) throws Exception;
+
+	// 회원 삭제
+	public boolean delete(Long no) throws Exception;
 	
 	// 회원 권한 등록
 	public boolean insertAuth(UserAuth userAuth) throws Exception;

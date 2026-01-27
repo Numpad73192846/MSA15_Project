@@ -25,7 +25,8 @@
 
 
 	<resultMap id="authMap" type="UserAuth">
-		<id property="id" column="id" />
+		<id property="no" column="no" />
+		<result property="id" column="id" />
 		<result property="userId" column="user_id" />
 		<result property="auth" column="auth" />
 		<result property="createdAt" column="created_at" />
@@ -53,5 +54,22 @@
 		FROM user_auth
 		WHERE user_id = #{value}
 	</select>
+
+	<update id="update" parameterType="Users">
+		UPDATE users
+		SET
+			username = #{username},
+			password = #{password},
+			name = #{name},
+			nickname = #{nickname},
+			status = #{status},
+			updated_at = NOW()
+		WHERE no = #{no}
+	</update>
+
+	<delete id="delete">
+		DELETE FROM users
+		WHERE no = #{no}
+	</delete>
 
 </mapper>

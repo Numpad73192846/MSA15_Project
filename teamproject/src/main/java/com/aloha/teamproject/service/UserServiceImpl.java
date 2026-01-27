@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
 		if ( result > 0 ) {
 			UserAuth userAuth = new UserAuth();
-			userAuth.setId(username);
+			userAuth.setUserId(username);
 			userAuth.setAuth("ROLE_USER");
 			result = userMapper.insertAuth(userAuth);
 		}
@@ -73,6 +73,12 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public boolean insertAuth(UserAuth userAuth) throws Exception {
 		int result = userMapper.insertAuth(userAuth);
+		return result > 0;
+	}
+
+	@Override
+	public boolean delete(Long no) throws Exception {
+		int result = userMapper.delete(no);
 		return result > 0;
 	}
 	
