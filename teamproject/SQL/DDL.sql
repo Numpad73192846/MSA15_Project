@@ -16,7 +16,6 @@ DROP TABLE IF EXISTS `featured_tuter`,
                      `user_auth`, 
                      `user`;
 
-
 CREATE TABLE `user` (
 	`no` INT AUTO_INCREMENT NOT NULL,
 	`id` VARCHAR(64) NOT NULL UNIQUE,
