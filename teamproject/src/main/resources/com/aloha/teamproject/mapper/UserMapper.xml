@@ -6,7 +6,8 @@
 <mapper namespace="com.aloha.teamproject.mapper.UserMapper">
 
 	<resultMap id="userMap" type="Users">
-		<id property="id" column="id" />
+		<id property="no" column="no" />
+		<result property="id" column="id" />
 		<result property="username" column="username" />
 		<result property="password" column="password" />
 		<result property="name" column="name" />
@@ -14,13 +15,14 @@
 		<result property="status" column="status" />
 		<result property="createdAt" column="created_at" />
 		<result property="updatedAt" column="updated_at" />
+
+		<collection property="authList"
+					ofType="UserAuth"
+					select="selectAuth"
+					column="id">
+		</collection>
 	</resultMap>
 
-	<collection property="authList"
-				ofType="UserAuth"
-				select="selectAuth"
-				column="username">
-	</collection>
 
 	<resultMap id="authMap" type="UserAuth">
 		<id property="id" column="id" />
@@ -31,26 +33,25 @@
 	</resultMap>
 
 	<insert id="join">
-        INSERT INTO user ( id, username, password, name, nickname )
-        VALUES ( #{id}, #{username}, #{password}, #{name}, #{nickname} )
+        INSERT INTO users ( id, username, password, name, nickname, status )
+        VALUES ( #{id}, #{username}, #{password}, #{name}, #{nickname}, #{status} )
     </insert>
 
 	<insert id="insertAuth">
-        INSERT INTO user_auth ( id, username, auth )
-        VALUES ( #{id}, #{username}, #{auth} )
+        INSERT INTO user_auth ( id, user_id, auth )
+        VALUES ( #{id}, #{userId}, #{auth} )
     </insert>
-
-
-	<select id="select" resultMap="userMap" parameterType="String"> 
+	
+	<select id="list" resultMap="userMap"> 
 		SELECT *
 		FROM users
 		ORDER BY created_at DESC
 	</select>
 
-	<select id="selectAuth" resultMap="authMap" parameterType="String">
+	<select id="selectAuth" resultMap="authMap">
 		SELECT *
 		FROM user_auth
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{value}
 	</select>
 
 </mapper>
