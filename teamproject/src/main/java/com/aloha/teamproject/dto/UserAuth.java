@@ -11,15 +11,17 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class UserAuth {
-    private Long no;
-    private String userId;
-    @Builder.Default
-    private String id = UUID.randomUUID().toString();
-    private String auth;
-    private Date createdAt;
-    private Date updatedAt;
+	
+  private Long no;
+  @Builder.Default
+  private String id = UUID.randomUUID().toString();
+  private String userId;
+  private String auth;
+  private Date createdAt;
+  private Date updatedAt;
 
-    public UserAuth() {
-        this.id = UUID.randomUUID().toString();
-    }
+  public UserAuth() {
+    this.id = UUID.randomUUID().toString();
+  }
+
 }

@@ -1,5 +1,7 @@
 package com.aloha.teamproject.service;
 
+import java.util.List;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,16 +53,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Users select(String username) throws Exception {
-        Users user = userMapper.select(username);
-        return user;
-    }
+	public List<Users> list() throws Exception {
+		List<Users> userList = userMapper.list();
+		return userList;
+	}
+
+	@Override
+	public Users selectById(String id) throws Exception {
+		Users user = userMapper.selectById(id);
+		return user;
+	}
+
+    @Override
+	public Users selectByNickname(String nickname) throws Exception {
+		Users user = userMapper.selectByNickname(nickname);
+		return user;
+	}
 
     @Override
     @Transactional
-    public int join(Users user) throws Exception {
-        String username = user.getUsername();
+    public boolean join(Users user) throws Exception {
+        String username = user.getId();
         String password = user.getPassword();
+        
+        if ( password == null || password.isEmpty() ) {
+            return false;
+		}
+
         String encodedPassword = passwordEncoder.encode(password);  // 🔒 비밀번호 암호화
         user.setPassword(encodedPassword);
 
@@ -70,15 +89,15 @@ public class UserServiceImpl implements UserService {
         if( result > 0 ) {
             // 회원 기본 권한 등록
             UserAuth userAuth = new UserAuth();
-            userAuth.setUserId(username);
+            userAuth.setId(username);
             userAuth.setAuth("ROLE_USER");
             result = userMapper.insertAuth(userAuth);
         }
-        return result;
+        return result > 0;
     }
 
     @Override
-    public int update(Users user) throws Exception {
+    public boolean update(Users user) throws Exception {
         // 비밀번호 변경하는 경우 암호화 처리
         String password = user.getPassword();
         if( password != null && !password.isEmpty() ) {
@@ -86,13 +105,13 @@ public class UserServiceImpl implements UserService {
           user.setPassword(encodedPassword);
         }
         int result = userMapper.update(user);
-        return result;
+        return result > 0;
     }
 
     @Override
-    public int insertAuth(UserAuth userAuth) throws Exception {
+    public boolean insertAuth(UserAuth userAuth) throws Exception {
         int result = userMapper.insertAuth(userAuth);
-        return result;
+        return result > 0;
     }
 	
 }

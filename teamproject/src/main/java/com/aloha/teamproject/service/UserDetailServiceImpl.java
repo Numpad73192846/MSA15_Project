@@ -31,7 +31,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         Users user = null;
         try {
-            user = userMapper.select(username);
+            user = userMapper.selectById(username);
         } catch (Exception e) {
             e.printStackTrace();
         }
