@@ -7,6 +7,7 @@ body {
 }
 
 body {
+    font-family: 'NanumSquare', sans-serif !important;
     display: flex;
     flex-direction: column;
     padding-top: 70px;
@@ -358,5 +359,76 @@ footer .footer-bottom {
 
     .hero-buttons {
         flex-direction: column;
+    }
+}
+
+/* MyPage Styles */
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    font-size: 48px;
+}
+
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-icon {
+    font-size: 32px;
+}
+
+.stat-value {
+    font-size: 24px;
+    margin: 8px 0;
+}
+
+.stat-label {
+    font-size: 13px;
+}
+
+.schedule-item,
+.booking-item {
+    transition: background-color 0.2s ease;
+}
+
+.schedule-item:hover,
+.booking-item:hover {
+    background-color: #f8f9fa;
+}
+
+.review-item {
+    border-left: 3px solid #4a90e2;
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: #4a90e2;
+    border-bottom: 2px solid #4a90e2;
+}
+
+/* Responsive MyPage */
+@media (max-width: 768px) {
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .stat-icon {
+        font-size: 28px;
     }
 }

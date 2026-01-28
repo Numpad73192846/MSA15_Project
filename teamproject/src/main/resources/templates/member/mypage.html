@@ -1,0 +1,297 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <!-- Header -->
+            <div class="mb-4">
+                <h2 class="h3 fw-bold mb-1">마이페이지</h2>
+                <p class="text-muted mb-0">프로필과 학습 내역을 관리하세요</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Profile -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="profile-avatar mb-3">
+                                <div
+                                    class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto">
+                                    <span class="fs-1">👤</span>
+                                </div>
+                            </div>
+                            <h3 class="h5 fw-bold mb-1" id="memberName">홍길동</h3>
+                            <p class="text-muted small mb-3" id="memberEmail">hong@example.com</p>
+
+                            <div class="mb-3">
+                                <span class="badge bg-light text-dark">회원</span>
+                            </div>
+
+                            <button class="btn btn-outline-primary w-100 mb-2" id="btnEditMemberProfile">
+                                프로필 수정
+                            </button>
+                            <button class="btn btn-primary w-100" onclick="location.href='/tutors'">
+                                튜터 찾기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Learning Stats -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-body">
+                            <h4 class="h6 fw-bold mb-3">학습 통계</h4>
+                            <div class="d-grid gap-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">총 수업 시간</span>
+                                    <span class="fw-semibold">48시간</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">완료한 수업</span>
+                                    <span class="fw-semibold">24회</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted">즐겨찾기 튜터</span>
+                                    <span class="fw-semibold">5명</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interests -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-body">
+                            <h4 class="h6 fw-bold mb-2">관심 과목</h4>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-primary">영어</span>
+                                <span class="badge bg-primary">수학</span>
+                                <span class="badge bg-primary">프로그래밍</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Activity -->
+                <div class="col-lg-8">
+                    <!-- Quick Stats -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="stat-card card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon mb-2">📅</div>
+                                    <div class="stat-value fw-bold text-primary">3</div>
+                                    <div class="stat-label small text-muted">예정된 수업</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon mb-2">✅</div>
+                                    <div class="stat-value fw-bold text-success">24</div>
+                                    <div class="stat-label small text-muted">완료한 수업</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="stat-icon mb-2">⭐</div>
+                                    <div class="stat-value fw-bold text-warning">5</div>
+                                    <div class="stat-label small text-muted">즐겨찾기</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#bookingsTab"
+                                type="button">
+                                예약 내역
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#favoritesTab" type="button">
+                                즐겨찾기
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviewsTab" type="button">
+                                내 리뷰
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Bookings Tab -->
+                        <div class="tab-pane fade show active" id="bookingsTab">
+                            <div class="card shadow-sm mb-3">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">예정된 수업</h4>
+                                    <div class="d-grid gap-2">
+                                        <div class="booking-item p-3 border rounded">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-semibold">김민지 튜터</div>
+                                                    <div class="small text-muted mt-1">
+                                                        📅 2026-01-30 | ⏰ 14:00 (2시간)
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-success">확정</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-light text-dark">영어</span>
+                                                <span class="fw-semibold text-primary">70,000원</span>
+                                            </div>
+                                        </div>
+                                        <div class="booking-item p-3 border rounded">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-semibold">이준호 튜터</div>
+                                                    <div class="small text-muted mt-1">
+                                                        📅 2026-02-01 | ⏰ 16:00 (1시간)
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-warning text-dark">대기중</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-light text-dark">수학</span>
+                                                <span class="fw-semibold text-primary">40,000원</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">지난 수업</h4>
+                                    <div class="d-grid gap-2">
+                                        <div class="booking-item p-3 border rounded opacity-75">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-semibold">김민지 튜터</div>
+                                                    <div class="small text-muted mt-1">
+                                                        📅 2026-01-25 | ⏰ 14:00 (2시간)
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-secondary">완료</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-light text-dark">영어</span>
+                                                <button class="btn btn-sm btn-outline-primary">리뷰 작성</button>
+                                            </div>
+                                        </div>
+                                        <div class="booking-item p-3 border rounded opacity-75">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <div class="fw-semibold">박서준 튜터</div>
+                                                    <div class="small text-muted mt-1">
+                                                        📅 2026-01-20 | ⏰ 10:00 (1시간)
+                                                    </div>
+                                                </div>
+                                                <span class="badge bg-secondary">완료</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-light text-dark">프로그래밍</span>
+                                                <span class="small text-success">✓ 리뷰 작성 완료</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Favorites Tab -->
+                        <div class="tab-pane fade" id="favoritesTab">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">즐겨찾기 튜터</h4>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="card border">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div>
+                                                            <div class="fw-semibold">김민지 튜터</div>
+                                                            <div class="small text-warning">★★★★★ 4.9</div>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-danger">♥</button>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="badge bg-light text-dark small">영어</span>
+                                                        <span class="badge bg-light text-dark small">수학</span>
+                                                    </div>
+                                                    <div class="small text-muted mb-2">35,000원/시간</div>
+                                                    <button class="btn btn-sm btn-primary w-100"
+                                                        onclick="location.href='/tutors/1'">
+                                                        프로필 보기
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card border">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div>
+                                                            <div class="fw-semibold">이준호 튜터</div>
+                                                            <div class="small text-warning">★★★★★ 4.8</div>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-danger">♥</button>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="badge bg-light text-dark small">수학</span>
+                                                        <span class="badge bg-light text-dark small">과학</span>
+                                                    </div>
+                                                    <div class="small text-muted mb-2">40,000원/시간</div>
+                                                    <button class="btn btn-sm btn-primary w-100"
+                                                        onclick="location.href='/tutors/2'">
+                                                        프로필 보기
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reviews Tab -->
+                        <div class="tab-pane fade" id="reviewsTab">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">내가 작성한 리뷰</h4>
+                                    <div class="d-grid gap-3">
+                                        <div class="review-item p-3 bg-light rounded">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <div class="fw-semibold">박서준 튜터</div>
+                                                <div class="text-warning">★★★★★</div>
+                                            </div>
+                                            <p class="small mb-1">
+                                                프로그래밍 기초를 정말 잘 가르쳐주셨습니다. 이해하기 쉽게 설명해주셔서 감사합니다!
+                                            </p>
+                                            <div class="small text-muted">2026-01-20</div>
+                                        </div>
+                                        <div class="review-item p-3 bg-light rounded">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <div class="fw-semibold">김민지 튜터</div>
+                                                <div class="text-warning">★★★★★</div>
+                                            </div>
+                                            <p class="small mb-1">
+                                                영어 회화 실력이 많이 늘었어요. 친절하고 열정적으로 가르쳐주셔서 좋았습니다.
+                                            </p>
+                                            <div class="small text-muted">2026-01-15</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

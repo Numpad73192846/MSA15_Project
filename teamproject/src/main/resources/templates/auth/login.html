@@ -78,92 +78,10 @@
                         </div>
                     </div>
 
-                    <div class="text-muted small mt-3">로그인/회원가입은 브라우저(localStorage)에 저장되는 mock 동작입니다.</div>
+                    <div class="text-muted small mt-3">로그인/회원가입은 서버 사용자 정보를 기준으로 처리됩니다.</div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<script>
-    // 로그인 폼 제출 핸들러
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = this.querySelector('input[name="email"]').value;
-        const password = this.querySelector('input[name="password"]').value;
-
-        let data = {
-            username: email,
-            password: password
-        }
-
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('로그인 성공!');
-                window.location.href = '/';
-            } else {
-                alert('로그인 실패: ' + result.message);
-            }
-        } catch (error) {
-            console.error('로그인 오류:', error);
-            alert('서버 오류가 발생했습니다.');
-        }
-    });
-
-    // 회원가입 폼 제출 핸들러
-    document.getElementById('signupForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const name = this.querySelector('input[name="name"]').value;
-        const email = this.querySelector('input[name="email"]').value;
-        const password = this.querySelector('input[name="password"]').value;
-        const confirmPassword = this.querySelector('input[name="confirmPassword"]').value;
-
-        if (password !== confirmPassword) {
-            alert('비밀번호가 일치하지 않습니다.');
-            return;
-        }
-
-        let data = {
-            name: name,
-            username: email,
-            password: password
-        }
-
-        try {
-            const response = await fetch('/api/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('회원가입 성공! 로그인해주세요.');
-                document.getElementById('tabLogin').click(); // 로그인 탭으로 전환
-            } else {
-                alert('회원가입 실패: ' + result.message);
-            }
-        } catch (error) {
-            console.error('회원가입 오류:', error);
-            alert('서버 오류가 발생했습니다.');
-        }
-    });
-</script>
     </div>
 </body>
 </html>

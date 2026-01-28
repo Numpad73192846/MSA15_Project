@@ -61,6 +61,12 @@
 		WHERE username = #{username}
 	</select>
 
+	<select id="selectByNickname" resultMap="userMap"> 
+		SELECT *
+		FROM users
+		WHERE nickname = #{nickname}
+	</select>
+
 	<select id="selectAuth" resultMap="authMap">
 		SELECT *
 		FROM user_auth

@@ -11,6 +11,7 @@ import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.service.LoginService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,11 +25,11 @@ public class AuthApiController {
 	private final LoginService loginService;
 
 	@PostMapping("/login")
-	public ApiResponse<Users> login(@RequestBody Users user) {
-		Users result;
+	public ApiResponse<Users> login(@RequestBody Users user, HttpServletRequest request) {
 		
 		try {
-			result = loginService.login(user.getUsername(), user.getPassword());
+			Users result = loginService.login(user, request);
+			return ApiResponse.ok(result, SuccessCode.OK);
 		} catch (AppException e) {
 			log.error("로그인 실패: {}", e.getMessage());
 			return ApiResponse.error(e.getErrorCode().getMessage());
@@ -36,8 +37,6 @@ public class AuthApiController {
 			log.error("로그인 중 오류가 발생했습니다: {}", e.getMessage(), e);
 			return ApiResponse.error("서버 오류가 발생했습니다.");
 		}
-
-		return ApiResponse.ok(result, SuccessCode.OK);
 
 	}
 	

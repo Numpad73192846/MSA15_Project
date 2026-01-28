@@ -6,9 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.aloha.teamproject.common.service.BaseServiceImpl;
 import com.aloha.teamproject.common.exception.AppException;
 import com.aloha.teamproject.common.exception.ErrorCode;
+import com.aloha.teamproject.common.service.BaseServiceImpl;
 import com.aloha.teamproject.dto.UserAuth;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
@@ -112,6 +112,20 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 			throw new AppException(ErrorCode.NOT_FOUND);
 		}
 		return true;
+	}
+
+	@Override
+	public boolean isUsernameAvailable(String username) throws Exception {
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
+		Users existing = userMapper.selectByUsername(username);
+		return existing == null;
+	}
+
+	@Override
+	public boolean isNicknameAvailable(String nickname) throws Exception {
+		requiredNotBlank(nickname, ErrorCode.INVALID_REQUEST);
+		Users existing = userMapper.selectByNickname(nickname);
+		return existing == null;
 	}
 
 }

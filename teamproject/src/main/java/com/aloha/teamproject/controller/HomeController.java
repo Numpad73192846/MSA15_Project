@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller
-public class HomeController {
+public class HomeController{
 
 	@GetMapping("")
 	public String home() {
@@ -17,6 +17,16 @@ public class HomeController {
 	@GetMapping("/login")
 	public String login() {
 		return "auth/login";
+	}
+
+    @GetMapping("/mypage")
+	public String mypage() {
+		return "member/mypage";
+	}
+
+    @GetMapping("/mypages")
+	public String mypages() {
+		return "tutor/mypage";
 	}
 
 }
