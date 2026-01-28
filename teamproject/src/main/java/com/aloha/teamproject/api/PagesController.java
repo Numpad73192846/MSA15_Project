@@ -1,4 +1,4 @@
-package com.aloha.teamproject.controller;
+package com.aloha.teamproject.api;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/pages")
+@RequestMapping("/api/users")
 public class PagesController {
 	
 	private final UserService userService;

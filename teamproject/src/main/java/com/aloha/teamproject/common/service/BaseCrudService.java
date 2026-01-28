@@ -15,4 +15,5 @@ public interface BaseCrudService<T> {
     boolean update(T entity) throws Exception;
 
     boolean delete(Long no) throws Exception;
+    
 }

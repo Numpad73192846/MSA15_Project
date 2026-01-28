@@ -1,0 +1,124 @@
+
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <a class="btn btn-link px-0 mb-3" href="/tutors">← 목록으로</a>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex gap-3 align-items-start">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                     style="width:96px;height:96px;font-size:32px;flex:0 0 auto;"
+                                     th:text="${#strings.substring(tutor.name,0,1)}">김</div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h1 class="h3 fw-bold mb-1" th:text="${tutor.name}">튜터명</h1>
+                                            <div class="text-muted mb-2">
+                                                <span class="me-1">⭐</span>
+                                                <span class="fw-semibold" th:text="${tutor.rating}">4.9</span>
+                                                <span class="text-muted">(</span><span class="text-muted" th:text="${tutor.reviews}">127</span><span class="text-muted">개의 리뷰)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <span class="badge text-bg-light" th:each="s : ${tutor.subjects}" th:text="${s}">영어</span>
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        <span class="me-3">⏱️ 경력 <span th:text="${tutor.experience}">5년</span></span>
+                                        <span>📅 <span th:text="${tutor.availability}">평일 오후, 주말</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold">소개</h3>
+                            <p class="text-muted" th:text="${tutor.bio}">소개</p>
+
+                            <hr>
+                            <h4 class="h6 fw-bold">강의 스타일</h4>
+                            <div class="text-muted">- 학생 수준에 맞춘 맞춤형 커리큘럼</div>
+                            <div class="text-muted">- 이론과 실습의 균형잡힌 학습</div>
+                            <div class="text-muted">- 수업 후 복습 자료 제공</div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
+                            <div class="py-3 border-bottom" th:each="r : ${reviews}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-semibold" th:text="${r.name}">학생A</div>
+                                        <div class="small text-muted">
+                                            <span th:text="${r.date}">2026-01-20</span>
+                                        </div>
+                                    </div>
+                                    <div class="small">
+                                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                                              th:text="${i <= r.rating ? '★' : '☆'}">★</span>
+                                    </div>
+                                </div>
+                                <div class="text-muted mt-2" th:text="${r.comment}">후기</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card shadow-sm sticky-top" style="top:90px;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="fw-bold">수업 예약</div>
+                                <div class="text-primary fw-semibold">시간당 <span th:text="${#numbers.formatInteger(tutor.hourlyRate, 0, 'COMMA')}">35,000</span>원</div>
+                            </div>
+
+                            <form id="bookingForm"
+                                  th:attr="data-tutor-id=${tutor.id},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.hourlyRate}">
+                                <div class="mb-3">
+                                    <label class="form-label">날짜 *</label>
+                                    <input name="date" type="date" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">시간 *</label>
+                                    <input name="time" type="time" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">기간(시간)</label>
+                                    <select name="duration" class="form-select">
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">과목 *</label>
+                                    <select name="subject" class="form-select" required>
+                                        <option value="" selected>선택</option>
+                                        <option th:each="s : ${tutor.subjects}" th:value="${s}" th:text="${s}">영어</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">요청사항</label>
+                                    <textarea name="message" class="form-control" rows="3" placeholder="추가로 전달할 내용을 입력하세요"></textarea>
+                                </div>
+                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100">예약하기</button>
+                                <div class="text-muted small mt-2">예약은 브라우저(localStorage)에 저장되는 mock 동작입니다.</div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

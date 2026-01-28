@@ -1,29 +1,41 @@
-<!-- footer.html: 공통 하단 정보 -->
-<footer th:fragment="footerFragment" class="bg-gray-100 border-t border-gray-200 py-10">
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-            <h1 class="text-xl font-bold text-indigo-900 mb-4">Tutoring-go</h1>
-            <p class="text-xs text-gray-500 line-height-relaxed">
-                Experience the best tutoring services.<br>
-                Connect with tutors worldwide.
-            </p>
+<th:block th:fragment="footer">
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>튜터링고</h4>
+                <p>최고의 튜터와 함께하는<br>1:1 맞춤 당금 플롯</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>서비스</h4>
+                <ul>
+                    <li><a href="/tutors">튜터 찾기</a></li>
+                    <li><a href="/my/reservation">내 예약</a></li>
+                    <li><a href="/tutor/register">튜터 등록</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>회사 소개</h4>
+                <ul>
+                    <li><a href="/about">소개</a></li>
+                    <li><a href="/recruit">채용</a></li>
+                    <li><a href="/partnership">파트너십</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>고객 지원</h4>
+                <ul>
+                    <li><a href="/contact">문의하기</a></li>
+                    <li><a href="/faq">FAQ</a></li>
+                    <li><a href="/terms">이용약관</a></li>
+                </ul>
+            </div>
         </div>
-        <div>
-            <h4 class="font-bold text-sm mb-4">서비스</h4>
-            <ul class="text-xs text-gray-600 space-y-2">
-                <li><a href="#">튜터찾기</a></li>
-                <li><a href="#">튜터되기</a></li>
-            </ul>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 튜터링고. All rights reserved.</p>
         </div>
-        <div>
-            <h4 class="font-bold text-sm mb-4">고객센터</h4>
-            <ul class="text-xs text-gray-600 space-y-2">
-                <li><a href="#">FAQ</a></li>
-                <li><a href="#">문의하기</a></li>
-            </ul>
-        </div>
-        <div class="text-xs text-gray-500">
-            &copy; 2026 Tutoring-go. All rights reserved.
-        </div>
-    </div>
-</footer>
+    </footer>
+</th:block>

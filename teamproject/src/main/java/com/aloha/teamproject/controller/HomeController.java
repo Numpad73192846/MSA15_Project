@@ -11,7 +11,12 @@ public class HomeController {
 
 	@GetMapping("")
 	public String home() {
-		return "redirect:/swagger-ui/index.html";
+		return "index";
+	}
+
+	@GetMapping("/login")
+	public String login() {
+		return "auth/login";
 	}
 
 }

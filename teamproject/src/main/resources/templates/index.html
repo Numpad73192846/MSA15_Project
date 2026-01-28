@@ -1,72 +1,68 @@
-<div xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layouts/main_layout}"
-      >
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+<head>
+    <title>Tutoring-go - 홈</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-container">
+                <!-- Left Content -->
+                <div class="hero-content">
+                    <h1 class="hero-title">원하는 튜터를<br>쉽고 빠르게 찾으세요</h1>
+                    <p class="hero-description">
+                        권주된 전문 튜터와 함께 1:1 맞춤 학습을 시작하세요. 과목, 시간, 가격을 자유롭게 선택할 수 있습니다.
+                    </p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary btn-lg" onclick="location.href='/tutors'">튜터 찾기</button>
+                        <!-- <a href="#" class="btn-more">더 알아보기 →</a> -->
+                    </div>
+                </div>
 
-<div layout:fragment="content">
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-container">
-            <!-- Left Content -->
-            <div class="hero-content">
-                <h1 class="hero-title">원하는 튜터를<br>쉽고 빠르게 찾으세요</h1>
-                <p class="hero-description">
-                    권주된 전문 튜터와 함께 1:1 맞춤 학습을 시작하세요. 과목, 시간, 가격을 자유롭게 선택할 수 있습니다.
-                </p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary btn-lg" onclick="location.href='/tutor/search'">튜터 찾기</button>
+                <!-- Right Image -->
+                <div class="hero-image">
+                    <img src="/img/edu.jpg" alt="튜터링고에서 학습하는 학생">
                 </div>
             </div>
-            
-            <!-- Right Image -->
-            <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-1427504494785-cdec1a45a95b?w=500&h=400&fit=crop" alt="튜터와 학생">
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Features Section (3 Cards) -->
-    <section class="features-section">
-        <h2 class="section-title">왜 튜코스를 선택해야 할까요?</h2>
-        <div class="features-container">
-            <div class="feature-card">
-                <div class="feature-icon">👨‍🏫</div>
-                <h3>전문 튜터</h3>
-                <p>엄선된 전문가들이 <br>최고 수준의 교육을 제공합니다</p>
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">전문 튜터</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-number">4.8</div>
+                    <div class="stat-label">평균 평점</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-number">24시간</div>
+                    <div class="stat-label">먼저주는 예약</div>
+                </div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">💰</div>
-                <h3>합리적인 가격</h3>
-                <p>다양한 가격대 중에서 <br>선택할 수 있습니다</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>빠른 예약</h3>
-                <p>24시간 이내 예약이 <br>가능합니다</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-number">100+</div>
-                <div class="stat-label">전문 튜터</div>
+        <!-- Popular Subjects Section -->
+        <section class="subjects-section">
+            <h2 class="section-title">인기 과목</h2>
+            <div class="subjects-grid">
+                <a href="#" class="subject-item">영어</a>
+                <a href="#" class="subject-item">수학</a>
+                <a href="#" class="subject-item">과학</a>
+                <a href="#" class="subject-item">프로그래밍</a>
+                <a href="#" class="subject-item">한국사</a>
+                <a href="#" class="subject-item">일본어</a>
+                <a href="#" class="subject-item">중국어</a>
+                <a href="#" class="subject-item">물리</a>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-number">4.8</div>
-                <div class="stat-label">평균 평점</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⏱️</div>
-                <div class="stat-number">24시간</div>
-                <div class="stat-label">빠른 예약</div>
-            </div>
-        </div>
-    </section>
-
-   
-
+        </section>
+    </div>
+</body>
+</html>

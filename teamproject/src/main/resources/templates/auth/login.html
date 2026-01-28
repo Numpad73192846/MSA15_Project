@@ -1,75 +1,169 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
 <head>
-    <!-- 공통 head 조각 삽입 -->
-    <th:block th:replace="~{fragments/head :: headFragment}"></th:block>
-    <title>Tutoring-go - 회원가입/로그인</title>
+    <title>Tutoring-go - 로그인 / 회원가입</title>
 </head>
-<body class="bg-gray-50">
-
-    <!-- 상단 헤더 조각 삽입 -->
-    <div th:replace="~{fragments/header :: headerFragment}"></div>
-
-    <!-- 중앙 컨텐츠 -->
-    <main class="flex justify-center items-center py-16 px-6">
-        <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 w-full max-w-xl">
-            <h2 class="text-3xl font-bold text-center mb-8">Welcome to Tutoring-go!</h2>
-
-            <!-- 구글 로그인 버튼 -->
-            <button class="w-full flex items-center justify-center border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition mb-6">
-                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-6 h-6 mr-3" alt="google">
-                <span class="text-gray-700">Google 계정으로 로그인</span>
-            </button>
-
-            <!-- 구분선 -->
-            <div class="relative flex items-center mb-8">
-                <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-400">or</span>
-                <div class="flex-grow border-t border-gray-300"></div>
+<body>
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="text-center mb-4">
+                <h2 class="h3 fw-bold mb-1">로그인 / 회원가입</h2>
+                <p class="text-muted mb-0">튜터링고에서 학습을 시작하세요</p>
             </div>
 
-            <!-- 이메일/비번 폼 -->
-            <form th:action="@{/auth/login}" method="post">
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <label class="w-24 text-gray-700 font-bold">이메일</label>
-                        <input type="email" name="username" class="flex-1 border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-400">
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <button id="userTypeStudent" class="btn btn-primary">학생으로 시작</button>
+                <button id="userTypeTutor" class="btn btn-outline-primary">튜터로 시작</button>
+            </div>
+
+            <div class="card shadow-sm mx-auto" style="max-width:520px;">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin"
+                                type="button" role="tab">로그인</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup" type="button"
+                                role="tab">회원가입</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-4">
+                        <div class="tab-pane fade show active" id="tabLogin" role="tabpanel">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">이메일</label>
+                                    <input name="email" type="email" class="form-control"
+                                        placeholder="example@email.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>
+                                    <input name="password" type="password" class="form-control" placeholder="••••••••"
+                                        required>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="rememberMe">
+                                        <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
+                                    </div>
+                                    <a href="#" class="small">비밀번호 찾기</a>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">로그인</button>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="tabSignup" role="tabpanel">
+                            <form id="signupForm">
+                                <div class="mb-3">
+                                    <label class="form-label">이름</label>
+                                    <input name="name" type="text" class="form-control" placeholder="홍길동" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">이메일</label>
+                                    <input name="email" type="email" class="form-control"
+                                        placeholder="example@email.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>
+                                    <input name="password" type="password" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호 확인</label>
+                                    <input name="confirmPassword" type="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">회원가입</button>
+                            </form>
+                        </div>
                     </div>
-                    <div class="flex items-center">
-                        <label class="w-24 text-gray-700 font-bold">비밀번호</label>
-                        <input type="password" name="password" class="flex-1 border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-400">
-                    </div>
+
+                    <div class="text-muted small mt-3">로그인/회원가입은 브라우저(localStorage)에 저장되는 mock 동작입니다.</div>
                 </div>
-
-                <div class="flex justify-between items-center mt-6 text-sm">
-                    <label class="flex items-center text-red-500 cursor-pointer">
-                        <input type="checkbox" class="mr-2 accent-red-500" checked> 아이디 저장
-                    </label>
-                    <a href="#" class="text-gray-600">비밀번호를 잊으셨나요?</a>
-                </div>
-
-                <!-- 로그인 버튼 -->
-                <button type="submit" class="w-full bg-[#FF4D42] text-white py-4 rounded-lg font-bold text-lg mt-8 hover:bg-red-600 transition">
-                    로그인
-                </button>
-            </form>
-
-            <hr class="my-8 border-dotted border-gray-300">
-
-            <!-- 회원가입 하단 버튼 -->
-            <div class="grid grid-cols-2 gap-4">
-                <a th:href="@{/auth/join_form(type='student')}" class="text-center py-3 border border-gray-800 rounded-lg font-bold hover:bg-gray-800 hover:text-white transition">
-                    학생으로 가입
-                </a>
-                <a th:href="@{/auth/join_form(type='tutor')}" class="text-center py-3 border border-gray-800 rounded-lg font-bold hover:bg-gray-800 hover:text-white transition">
-                    튜터로 가입
-                </a>
             </div>
         </div>
-    </main>
+    </div>
+</div>
 
-    <!-- 푸터 조각 삽입 -->
-    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+<script>
+    // 로그인 폼 제출 핸들러
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = this.querySelector('input[name="email"]').value;
+        const password = this.querySelector('input[name="password"]').value;
 
+        let data = {
+            username: email,
+            password: password
+        }
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('로그인 성공!');
+                window.location.href = '/';
+            } else {
+                alert('로그인 실패: ' + result.message);
+            }
+        } catch (error) {
+            console.error('로그인 오류:', error);
+            alert('서버 오류가 발생했습니다.');
+        }
+    });
+
+    // 회원가입 폼 제출 핸들러
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const name = this.querySelector('input[name="name"]').value;
+        const email = this.querySelector('input[name="email"]').value;
+        const password = this.querySelector('input[name="password"]').value;
+        const confirmPassword = this.querySelector('input[name="confirmPassword"]').value;
+
+        if (password !== confirmPassword) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        let data = {
+            name: name,
+            username: email,
+            password: password
+        }
+
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('회원가입 성공! 로그인해주세요.');
+                document.getElementById('tabLogin').click(); // 로그인 탭으로 전환
+            } else {
+                alert('회원가입 실패: ' + result.message);
+            }
+        } catch (error) {
+            console.error('회원가입 오류:', error);
+            alert('서버 오류가 발생했습니다.');
+        }
+    });
+</script>
+    </div>
 </body>
 </html>

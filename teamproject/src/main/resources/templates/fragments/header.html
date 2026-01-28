@@ -1,22 +1,25 @@
-<!-- header.html: 공통 상단 네비게이션 바 -->
-<header th:fragment="headerFragment" class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-    <div class="flex items-center space-x-8">
-        <h1 class="text-2xl font-bold text-indigo-900 flex items-center">
-            <a th:href="@{/}" class="flex items-center">
-                <span class="text-red-500 mr-1">●</span> Tutoring-go
-            </a>
-        </h1>
-        <nav class="hidden md:flex space-x-6 text-sm font-medium text-gray-600">
-            <a href="#">튜터찾기</a>
-            <a href="#">튜터되기</a>
-            <a href="#">주간 테마</a>
-            <a href="#">하루 한마디</a>
-            <a href="#">커뮤니티</a>
-        </nav>
-    </div>
-    <div class="flex items-center space-x-4 text-sm font-medium">
-        <span class="text-gray-500">한국어 | USD $</span>
-        <a th:href="@{/auth/login}" class="hover:text-red-500">LOGIN</a>
-        <a th:href="@{/auth/join_select}" class="bg-gray-600 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition">SIGN UP</a>
-    </div>
-</header>
+<!-- 프래그먼트 : 레이아웃에서 공통적으로 사용할 UI -->
+<!-- th:fragment="프래그먼트 명" -->
+<th:block th:fragment="header">
+    <header class="navbar">
+        <div class="navbar-container">
+            <a class="navbar-logo" href="/"><img src="/img/logo.png" alt="튜터링고로고"></a>
+
+            <!-- 검색 바 -->
+            <!-- <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="튜터 찾기" class="search-input">
+            </div> -->
+
+            <!-- 오른쪽 버튼 -->
+            <div class="navbar-right">
+                <button class="btn btn-outline-primary" onclick="location.href='/tutors'">튜터 찾기</button>
+                <button class="btn btn-outline-primary" onclick="location.href='/bookings'">내 예약</button>
+                <div id="navAuthArea" class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="location.href='/login'">로그인</button>
+                    <button class="btn btn-primary" onclick="location.href='/login'">회원가입</button>
+                </div>
+            </div>
+        </div>
+    </header>
+</th:block>

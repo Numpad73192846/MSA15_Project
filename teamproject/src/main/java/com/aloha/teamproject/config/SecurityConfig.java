@@ -36,18 +36,20 @@ public class SecurityConfig {
         // ✅ 인가 설정
         http
             .csrf(csrf -> csrf.ignoringRequestMatchers(
-            "/pages/**",
+            "/api/auth/**",
             "/swagger-ui/**",
             "/v3/api-docs/**"
             ))
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers(
+                    "/login",
                     "/swagger-ui/**",
-                    "/v3/api-docs/**"
+                    "/v3/api-docs/**",
+                    "/api/auth/**"
                 ).permitAll()
-                .requestMatchers(HttpMethod.POST, "/pages", "/pages/**").permitAll()
-                .requestMatchers(HttpMethod.PUT, "/pages", "/pages/**").hasAnyRole("USER", "TUTOR")
-                .requestMatchers(HttpMethod.DELETE, "/pages", "/pages/**").hasAnyRole("USER", "TUTOR", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/auth", "/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 .anyRequest().authenticated()
             );
@@ -56,7 +58,10 @@ public class SecurityConfig {
         http.userDetailsService(userDetailServiceImpl);
 
         // 로그인/로그아웃 설정
-        http.formLogin(form -> form.permitAll())
+        http.formLogin(form -> form
+                .loginPage("/login")
+                .permitAll()
+            )
             .logout(logout -> logout.permitAll());
 
         return http.build();
