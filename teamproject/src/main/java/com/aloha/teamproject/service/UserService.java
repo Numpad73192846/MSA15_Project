@@ -18,6 +18,9 @@ public interface UserService {
 	// ID로 회원 조회
 	public Users selectById(String id) throws Exception;
 
+	// 이메일로 회원 조회
+	public Users selectByUsername(String username) throws Exception;
+
 	// NICKNAME으로 회원 조회
 	public Users selectByNickname(String nickname) throws Exception;
 	

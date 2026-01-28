@@ -65,6 +65,13 @@ public class UserServiceImpl implements UserService {
 	}
 
     @Override
+	public Users selectByUsername(String username) throws Exception {
+		Users user = userMapper.selectByUsername(username);
+		return user;
+	}
+
+
+    @Override
 	public Users selectByNickname(String nickname) throws Exception {
 		Users user = userMapper.selectByNickname(nickname);
 		return user;
@@ -73,7 +80,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public boolean join(Users user) throws Exception {
-        String username = user.getId();
+        String username = user.getUsername();
         String password = user.getPassword();
         
         if ( password == null || password.isEmpty() ) {
@@ -89,12 +96,12 @@ public class UserServiceImpl implements UserService {
         if( result > 0 ) {
             // 회원 기본 권한 등록
             UserAuth userAuth = new UserAuth();
-            userAuth.setId(username);
+            userAuth.setUserId(user.getId());
             userAuth.setAuth("ROLE_USER");
             result = userMapper.insertAuth(userAuth);
         }
         return result > 0;
-    }
+    }   
 
     @Override
     public boolean update(Users user) throws Exception {

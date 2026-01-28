@@ -76,7 +76,8 @@ public class HomeController {
     @PostMapping("/join")
     public String joinPro(@Valid @ModelAttribute("joinRequest") JoinRequest joinRequest, BindingResult bindingResult, HttpServletRequest request) throws Exception {
         log.info(":::::::::: 회원 가입 처리 ::::::::::");
-        log.info("joinRequest : " + joinRequest);        
+        log.info("joinRequest : " + joinRequest);          
+      
 
          // ❌ 유효성 검사 실패
         if (bindingResult.hasErrors()) {
@@ -90,11 +91,12 @@ public class HomeController {
                     .name(joinRequest.getName())
                     .nickname(joinRequest.getNickname())
                     .build();
+        log.info("userid : " + user.getUsername()); 
 
         // 암호화 전 비밀번호
         String plainPassword = user.getPassword();
         // 회원 가입 처리
-        boolean result = userService.join(user);
+        boolean result = userService.join(user);        
 
         // 회원 가입 성공 시, 바로 로그인
         if( result ) {
