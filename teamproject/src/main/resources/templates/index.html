@@ -1,11 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Document</title>
-</head>
-<body>
-	<h1>메인</h1>
-</body>
-</html>
+<div xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-container">
+                <!-- Left Content -->
+                <div class="hero-content">
+                    <h1 class="hero-title">원하는 튜터를<br>쉽고 빠르게 찾으세요</h1>
+                    <p class="hero-description">
+                        권주된 전문 튜터와 함께 1:1 맞춤 학습을 시작하세요. 과목, 시간, 가격을 자유롭게 선택할 수 있습니다.
+                    </p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary btn-lg" onclick="location.href='/tutor/search'">튜터 찾기</button>
+                        <a href="#" class="btn-more">더 알아보기 →</a>
+                    </div>
+                </div>
+                
+                <!-- Right Image -->
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1427504494785-cdec1a45a95b?w=500&h=400&fit=crop" alt="튜터와 학생">
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">전문 튜터</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-number">4.8</div>
+                    <div class="stat-label">평균 평점</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-number">24시간</div>
+                    <div class="stat-label">먼저주는 예약</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Subjects Section -->
+        <section class="subjects-section">
+            <h2 class="section-title">인기 과목</h2>
+            <div class="subjects-grid">
+                <a href="#" class="subject-item">영어</a>
+                <a href="#" class="subject-item">수학</a>
+                <a href="#" class="subject-item">과학</a>
+                <a href="#" class="subject-item">프로그래밍</a>
+                <a href="#" class="subject-item">한국사</a>
+                <a href="#" class="subject-item">일본어</a>
+                <a href="#" class="subject-item">중국어</a>
+                <a href="#" class="subject-item">물리</a>
+            </div>
+        </section>
+    </div>
+</div>

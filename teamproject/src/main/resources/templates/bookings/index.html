@@ -1,0 +1,35 @@
+
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="mb-4">
+                <h2 class="h3 fw-bold mb-1">내 예약</h2>
+                <p class="text-muted mb-0">예약 내역을 확인하고 관리하세요</p>
+            </div>
+
+            <div id="bookingEmpty" class="card text-center py-5 shadow-sm d-none">
+                <div class="card-body">
+                    <div class="display-6 mb-3">📅</div>
+                    <h3 class="h5 fw-bold mb-2">예약 내역이 없습니다</h3>
+                    <p class="text-muted mb-3">원하는 튜터를 찾아 수업을 예약해보세요</p>
+                    <a class="btn btn-primary" href="/tutors">튜터 찾기</a>
+                </div>
+            </div>
+
+            <div id="bookingContent" class="d-none">
+                <div class="mb-4">
+                    <h3 class="h5 fw-bold">예정된 수업 (<span id="upcomingCount">0</span>)</h3>
+                    <div id="upcomingList" class="d-grid gap-3"></div>
+                </div>
+
+                <div>
+                    <h3 class="h5 fw-bold">지난 수업 (<span id="pastCount">0</span>)</h3>
+                    <div id="pastList" class="d-grid gap-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

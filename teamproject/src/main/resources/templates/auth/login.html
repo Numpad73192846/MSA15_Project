@@ -1,0 +1,79 @@
+
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="text-center mb-4">
+                <h2 class="h3 fw-bold mb-1">로그인 / 회원가입</h2>
+                <p class="text-muted mb-0">튜코스에서 학습을 시작하세요</p>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <button id="userTypeStudent" class="btn btn-primary">학생으로 시작</button>
+                <button id="userTypeTutor" class="btn btn-outline-primary">튜터로 시작</button>
+            </div>
+
+            <div class="card shadow-sm mx-auto" style="max-width:520px;">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin" type="button" role="tab">로그인</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup" type="button" role="tab">회원가입</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-4">
+                        <div class="tab-pane fade show active" id="tabLogin" role="tabpanel">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">이메일</label>
+                                    <input name="email" type="email" class="form-control" placeholder="example@email.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>
+                                    <input name="password" type="password" class="form-control" placeholder="••••••••" required>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="rememberMe">
+                                        <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
+                                    </div>
+                                    <a href="#" class="small">비밀번호 찾기</a>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">로그인</button>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="tabSignup" role="tabpanel">
+                            <form id="signupForm">
+                                <div class="mb-3">
+                                    <label class="form-label">이름</label>
+                                    <input name="name" type="text" class="form-control" placeholder="홍길동" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">이메일</label>
+                                    <input name="email" type="email" class="form-control" placeholder="example@email.com" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>
+                                    <input name="password" type="password" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호 확인</label>
+                                    <input name="confirmPassword" type="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">회원가입</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small mt-3">로그인/회원가입은 브라우저(localStorage)에 저장되는 mock 동작입니다.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
