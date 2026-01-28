@@ -1,6 +1,6 @@
 // 사용자 정의 자바스크립트
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('Script loaded successfully');
 });
 
@@ -58,6 +58,8 @@ function setBookings(bookings) {
 
 function updateHeaderForUser() {
     const $area = $('#navAuthArea');
+    const $myPageBtn = $('#navMyPageBtn');
+
     if ($area.length === 0) return;
 
     const user = getCurrentUser();
@@ -66,6 +68,7 @@ function updateHeaderForUser() {
             '<button class="btn btn-outline-primary" onclick="location.href=\'/login\'">로그인</button>' +
             '<button class="btn btn-primary" onclick="location.href=\'/login\'">회원가입</button>'
         );
+        $myPageBtn.hide();
         return;
     }
 
@@ -79,7 +82,19 @@ function updateHeaderForUser() {
         '<button class="btn btn-outline-secondary" id="btnLogout">로그아웃</button>'
     );
 
-    $('#btnLogout').on('click', function() {
+    // Show mypage button and set appropriate link
+    $myPageBtn.show();
+    if (role === 'tutor') {
+        $myPageBtn.off('click').on('click', function () {
+            location.href = '/tutor/mypage';
+        });
+    } else {
+        $myPageBtn.off('click').on('click', function () {
+            location.href = '/member/mypage';
+        });
+    }
+
+    $('#btnLogout').on('click', function () {
         clearCurrentUser();
         setBookings([]);
         toast('로그아웃 되었습니다');
@@ -107,7 +122,7 @@ function initTutorListFiltering() {
 
         let visibleCount = 0;
 
-        $('.tutor-card').each(function() {
+        $('.tutor-card').each(function () {
             const $card = $(this);
             const name = normalize($card.attr('data-name'));
             const subjectsRaw = normalize($card.attr('data-subjects'));
@@ -140,7 +155,7 @@ function initBookingForm() {
     const $form = $('#bookingForm');
     if ($form.length === 0) return;
 
-    $form.on('submit', function(e) {
+    $form.on('submit', function (e) {
         e.preventDefault();
 
         const user = getCurrentUser();
@@ -207,24 +222,24 @@ function renderBookingCard(booking, isUpcoming) {
 
     return (
         '<div class="card shadow-sm ' + (isUpcoming ? '' : 'opacity-75') + '">' +
-            '<div class="card-body">' +
-                '<div class="d-flex justify-content-between align-items-start">' +
-                    '<div>' +
-                        '<div class="fw-bold">' + booking.tutorName + ' 튜터</div>' +
-                        '<div class="small text-muted mt-1">' +
-                            '<span class="badge text-bg-light me-1">' + booking.subject + '</span>' +
-                            '<span class="badge ' + badgeClass + '">' + booking.status + '</span>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="text-end">' + cancelBtn + '</div>' +
-                '</div>' +
-                '<div class="row mt-3 g-2 small">' +
-                    '<div class="col-md-4">📅 ' + booking.date + '</div>' +
-                    '<div class="col-md-4">⏰ ' + booking.time + ' (' + booking.duration + '시간)</div>' +
-                    '<div class="col-md-4">💰 <span class="fw-semibold text-primary">' + formatNumberWithComma(booking.totalPrice) + '원</span></div>' +
-                '</div>' +
-                msg +
-            '</div>' +
+        '<div class="card-body">' +
+        '<div class="d-flex justify-content-between align-items-start">' +
+        '<div>' +
+        '<div class="fw-bold">' + booking.tutorName + ' 튜터</div>' +
+        '<div class="small text-muted mt-1">' +
+        '<span class="badge text-bg-light me-1">' + booking.subject + '</span>' +
+        '<span class="badge ' + badgeClass + '">' + booking.status + '</span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="text-end">' + cancelBtn + '</div>' +
+        '</div>' +
+        '<div class="row mt-3 g-2 small">' +
+        '<div class="col-md-4">📅 ' + booking.date + '</div>' +
+        '<div class="col-md-4">⏰ ' + booking.time + ' (' + booking.duration + '시간)</div>' +
+        '<div class="col-md-4">💰 <span class="fw-semibold text-primary">' + formatNumberWithComma(booking.totalPrice) + '원</span></div>' +
+        '</div>' +
+        msg +
+        '</div>' +
         '</div>'
     );
 }
@@ -266,7 +281,7 @@ function initBookingsPage() {
         $upcomingList.html(upcoming.map(b => renderBookingCard(b, true)).join(''));
         $pastList.html(past.map(b => renderBookingCard(b, false)).join(''));
 
-        $('.btn-cancel-booking').off('click').on('click', function() {
+        $('.btn-cancel-booking').off('click').on('click', function () {
             const bookingId = String($(this).attr('data-booking-id') || '');
             if (!bookingId) return;
 
@@ -307,12 +322,12 @@ function initLoginPage() {
         }
     }
 
-    $btnStudent.on('click', function() { setUserType('student'); });
-    $btnTutor.on('click', function() { setUserType('tutor'); });
+    $btnStudent.on('click', function () { setUserType('student'); });
+    $btnTutor.on('click', function () { setUserType('tutor'); });
 
     setUserType('student');
 
-    $loginForm.on('submit', function(e) {
+    $loginForm.on('submit', function (e) {
         e.preventDefault();
         const fd = new FormData($loginForm.get(0));
         const email = String(fd.get('email') || '');
@@ -334,7 +349,7 @@ function initLoginPage() {
         location.href = '/';
     });
 
-    $signupForm.on('submit', function(e) {
+    $signupForm.on('submit', function (e) {
         e.preventDefault();
         const fd = new FormData($signupForm.get(0));
         const name = String(fd.get('name') || '');
@@ -368,15 +383,120 @@ function initTutorDashboardMock() {
     const $buttons = $('.tutor-booking-action');
     if ($buttons.length === 0) return;
 
-    $buttons.on('click', function() {
-        const action = String($(this).attr('data-action') || '');
-        if (action === 'accept') toast('예약을 확정했습니다');
-        else if (action === 'reject') toast('예약을 거절했습니다');
-        else if (action === 'complete') toast('수업을 완료 처리했습니다');
+    let currentBookingData = null;
+
+    // Handle button clicks to open modals
+    $buttons.on('click', function () {
+        const $btn = $(this);
+        const action = String($btn.attr('data-action') || '');
+        const bookingId = String($btn.attr('data-booking-id') || '');
+
+        // Get booking data from the card
+        const $card = $btn.closest('.card');
+        const studentName = $card.find('.fw-bold').first().text();
+        const studentEmail = $card.find('.text-muted.small').first().text();
+        const dateText = $card.find('span').eq(0).text();
+        const timeText = $card.find('span').eq(1).text();
+        const durationText = $card.find('span').eq(2).text();
+        const subjectText = $card.find('span').eq(3).text();
+        const priceText = $card.find('.fw-semibold.text-primary').text();
+
+        currentBookingData = {
+            id: bookingId,
+            studentName: studentName,
+            studentEmail: studentEmail,
+            date: dateText,
+            time: timeText,
+            duration: durationText,
+            subject: subjectText,
+            price: priceText
+        };
+
+        // Open appropriate modal
+        if (action === 'accept') {
+            $('#acceptStudentName').text(currentBookingData.studentName);
+            $('#acceptDateTime').text(currentBookingData.date + ' ' + currentBookingData.time);
+            $('#acceptSubject').text(currentBookingData.subject);
+            $('#acceptPrice').text(currentBookingData.price);
+            new bootstrap.Modal(document.getElementById('acceptModal')).show();
+        } else if (action === 'reject') {
+            $('#rejectStudentName').text(currentBookingData.studentName);
+            $('#rejectDateTime').text(currentBookingData.date + ' ' + currentBookingData.time);
+            $('#rejectSubject').text(currentBookingData.subject);
+            $('#rejectReason').val('').removeClass('is-invalid');
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        } else if (action === 'complete') {
+            $('#completeStudentName').text(currentBookingData.studentName);
+            $('#completeDateTime').text(currentBookingData.date + ' ' + currentBookingData.time);
+            $('#completeSubject').text(currentBookingData.subject);
+            $('#completePrice').text(currentBookingData.price);
+            $('#completeNotes').val('');
+            new bootstrap.Modal(document.getElementById('completeModal')).show();
+        }
+    });
+
+    // Handle confirm accept
+    $('#confirmAccept').on('click', function () {
+        showSuccessToast('예약을 확정했습니다! 학생에게 알림이 전송되었습니다.');
+        bootstrap.Modal.getInstance(document.getElementById('acceptModal')).hide();
+        // In real implementation, would update booking status via API
+    });
+
+    // Handle confirm reject
+    $('#confirmReject').on('click', function () {
+        const reason = $('#rejectReason').val().trim();
+        if (!reason) {
+            $('#rejectReason').addClass('is-invalid');
+            return;
+        }
+        $('#rejectReason').removeClass('is-invalid');
+        showSuccessToast('예약을 거절했습니다. 학생에게 거절 사유가 전송되었습니다.');
+        bootstrap.Modal.getInstance(document.getElementById('rejectModal')).hide();
+        // In real implementation, would update booking status and send reason via API
+    });
+
+    // Handle confirm complete
+    $('#confirmComplete').on('click', function () {
+        const notes = $('#completeNotes').val().trim();
+        showSuccessToast('수업을 완료 처리했습니다!');
+        bootstrap.Modal.getInstance(document.getElementById('completeModal')).hide();
+        // In real implementation, would update booking status and save notes via API
+    });
+
+    // Clear validation on input
+    $('#rejectReason').on('input', function () {
+        $(this).removeClass('is-invalid');
     });
 }
 
-$(function() {
+function showSuccessToast(message) {
+    // Create a better toast notification
+    const toastHtml = `
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999">
+            <div class="toast show" role="alert">
+                <div class="toast-header bg-success text-white">
+                    <strong class="me-auto">✓ 성공</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        </div>
+    `;
+
+    const $toast = $(toastHtml);
+    $('body').append($toast);
+
+    setTimeout(function () {
+        $toast.find('.toast').removeClass('show');
+        setTimeout(function () {
+            $toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+$(function () {
     updateHeaderForUser();
     initTutorListFiltering();
     initBookingForm();

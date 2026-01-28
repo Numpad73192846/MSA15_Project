@@ -16,22 +16,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
-
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/pages")
 public class PagesController {
-	
+
 	private final UserService userService;
 
 	@GetMapping()
 	public ResponseEntity<?> home() {
 		return new ResponseEntity<>("index", HttpStatus.OK);
 	}
-	
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> selectById() {
@@ -49,14 +45,13 @@ public class PagesController {
 		log.info("[Post] - join");
 		try {
 			boolean result = userService.join(user);
-			if ( !result ) {
-				return new ResponseEntity<>("FAIL",HttpStatus.BAD_REQUEST);
+			if (!result) {
+				return new ResponseEntity<>("FAIL", HttpStatus.BAD_REQUEST);
 			}
 			return new ResponseEntity<>("SUCCESS", HttpStatus.OK);
 		} catch (Exception e) {
-			return new ResponseEntity<>("EXCEPTION",HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>("EXCEPTION", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
 
 }
