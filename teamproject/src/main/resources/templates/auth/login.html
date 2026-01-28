@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- 공통 head 조각 삽입 -->
+    <th:block th:replace="~{fragments/head :: headFragment}"></th:block>
+    <title>Tutoring-go - 회원가입/로그인</title>
+</head>
+<body class="bg-gray-50">
+
+    <!-- 상단 헤더 조각 삽입 -->
+    <div th:replace="~{fragments/header :: headerFragment}"></div>
+
+    <!-- 중앙 컨텐츠 -->
+    <main class="flex justify-center items-center py-16 px-6">
+        <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 w-full max-w-xl">
+            <h2 class="text-3xl font-bold text-center mb-8">Welcome to Tutoring-go!</h2>
+
+            <!-- 구글 로그인 버튼 -->
+            <button class="w-full flex items-center justify-center border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition mb-6">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="w-6 h-6 mr-3" alt="google">
+                <span class="text-gray-700">Google 계정으로 로그인</span>
+            </button>
+
+            <!-- 구분선 -->
+            <div class="relative flex items-center mb-8">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-400">or</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <!-- 이메일/비번 폼 -->
+            <form th:action="@{/auth/login}" method="post">
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <label class="w-24 text-gray-700 font-bold">이메일</label>
+                        <input type="email" name="username" class="flex-1 border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-400">
+                    </div>
+                    <div class="flex items-center">
+                        <label class="w-24 text-gray-700 font-bold">비밀번호</label>
+                        <input type="password" name="password" class="flex-1 border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-400">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-6 text-sm">
+                    <label class="flex items-center text-red-500 cursor-pointer">
+                        <input type="checkbox" class="mr-2 accent-red-500" checked> 아이디 저장
+                    </label>
+                    <a href="#" class="text-gray-600">비밀번호를 잊으셨나요?</a>
+                </div>
+
+                <!-- 로그인 버튼 -->
+                <button type="submit" class="w-full bg-[#FF4D42] text-white py-4 rounded-lg font-bold text-lg mt-8 hover:bg-red-600 transition">
+                    로그인
+                </button>
+            </form>
+
+            <hr class="my-8 border-dotted border-gray-300">
+
+            <!-- 회원가입 하단 버튼 -->
+            <div class="grid grid-cols-2 gap-4">
+                <a th:href="@{/auth/join_form(type='student')}" class="text-center py-3 border border-gray-800 rounded-lg font-bold hover:bg-gray-800 hover:text-white transition">
+                    학생으로 가입
+                </a>
+                <a th:href="@{/auth/join_form(type='tutor')}" class="text-center py-3 border border-gray-800 rounded-lg font-bold hover:bg-gray-800 hover:text-white transition">
+                    튜터로 가입
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- 푸터 조각 삽입 -->
+    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!-- head.html: 공통 메타데이터, Tailwind, 폰트 설정 -->
+<th:block th:fragment="headFragment">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @font-face {
+            font-family: 'GmarketSansMedium';
+            src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: 'GmarketSansMedium', sans-serif !important;
+        }
+    </style>
+</th:block>
