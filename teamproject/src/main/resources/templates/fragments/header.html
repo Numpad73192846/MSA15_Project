@@ -3,14 +3,14 @@
 <th:block th:fragment="header">
     <header class="navbar">
         <div class="navbar-container">
-            <a href="/">🎓 튜코스</a> 
-            
+            <a class="navbar-logo" href="/"><img src="/img/logo.png" alt="튜터링고로고"></a>
+
             <!-- 검색 바 -->
-            <div class="search-bar">
+            <!-- <div class="search-bar">
                 <span class="search-icon">🔍</span>
                 <input type="text" placeholder="튜터 찾기" class="search-input">
-            </div>
-            
+            </div> -->
+
             <!-- 오른쪽 버튼 -->
             <div class="navbar-right">
                 <button class="btn btn-outline-primary" onclick="location.href='/tutors'">튜터 찾기</button>
@@ -18,8 +18,8 @@
                 <div id="navAuthArea" class="d-flex gap-2">
                     <button class="btn btn-outline-primary" onclick="location.href='/login'">로그인</button>
                     <button class="btn btn-primary" onclick="location.href='/login'">회원가입</button>
-                </div> 
+                </div>
             </div>
         </div>
     </header>
-</th:block> 
+</th:block>

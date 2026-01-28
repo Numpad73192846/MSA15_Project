@@ -1,5 +1,6 @@
 /* Global Styles */
-html, body {
+html,
+body {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -43,11 +44,22 @@ header .navbar-logo {
     font-weight: bold;
     color: #4a5568;
     flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
 header .navbar-logo a {
     text-decoration: none;
     color: #4a5568;
+    display: flex;
+    align-items: center;
+}
+
+header .navbar-logo img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
 }
 
 header .search-bar {
@@ -309,11 +321,11 @@ footer .footer-bottom {
 }
 
 .card-body {
-    display: flex ;
+    display: flex;
     flex-direction: column;
 }
 
-.card-body .btn {  
+.card-body .btn {
     margin-top: auto;
 }
 
@@ -323,16 +335,16 @@ footer .footer-bottom {
         flex-direction: column;
         gap: 30px;
     }
-    
+
     .hero-title {
         font-size: 36px;
     }
-    
+
     .stats-container {
         flex-direction: column;
         gap: 20px;
     }
-    
+
     .subjects-grid {
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
@@ -343,7 +355,7 @@ footer .footer-bottom {
     .hero-title {
         font-size: 28px;
     }
-    
+
     .hero-buttons {
         flex-direction: column;
     }
