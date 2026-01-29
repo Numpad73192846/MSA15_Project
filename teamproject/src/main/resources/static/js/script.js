@@ -199,7 +199,7 @@ function initBookingForm() {
         setBookings(bookings);
 
         toast('예약이 완료되었습니다!');
-        location.href = '/bookings';
+        location.href = '/member/mypage';
     });
 }
 
