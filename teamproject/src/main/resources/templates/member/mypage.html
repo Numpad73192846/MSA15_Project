@@ -229,9 +229,11 @@
                                 <div class="card-body">
                                     <h4 class="h6 fw-bold mb-3">내가 작성한 리뷰</h4>
                                     <div class="d-grid gap-3">
-                                        <div class="review-item p-3 bg-light rounded">
+                                        <div class="review-item p-3 bg-light rounded" style="cursor: pointer;"
+                                            onclick="location.href='/tutors/detail'">
                                             <div class="d-flex justify-content-between mb-2">
-                                                <div class="fw-semibold">박서준 튜터</div>
+                                                <div class="fw-semibold">박서준 튜터 <small
+                                                        class="text-primary opacity-75 ms-1">상세되기 ↗</small></div>
                                                 <div class="text-warning">★★★★★</div>
                                             </div>
                                             <p class="small mb-1">
@@ -239,9 +241,11 @@
                                             </p>
                                             <div class="small text-muted">2026-01-20</div>
                                         </div>
-                                        <div class="review-item p-3 bg-light rounded">
+                                        <div class="review-item p-3 bg-light rounded" style="cursor: pointer;"
+                                            onclick="location.href='/tutors/detail'">
                                             <div class="d-flex justify-content-between mb-2">
-                                                <div class="fw-semibold">김민지 튜터</div>
+                                                <div class="fw-semibold">김민지 튜터 <small
+                                                        class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>
                                                 <div class="text-warning">★★★★★</div>
                                             </div>
                                             <p class="small mb-1">
@@ -327,7 +331,7 @@
         <div class="modal fade" id="profileEditModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form action="/member/mypage/update" method="POST">
+                    <form action="/member/mypage/update" method="POST" enctype="multipart/form-data">
                         <div class="modal-header">
                             <h5 class="modal-title fw-bold">프로필 수정</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -348,6 +352,27 @@
                                 <input type="email" class="form-control" id="editEmail" name="username"
                                     th:value="${user.username}" readonly>
                             </div>
+                            <div class="mb-3">
+                                <label for="editProfileImage" class="form-label">프로필 이미지</label>
+                                <input type="file" class="form-control" id="editProfileImage" name="profileImage"
+                                    accept="image/*">
+                                <div class="mt-2 text-center" id="imagePreviewContainer" style="display: none;">
+                                    <img id="imagePreview" src="" alt="Profile Preview" class="rounded-circle shadow-sm"
+                                        style="width: 100px; height: 100px; object-fit: cover;">
+                                </div>
+                            </div>
+                            <script>
+                                document.getElementById('editProfileImage').addEventListener('change', function (e) {
+                                    if (e.target.files && e.target.files[0]) {
+                                        var reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            document.getElementById('imagePreview').src = e.target.result;
+                                            document.getElementById('imagePreviewContainer').style.display = 'block';
+                                        }
+                                        reader.readAsDataURL(e.target.files[0]);
+                                    }
+                                });
+                            </script>
                             <!-- Password change could be added here -->
                         </div>
                         <div class="modal-footer">

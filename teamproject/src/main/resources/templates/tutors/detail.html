@@ -1,7 +1,5 @@
-
-<div xmlns:th="http://www.thymeleaf.org"
-     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-     layout:decorate="~{layouts/main_layout}">
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
 
     <div layout:fragment="content">
         <div class="container py-5">
@@ -13,8 +11,8 @@
                         <div class="card-body">
                             <div class="d-flex gap-3 align-items-start">
                                 <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                     style="width:96px;height:96px;font-size:32px;flex:0 0 auto;"
-                                     th:text="${#strings.substring(tutor.name,0,1)}">김</div>
+                                    style="width:96px;height:96px;font-size:32px;flex:0 0 auto;"
+                                    th:text="${#strings.substring(tutor.name,0,1)}">김</div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
@@ -22,13 +20,16 @@
                                             <div class="text-muted mb-2">
                                                 <span class="me-1">⭐</span>
                                                 <span class="fw-semibold" th:text="${tutor.rating}">4.9</span>
-                                                <span class="text-muted">(</span><span class="text-muted" th:text="${tutor.reviews}">127</span><span class="text-muted">개의 리뷰)</span>
+                                                <span class="text-muted">(</span><span class="text-muted"
+                                                    th:text="${tutor.reviews}">127</span><span class="text-muted">개의
+                                                    리뷰)</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-1 mb-3">
-                                        <span class="badge text-bg-light" th:each="s : ${tutor.subjects}" th:text="${s}">영어</span>
+                                        <span class="badge text-bg-light" th:each="s : ${tutor.subjects}"
+                                            th:text="${s}">영어</span>
                                     </div>
 
                                     <div class="small text-muted">
@@ -66,7 +67,7 @@
                                     </div>
                                     <div class="small">
                                         <span th:each="i : ${#numbers.sequence(1,5)}"
-                                              th:text="${i <= r.rating ? '★' : '☆'}">★</span>
+                                            th:text="${i <= r.rating ? '★' : '☆'}">★</span>
                                     </div>
                                 </div>
                                 <div class="text-muted mt-2" th:text="${r.comment}">후기</div>
@@ -80,19 +81,86 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="fw-bold">수업 예약</div>
-                                <div class="text-primary fw-semibold">시간당 <span th:text="${#numbers.formatInteger(tutor.hourlyRate, 0, 'COMMA')}">35,000</span>원</div>
+                                <div class="text-primary fw-semibold">시간당 <span
+                                        th:text="${#numbers.formatInteger(tutor.hourlyRate, 0, 'COMMA')}">35,000</span>원
+                                </div>
+                            </div>
+
+                            <h4 class="h6 fw-bold mb-3">태스크</h4>
+                            <div id="bookingCalendar" class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button class="btn btn-outline-secondary btn-sm rounded-circle p-0"
+                                            style="width: 30px; height: 30px;">←</button>
+                                        <button class="btn btn-outline-secondary btn-sm rounded-circle p-0"
+                                            style="width: 30px; height: 30px;">→</button>
+                                        <span class="fw-bold ms-2">2026.02.06 ~ 2026.02.12</span>
+                                    </div>
+                                </div>
+
+                                <div class="calendar-grid text-center">
+                                    <!-- Header Row -->
+                                    <div class="row g-0 border-bottom mb-2 pb-2">
+                                        <div class="col">
+                                            <div class="small fw-bold">금</div>
+                                            <div class="small">02.06</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="small fw-bold text-danger">토</div>
+                                            <div class="small text-danger">02.07</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="small fw-bold text-danger">일</div>
+                                            <div class="small text-danger">02.08</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="small fw-bold">월</div>
+                                            <div class="small">02.09</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="small fw-bold">화</div>
+                                            <div class="small">02.10</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="small fw-bold">수</div>
+                                            <div class="small">02.11</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="small fw-bold">목</div>
+                                            <div class="small">02.12</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Time Slots -->
+                                    <div class="time-slots" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- Generating slots via JS for brevity in this mock -->
+                                        <div class="row g-1 mb-1"
+                                            th:each="time : ${ {'08:00', '08:30', '09:00', '09:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30'} }">
+                                            <div class="col" th:each="day, iterStat : ${ {0,1,2,3,4,5,6} }">
+                                                <button type="button" class="btn btn-sm w-100 p-0 py-1 slot-btn"
+                                                    th:classappend="${(iterStat.index == 1 or iterStat.index == 2) ? 'text-danger' : 'text-muted'}"
+                                                    th:data-time="${time}"
+                                                    th:data-date="'2026-02-0' + ${6 + iterStat.index}"
+                                                    onclick="selectSlot(this)">
+                                                    <span class="small" th:text="${time}">08:00</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <form id="bookingForm"
-                                  th:attr="data-tutor-id=${tutor.id},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.hourlyRate}">
+                                th:attr="data-tutor-id=${tutor.id},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.hourlyRate}">
+                                <input type="hidden" name="date" id="selectedDate" required>
+                                <input type="hidden" name="time" id="selectedTime" required>
+
                                 <div class="mb-3">
-                                    <label class="form-label">날짜 *</label>
-                                    <input name="date" type="date" class="form-control" required>
+                                    <label class="form-label">선택된 시간</label>
+                                    <input type="text" class="form-control bg-white" id="displaySelectedTime"
+                                        placeholder="시간을 선택해주세요" readonly>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">시간 *</label>
-                                    <input name="time" type="time" class="form-control" required>
-                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label">기간(시간)</label>
                                     <select name="duration" class="form-select">
@@ -105,16 +173,52 @@
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
                                         <option value="" selected>선택</option>
-                                        <option th:each="s : ${tutor.subjects}" th:value="${s}" th:text="${s}">영어</option>
+                                        <option th:each="s : ${tutor.subjects}" th:value="${s}" th:text="${s}">영어
+                                        </option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">요청사항</label>
-                                    <textarea name="message" class="form-control" rows="3" placeholder="추가로 전달할 내용을 입력하세요"></textarea>
+                                    <textarea name="message" class="form-control" rows="3"
+                                        placeholder="추가로 전달할 내용을 입력하세요"></textarea>
                                 </div>
-                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100">예약하기</button>
+                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100"
+                                    disabled>예약하기</button>
                                 <div class="text-muted small mt-2">예약은 브라우저(localStorage)에 저장되는 mock 동작입니다.</div>
                             </form>
+
+                            <style>
+                                .slot-btn {
+                                    border: 1px solid transparent;
+                                }
+
+                                .slot-btn:hover {
+                                    background-color: #f1f5f9;
+                                }
+
+                                .slot-btn.selected {
+                                    background-color: var(--primary-color) !important;
+                                    color: white !important;
+                                    border-radius: 4px;
+                                }
+                            </style>
+                            <script>
+                                function selectSlot(btn) {
+                                    // Reset previous
+                                    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+
+                                    // Select new
+                                    btn.classList.add('selected');
+
+                                    // Update form
+                                    const date = btn.getAttribute('data-date');
+                                    const time = btn.getAttribute('data-time');
+                                    document.getElementById('selectedDate').value = date;
+                                    document.getElementById('selectedTime').value = time;
+                                    document.getElementById('displaySelectedTime').value = `${date} ${time}`;
+                                    document.getElementById('bookingSubmit').disabled = false;
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>
