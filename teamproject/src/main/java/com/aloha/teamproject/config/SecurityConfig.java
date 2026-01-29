@@ -37,20 +37,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.ignoringRequestMatchers(
             "/api/auth/**",
-            "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/api/users/**"
             ))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers(
-                    "/login",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/api/auth/**"
-                ).permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth", "/api/auth/**").permitAll()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/login", "/auth/**", "/api/auth/**").permitAll()
+                .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 .anyRequest().authenticated()
             );
 

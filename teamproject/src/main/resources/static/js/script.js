@@ -379,12 +379,13 @@ function initLoginPage() {
         e.preventDefault();
         const fd = new FormData($signupForm.get(0));
         const name = String(fd.get('name') || '');
-        const email = String(fd.get('email') || '');
+        const username = String(fd.get('username') || '');
+        const nickname = String(fd.get('nickname') || '');
         const password = String(fd.get('password') || '');
         const confirmPassword = String(fd.get('confirmPassword') || '');
 
-        if (!name || !email || !password) {
-            toast('모든 필드를 입력해주세요');
+        if (!name || !username || !nickname || !password) {
+            toast('모든 필수 항목을 입력해주세요');
             return;
         }
         if (password !== confirmPassword) {
@@ -395,7 +396,12 @@ function initLoginPage() {
         fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, username: email, password: password })
+            body: JSON.stringify({ 
+                name: name,
+                username: username,
+                nickname: nickname,
+                password: password 
+            })
         })
             .then(res => res.json())
             .then(result => {

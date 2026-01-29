@@ -2,8 +2,10 @@ CREATE DATABASE IF NOT EXISTS matching;
 
 USE matching;
 
-DROP TABLE IF EXISTS `featured_tuter`,
-                     `tuter_availability`,
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `featured_tutor`,
+                     `tutor_availability`,
                      `tutor_subject`,
                      `subject`,
                      `subject_group`,
@@ -12,13 +14,15 @@ DROP TABLE IF EXISTS `featured_tuter`,
                      `booking`,
                      `lesson`,
                      `persistent_logins`,
-                     `tuter_profile`,
+                     `tutor_profile`,
                      `user_auth`,
                      `users`,
                      `tutor_career`,
                      `tutor_education`,
                      `tutor_time_range`,
                      `tutor_document`;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE `users` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
@@ -45,7 +49,7 @@ CREATE TABLE `user_auth` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `tuter_profile` (
+CREATE TABLE `tutor_profile` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL UNIQUE,
     `id` VARCHAR(64) NOT NULL UNIQUE,
@@ -116,7 +120,7 @@ CREATE TABLE `lesson` (
     FOREIGN KEY (`subject_id`) REFERENCES `subject`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `tuter_availability` (
+CREATE TABLE `tutor_availability` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,
@@ -149,7 +153,7 @@ CREATE TABLE `booking` (
     INDEX `idx_availability_id` (`availability_id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`lesson_id`) REFERENCES `lesson`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`availability_id`) REFERENCES `tuter_availability`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`availability_id`) REFERENCES `tutor_availability`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `payment` (
@@ -198,7 +202,7 @@ CREATE TABLE `tutor_subject` (
     FOREIGN KEY (`subject_id`) REFERENCES `subject`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `featured_tuter` (
+CREATE TABLE `featured_tutor` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,
