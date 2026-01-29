@@ -24,6 +24,22 @@ VALUES
 ('sg-math', '수학', 1),
 ('sg-eng', '영어', 2);
 
+-- 테스트 언어 분야 데이터 삽입
+INSERT INTO language_field (id, name, category, seq)
+VALUES
+('lf-general-1', '회화', 'GENERAL', 1),
+('lf-general-2', '문법', 'GENERAL', 2),
+('lf-general-3', '읽기', 'GENERAL', 3),
+('lf-general-4', '작문', 'GENERAL', 4),
+('lf-general-5', '발음', 'GENERAL', 5),
+('lf-domain-1', '학교', 'DOMAIN', 1),
+('lf-domain-2', '비즈니스', 'DOMAIN', 2),
+('lf-domain-3', '여행', 'DOMAIN', 3),
+('lf-domain-4', '영화', 'DOMAIN', 4),
+('lf-domain-5', '드라마', 'DOMAIN', 5),
+('lf-domain-6', '노래', 'DOMAIN', 6),
+('lf-domain-7', '문화', 'DOMAIN', 7);
+
 INSERT INTO subject (group_id, id, name, seq_in_group)
 VALUES
 ('sg-math', 'sub-math-1', '중등 수학', 1),
@@ -36,6 +52,14 @@ VALUES
 ('u-tutor-1', 'sub-math-1', 'ts-1', 1),
 ('u-tutor-1', 'sub-math-2', 'ts-2', 2),
 ('u-tutor-2', 'sub-eng-1', 'ts-3', 1);
+
+-- 테스트 튜터 분야 매핑 데이터 삽입
+INSERT INTO tutor_field (user_id, field_id, id, seq)
+VALUES
+('u-tutor-1', 'lf-general-1', 'tf-1', 1),
+('u-tutor-1', 'lf-domain-1', 'tf-2', 2),
+('u-tutor-2', 'lf-general-1', 'tf-3', 1),
+('u-tutor-2', 'lf-domain-2', 'tf-4', 2);
 
 -- 테스트 레슨 데이터 삽입
 INSERT INTO lesson (user_id, subject_id, id, title, description, price)

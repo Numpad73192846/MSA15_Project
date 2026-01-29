@@ -1,11 +1,14 @@
 package com.aloha.teamproject.service;
 
+import com.aloha.teamproject.dto.AuthTokenResponse;
 import com.aloha.teamproject.dto.Users;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 public interface LoginService {
 	
-	public Users login(Users user, HttpServletRequest request) throws Exception;
+	public AuthTokenResponse login(Users user) throws Exception;
 
+	public AuthTokenResponse tokenRefresh(String refreshToken)  throws Exception;
+
+	public void logout(String refreshToken)  throws Exception;
+	
 }

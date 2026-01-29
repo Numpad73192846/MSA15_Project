@@ -7,10 +7,13 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `featured_tutor`,
                      `tutor_availability`,
                      `tutor_subject`,
+                     `tutor_field`,
                      `subject`,
                      `subject_group`,
+                     `language_field`,
                      `review`,
                      `payment`,
+                     `refresh_token`,
                      `booking`,
                      `lesson`,
                      `persistent_logins`,
@@ -86,6 +89,33 @@ CREATE TABLE `subject_group` (
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`no`),
     INDEX `idx_name` (`name`)
+);
+
+CREATE TABLE `language_field` (
+    `no` BIGINT AUTO_INCREMENT NOT NULL,
+    `id` VARCHAR(64) NOT NULL UNIQUE,
+    `name` VARCHAR(64) NOT NULL,
+    `category` ENUM('GENERAL', 'DOMAIN') NOT NULL,
+    `seq` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`no`),
+    INDEX `idx_category` (`category`),
+    INDEX `idx_name` (`name`)
+);
+
+CREATE TABLE `tutor_field` (
+    `no` BIGINT AUTO_INCREMENT NOT NULL,
+    `user_id` VARCHAR(64) NOT NULL,
+    `field_id` VARCHAR(64) NOT NULL,
+    `id` VARCHAR(64) NOT NULL UNIQUE,
+    `seq` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`no`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_field_id` (`field_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`field_id`) REFERENCES `language_field`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `subject` (
@@ -278,5 +308,22 @@ CREATE TABLE `tutor_document` (
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`no`),
     INDEX `idx_user_id` (`user_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `refresh_token` (
+    `no` BIGINT AUTO_INCREMENT NOT NULL,
+    `user_id` VARCHAR(64) NOT NULL,
+    `id` VARCHAR(64) NOT NULL UNIQUE,
+    `token_hash` VARCHAR(255) NOT NULL,
+    `expires_at` DATETIME NOT NULL,
+    `revoked_at` DATETIME NULL,
+    `user_agent` VARCHAR(255) NULL,
+    `ip` VARCHAR(64) NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`no`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_expires_at` (`expires_at`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );

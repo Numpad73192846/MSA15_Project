@@ -57,6 +57,15 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		Users existing = userMapper.selectByUsername(username);
 		require(existing == null, ErrorCode.USERNAME_DUPLICATED);
 
+
+		String role = user.getRole();
+		if (role == null || role.isBlank()) {
+			role = "ROLE_USER";
+		}
+		if ("ROLE_TUTOR".equals(role)) {
+			role = "ROLE_TUTOR_PENDING";
+		}
+
 		String encodedPassword = passwordEncoder.encode(password);
 		user.setPassword(encodedPassword);
 
@@ -65,7 +74,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		if ( result > 0 ) {
 			UserAuth userAuth = new UserAuth();
 			userAuth.setUserId(user.getId());
-			userAuth.setAuth("ROLE_USER");
+			userAuth.setAuth(role);
 			result = userMapper.insertAuth(userAuth);
 		}
 
@@ -101,6 +110,14 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		if (result <= 0) {
 			throw new AppException(ErrorCode.INTERNAL_ERROR);
 		}
+		return true;
+	}
+
+	@Override
+	public boolean deleteAuth(String userId, String auth) throws Exception {
+		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+		requiredNotBlank(auth, ErrorCode.INVALID_REQUEST);
+		userMapper.deleteAuth(userId, auth);
 		return true;
 	}
 

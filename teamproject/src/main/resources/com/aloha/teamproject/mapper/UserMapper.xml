@@ -42,6 +42,12 @@
         INSERT INTO user_auth ( id, user_id, auth )
         VALUES ( #{id}, #{userId}, #{auth} )
     </insert>
+
+	<delete id="deleteAuth">
+		DELETE FROM user_auth
+		WHERE user_id = #{userId}
+		  AND auth = #{auth}
+	</delete>
 	
 	<select id="list" resultMap="userMap"> 
 		SELECT *
