@@ -12,9 +12,25 @@ public class JoinRequestValidator implements Validator {
         return JoinRequest.class.isAssignableFrom(clazz);
     }
 
+    // 검증 로직 구현
     @Override
     public void validate(Object target, Errors errors) {
-        JoinRequest req = (JoinRequest) target;        
+        JoinRequest req = (JoinRequest) target; 
+        
+        // 닉네임: 공백 먼저, 그 다음 길이 검사
+        if (!errors.hasFieldErrors("nickname")) {
+            String nickname = req.getNickname();
+            if (nickname != null) {
+                int len = nickname.length();
+                if (len < 2 || len > 20) {
+                    errors.rejectValue(
+                        "nickname",
+                        "nickname.size",
+                        "닉네임은 2~20자"
+                    );
+                }
+            }
+        }
 
         // 이미 password / passwordCheck 자체 에러가 있으면 비교 안 함
         if (errors.hasFieldErrors("password") ||

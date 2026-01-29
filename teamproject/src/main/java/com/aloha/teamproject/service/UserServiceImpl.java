@@ -2,57 +2,27 @@ package com.aloha.teamproject.service;
 
 import java.util.List;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.aloha.teamproject.common.exception.AppException;
+import com.aloha.teamproject.common.exception.ErrorCode;
+import com.aloha.teamproject.common.service.BaseServiceImpl;
 import com.aloha.teamproject.dto.UserAuth;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
-    private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+	private final UserMapper userMapper;
+	private final PasswordEncoder passwordEncoder;
 
-    @Override
-    public Boolean login(Users user, HttpServletRequest request) throws Exception {
-        // 💍 토큰 생성
-        String username = user.getUsername();    // 아이디
-        String password = user.getPassword();    // 암호화되지 않은 비밀번호
-        UsernamePasswordAuthenticationToken token 
-            = new UsernamePasswordAuthenticationToken(username, password);
-        
-        // 토큰을 이용하여 인증
-        Authentication authentication = authenticationManager.authenticate(token);
-        
-        // 인증 여부 확인
-        boolean result = authentication.isAuthenticated();
-
-        // 인증이 성공하면 SecurityContext에 설정
-        if (result) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            
-            // 세션에 인증 정보 설정 (세션이 없으면 새로 생성)
-            HttpSession session = request.getSession(true);  // 세션이 없으면 새로 생성
-            session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-        }
-
-        return result;
-    }
-
-    @Override
+	@Override
 	public List<Users> list() throws Exception {
 		List<Users> userList = userMapper.list();
 		return userList;
@@ -60,65 +30,110 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Users selectById(String id) throws Exception {
+		requiredNotBlank(id, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectById(id);
+		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
 		return user;
 	}
 
-    @Override
+	@Override
 	public Users selectByUsername(String username) throws Exception {
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectByUsername(username);
+		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
 		return user;
 	}
 
-
-    @Override
+	@Override
 	public Users selectByNickname(String nickname) throws Exception {
+		requiredNotBlank(nickname, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectByNickname(nickname);
+		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
 		return user;
 	}
 
-    @Override
-    @Transactional
-    public boolean join(Users user) throws Exception {
-        String username = user.getUsername();
-        String password = user.getPassword();
-        
-        if ( password == null || password.isEmpty() ) {
-            return false;
+	@Override
+	@Transactional
+	public boolean insert(Users user) throws Exception {
+		requireNotNull(user, ErrorCode.INVALID_REQUEST);
+		String username = user.getUsername();
+		String password = user.getPassword();
+
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
+		requiredNotBlank(password, ErrorCode.INVALID_REQUEST);
+
+		Users existing = userMapper.selectByUsername(username);
+		require(existing == null, ErrorCode.USERNAME_DUPLICATED);
+
+		String encodedPassword = passwordEncoder.encode(password);
+		user.setPassword(encodedPassword);
+
+		int result = userMapper.join(user);
+
+		if ( result > 0 ) {
+			UserAuth userAuth = new UserAuth();
+			userAuth.setUserId(user.getId());
+			userAuth.setAuth("ROLE_USER");
+			result = userMapper.insertAuth(userAuth);
 		}
 
-        String encodedPassword = passwordEncoder.encode(password);  // 🔒 비밀번호 암호화
-        user.setPassword(encodedPassword);
+		if (result <= 0) {
+			throw new AppException(ErrorCode.INTERNAL_ERROR);
+		}
+		return true;
+	}
 
-        // 회원 등록
-        int result = userMapper.join(user);
+	@Override
+	public boolean update(Users user) throws Exception {
+		requireNotNull(user, ErrorCode.INVALID_REQUEST);
+		requireNotNull(user.getNo(), ErrorCode.INVALID_REQUEST);
+		String password = user.getPassword();
+		
+		if ( password != null && !password.isEmpty() ) {
+			String encodedPassword = passwordEncoder.encode(password);
+			user.setPassword(encodedPassword);
+		}
+		
+		int result = userMapper.update(user);
+		if (result <= 0) {
+			throw new AppException(ErrorCode.NOT_FOUND);
+		}
+		return true;
+		
+	}
 
-        if( result > 0 ) {
-            // 회원 기본 권한 등록
-            UserAuth userAuth = new UserAuth();
-            userAuth.setUserId(user.getId());
-            userAuth.setAuth("ROLE_USER");
-            result = userMapper.insertAuth(userAuth);
-        }
-        return result > 0;
-    }   
+	@Override
+	public boolean insertAuth(UserAuth userAuth) throws Exception {
+		requireNotNull(userAuth, ErrorCode.INVALID_REQUEST);
+		int result = userMapper.insertAuth(userAuth);
+		if (result <= 0) {
+			throw new AppException(ErrorCode.INTERNAL_ERROR);
+		}
+		return true;
+	}
 
-    @Override
-    public boolean update(Users user) throws Exception {
-        // 비밀번호 변경하는 경우 암호화 처리
-        String password = user.getPassword();
-        if( password != null && !password.isEmpty() ) {
-          String encodedPassword = passwordEncoder.encode(password);  // 🔒 비밀번호 암호화
-          user.setPassword(encodedPassword);
-        }
-        int result = userMapper.update(user);
-        return result > 0;
-    }
+	@Override
+	public boolean delete(Long no) throws Exception {
+		requireNotNull(no, ErrorCode.INVALID_REQUEST);
+		int result = userMapper.delete(no);
+		if (result <= 0) {
+			throw new AppException(ErrorCode.NOT_FOUND);
+		}
+		return true;
+	}
 
-    @Override
-    public boolean insertAuth(UserAuth userAuth) throws Exception {
-        int result = userMapper.insertAuth(userAuth);
-        return result > 0;
-    }
-	
+	@Override
+	public boolean isUsernameAvailable(String username) throws Exception {
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
+		Users existing = userMapper.selectByUsername(username);
+		return existing == null;
+	}
+
+	@Override
+	public boolean isNicknameAvailable(String nickname) throws Exception {
+		requiredNotBlank(nickname, ErrorCode.INVALID_REQUEST);
+		Users existing = userMapper.selectByNickname(nickname);
+		return existing == null;
+	}	
+
 }

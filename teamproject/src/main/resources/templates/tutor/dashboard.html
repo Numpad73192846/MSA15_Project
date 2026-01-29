@@ -1,0 +1,194 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="mb-4">
+                <h2 class="h3 fw-bold mb-1">튜터 대시보드</h2>
+                <p class="text-muted mb-0">Mock 데이터 화면입니다</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold mb-3">예약 관리</h3>
+
+                            <div class="d-grid gap-3">
+                                <div class="card" th:each="b : ${bookings}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-bold" th:text="${b.studentName}">학생</div>
+                                                <div class="text-muted small" th:text="${b.studentEmail}">메일</div>
+                                                <div class="mt-2 small">
+                                                    📅 <span th:text="${b.date}">2026-01-30</span>
+                                                    <span class="mx-2">|</span>
+                                                    ⏰ <span th:text="${b.time}">14:00</span>
+                                                    <span class="mx-2">|</span>
+                                                    <span th:text="${b.duration}">2</span>시간
+                                                </div>
+                                                <div class="mt-2 small">과목: <span th:text="${b.subject}">영어</span></div>
+                                                <div class="mt-2 small text-muted"
+                                                    th:if="${b.message != null && b.message != ''}">
+                                                    요청사항: <span th:text="${b.message}">...</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="badge text-bg-secondary" th:text="${b.status}">대기중</div>
+                                                <div class="fw-semibold text-primary mt-2"><span
+                                                        th:text="${#numbers.formatInteger(b.totalPrice, 0, 'COMMA')}">70,000</span>원
+                                                </div>
+                                                <div class="mt-3 d-flex gap-2 justify-content-end">
+                                                    <button class="btn btn-sm btn-outline-primary tutor-booking-action"
+                                                        th:attr="data-booking-id=${b.id},data-action='accept'">확정</button>
+                                                    <button class="btn btn-sm btn-outline-danger tutor-booking-action"
+                                                        th:attr="data-booking-id=${b.id},data-action='reject'">거절</button>
+                                                    <button class="btn btn-sm btn-primary tutor-booking-action"
+                                                        th:attr="data-booking-id=${b.id},data-action='complete'">완료</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h5 fw-bold mb-3">학생 목록</h3>
+                            <div class="list-group">
+                                <button type="button" class="list-group-item list-group-item-action"
+                                    th:each="s : ${students}" th:attr="data-student-id=${s.id}"
+                                    onclick="alert('mock 화면입니다')">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="fw-semibold" th:text="${s.name}">김학생</div>
+                                        <div class="small text-muted" th:text="${s.totalSessions} + '회'">12회</div>
+                                    </div>
+                                    <div class="small text-muted" th:text="${s.email}">email</div>
+                                </button>
+                            </div>
+                            <div class="text-muted small mt-3">대시보드 버튼은 동작만 흉내낸 mock입니다.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 확정 Modal -->
+        <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="acceptModalLabel">예약 확정</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-2">✓</span>
+                                <div>
+                                    <div class="fw-semibold">예약을 확정하시겠습니까?</div>
+                                    <div class="small mt-1">학생에게 확정 알림이 전송됩니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="booking-summary p-3 bg-light rounded">
+                            <div class="mb-2"><strong>학생:</strong> <span id="acceptStudentName"></span></div>
+                            <div class="mb-2"><strong>일시:</strong> <span id="acceptDateTime"></span></div>
+                            <div class="mb-2"><strong>과목:</strong> <span id="acceptSubject"></span></div>
+                            <div><strong>금액:</strong> <span id="acceptPrice"></span>원</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="confirmAccept">확정하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 거절 Modal -->
+        <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="rejectModalLabel">예약 거절</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-2">⚠</span>
+                                <div>
+                                    <div class="fw-semibold">예약을 거절하시겠습니까?</div>
+                                    <div class="small mt-1">거절 사유를 입력해주세요.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="booking-summary p-3 bg-light rounded mb-3">
+                            <div class="mb-2"><strong>학생:</strong> <span id="rejectStudentName"></span></div>
+                            <div class="mb-2"><strong>일시:</strong> <span id="rejectDateTime"></span></div>
+                            <div><strong>과목:</strong> <span id="rejectSubject"></span></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rejectReason" class="form-label fw-semibold">거절 사유 <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="rejectReason" rows="4"
+                                placeholder="학생에게 전달될 거절 사유를 입력해주세요." required></textarea>
+                            <div class="invalid-feedback">거절 사유를 입력해주세요.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-danger" id="confirmReject">거절하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 완료 Modal -->
+        <div class="modal fade" id="completeModal" tabindex="-1" aria-labelledby="completeModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="completeModalLabel">수업 완료</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-success mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-2">✓</span>
+                                <div>
+                                    <div class="fw-semibold">수업을 완료 처리하시겠습니까?</div>
+                                    <div class="small mt-1">완료 후 학생이 리뷰를 남길 수 있습니다.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="booking-summary p-3 bg-light rounded mb-3">
+                            <div class="mb-2"><strong>학생:</strong> <span id="completeStudentName"></span></div>
+                            <div class="mb-2"><strong>일시:</strong> <span id="completeDateTime"></span></div>
+                            <div class="mb-2"><strong>과목:</strong> <span id="completeSubject"></span></div>
+                            <div><strong>금액:</strong> <span id="completePrice"></span>원</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="completeNotes" class="form-label fw-semibold">수업 메모 (선택)</label>
+                            <textarea class="form-control" id="completeNotes" rows="3"
+                                placeholder="수업 내용이나 학생에게 전달할 메시지를 입력하세요."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-success" id="confirmComplete">완료 처리</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

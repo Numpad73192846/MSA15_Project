@@ -5,6 +5,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.aloha.teamproject.common.exception.AppException;
+import com.aloha.teamproject.common.exception.ErrorCode;
 import com.aloha.teamproject.dto.CustomUser;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
@@ -25,24 +27,19 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("::::::::: UserDetailServiceImpl ::::::::::");
-        log.info("- 사용자 정의 인증을 위해, 사용자 정보 조회");
-        log.info("- username : " + username);
-
-        Users user = null;
+        Users user;
         try {
             user = userMapper.selectByUsername(username);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("사용자의 이름을 불러오는데 실패했습니다: {}", username, e);
+            throw new AppException(ErrorCode.USER_LOOKUP_FAILED);
         }
+
         if( user == null ) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다." + username);
         }
 
-        // CustomUser ➡ UserDetails
-        CustomUser customUser = new CustomUser(user);
-        return customUser;
-
+        return new CustomUser(user);
     }
 
 }

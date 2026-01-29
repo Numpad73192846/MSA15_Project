@@ -12,9 +12,8 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class CustomUser implements UserDetails {
-    
-    // 사용자 DTO
+public class CustomUser implements UserDetails {    
+   
     private Users user;
 
     public CustomUser(Users user) {
@@ -27,9 +26,10 @@ public class CustomUser implements UserDetails {
      */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getAuthList().stream()
-                                 .map( (auth) -> new SimpleGrantedAuthority(auth.getAuth()) )
-                                 .collect(Collectors.toList());
+        return user.getAuthList()
+                   .stream()
+                   .map( (auth) -> new SimpleGrantedAuthority(auth.getAuth()) )
+                   .collect(Collectors.toList());
     }
 
     @Override
@@ -55,6 +55,11 @@ public class CustomUser implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return "ACTIVE".equals(user.getStatus());
     }
 
 }

@@ -19,7 +19,7 @@ public interface UserMapper {
 	// Username으로 회원 조회
 	public Users selectByUsername(String username) throws Exception;
 
-	// 회원 조회(닉네임)
+	// Nickname으로 회원 조회
 	public Users selectByNickname(String nickname) throws Exception;
 	
 	// 회원 가입

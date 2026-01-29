@@ -1,7 +1,5 @@
 package com.aloha.teamproject.config;
 
-import javax.sql.DataSource;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,11 +9,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import com.aloha.teamproject.service.UserDetailServiceImpl;
+import org.springframework.http.HttpMethod;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.aloha.teamproject.service.UserDetailServiceImpl;
 
 @Slf4j
 @Configuration
@@ -23,42 +21,58 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final DataSource dataSource;
-    private final UserDetailServiceImpl userDetailServiceImpl;    
-    
+    private final UserDetailServiceImpl userDetailServiceImpl;
 
-    // 스프링 시큐리티 설정 메소드
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        /// ✅ 인가 설정
-        http.authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/**").permitAll());
-
-                                            
-        return http.build();
-
-    }
-    
-   /**
-     * 🍃 암호화 방식 빈 등록
-     * @return
-     */
+    // 비밀번호 암호화 빈 설정
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * 🍃 AuthenticationManager 인증 관리자 빈 등록
-     * @param authenticationConfiguration
-     * @return
-     * @throws Exception
-    */
+    // 보안 필터 체인 설정
     @Bean
-    public AuthenticationManager authenticationManager( 
-                                    AuthenticationConfiguration authenticationConfiguration ) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // ✅ 인가 설정
+        http
+            .csrf(csrf -> csrf.ignoringRequestMatchers(
+            "/api/auth/**",
+            "/swagger-ui/**",
+            "/v3/api-docs/**"
+            ))
+            .authorizeHttpRequests(auth -> 
+                auth.requestMatchers(
+                    "/login",
+                    "/join",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/api/auth/**"
+                ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth", "/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                .anyRequest().authenticated()
+            );
+
+        // 사용자 상세 서비스 설정
+        http.userDetailsService(userDetailServiceImpl);
+
+        // 로그인/로그아웃 설정
+        http.formLogin(form -> form
+                .loginPage("/login")
+                .permitAll()
+            )
+            .logout(logout -> logout.permitAll());
+
+        return http.build();
+
     }
-    
+
+    // 인증 매니저 빈 설정
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
 }
