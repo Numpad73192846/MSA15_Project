@@ -13,6 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
 
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +30,16 @@ public class SecurityConfig {
     private final UserDetailServiceImpl userDetailServiceImpl;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+            .requestMatchers(new AntPathRequestMatcher("/admin/**"))
+            .requestMatchers(new AntPathRequestMatcher("/admin"))
+            .requestMatchers(new AntPathRequestMatcher("/api/admin/**"))
+            .requestMatchers(new AntPathRequestMatcher("/favicon.ico"))
+            .requestMatchers(new AntPathRequestMatcher("/error"));
+    }
+
     // 비밀번호 암호화 빈 설정
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,13 +54,19 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.ignoringRequestMatchers(
             "/api/auth/**",
-            "/api/users/**"
+            "/api/users/**",
+            "/api/admin/**"
             ))
             .authorizeHttpRequests(auth -> auth
-                // ============================== 수정 (튜터 회원가입 경로 추가) ==============================
-                // 작성일: 2026-01-30
-                // 수정 내용: 튜터 회원가입 4단계 페이지 접근 허용 추가
-                .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**", "/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3", "/tutor/mypage", "/mypages", "/mypage", "/member/mypage", "/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
+                // ============================== 수정 (명시적 AntPathRequestMatcher 사용) ==============================
+                .requestMatchers(new AntPathRequestMatcher("/admin/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/admin")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/admin")).permitAll()
+                .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
+                .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
+                .requestMatchers("/tutor/mypage", "/mypages", "/mypage", "/member/mypage").permitAll()
+                .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 // ============================== 수정 종료 ==============================
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
