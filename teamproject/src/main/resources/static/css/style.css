@@ -571,6 +571,16 @@ footer .footer-bottom {
     color: var(--primary-color);
 }
 
+/* ====== 수정: 버튼 높이 통일 (튜터 회원가입 페이지) ====== */
+.d-flex.gap-2 .btn {
+    height: 45px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+/* ====== 수정 종료 ====== */
+
 /* Badge Updates */
 .badge.bg-primary {
     background-color: #e0e7ff !important;

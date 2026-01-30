@@ -138,10 +138,13 @@ function fetchUserInfo() {
                 const authList = data.data.authList || [];
                 setNavState(true, authList);
 
+                // ====== 수정: 튜터 회원가입 페이지들도 허용 ======
                 const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
-                if (isTutorPending && location.pathname !== "/tutor/register") {
+                const isRegisterPage = location.pathname.startsWith("/tutor/register");
+                if (isTutorPending && !isRegisterPage) {
                     location.href = "/tutor/register";
                 }
+                // ====== 수정 종료 ======
             }
             else {
                 setNavState(false);

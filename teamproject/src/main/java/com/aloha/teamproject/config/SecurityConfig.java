@@ -45,7 +45,11 @@ public class SecurityConfig {
             "/api/users/**"
             ))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**", "/tutor/register", "/tutor/mypage", "/mypages", "/mypage", "/member/mypage", "/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
+                // ============================== 수정 (튜터 회원가입 경로 추가) ==============================
+                // 작성일: 2026-01-30
+                // 수정 내용: 튜터 회원가입 4단계 페이지 접근 허용 추가
+                .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**", "/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3", "/tutor/mypage", "/mypages", "/mypage", "/member/mypage", "/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
+                // ============================== 수정 종료 ==============================
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
