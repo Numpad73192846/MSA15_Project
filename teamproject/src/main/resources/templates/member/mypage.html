@@ -331,7 +331,9 @@
         <div class="modal fade" id="profileEditModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form action="/member/mypage/update" method="POST" enctype="multipart/form-data">
+                    <!-- <form action="/api/users/update" method="POST" enctype="multipart/form-data"> -->
+                    <form>
+                        <input type="hidden" name="no" th:value="${user.no}">
                         <div class="modal-header">
                             <h5 class="modal-title fw-bold">프로필 수정</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -353,6 +355,10 @@
                                     th:value="${user.username}" readonly>
                             </div>
                             <div class="mb-3">
+                                <label for="editPassword" class="form-label">비밀번호</label>
+                                <input type="password" class="form-control" id="editPassword" name="password">
+                            </div>
+                            <!-- <div class="mb-3">
                                 <label for="editProfileImage" class="form-label">프로필 이미지</label>
                                 <input type="file" class="form-control" id="editProfileImage" name="profileImage"
                                     accept="image/*">
@@ -360,33 +366,59 @@
                                     <img id="imagePreview" src="" alt="Profile Preview" class="rounded-circle shadow-sm"
                                         style="width: 100px; height: 100px; object-fit: cover;">
                                 </div>
-                            </div>
+                            </div> -->
                             <script>
-                                document.getElementById('editProfileImage').addEventListener('change', function (e) {
-                                    if (e.target.files && e.target.files[0]) {
-                                        var reader = new FileReader();
-                                        reader.onload = function (e) {
-                                            document.getElementById('imagePreview').src = e.target.result;
-                                            document.getElementById('imagePreviewContainer').style.display = 'block';
-                                        }
-                                        reader.readAsDataURL(e.target.files[0]);
-                                    }
-                                });
+                                // document.getElementById('editProfileImage').addEventListener('change', function (e) {
+                                //     if (e.target.files && e.target.files[0]) {
+                                //         var reader = new FileReader();
+                                //         reader.onload = function (e) {
+                                //             document.getElementById('imagePreview').src = e.target.result;
+                                //             document.getElementById('imagePreviewContainer').style.display = 'block';
+                                //         }
+                                //         reader.readAsDataURL(e.target.files[0]);
+                                //     }
+                                // });
                             </script>
                             <!-- Password change could be added here -->
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                            <button type="submit" class="btn btn-primary">저장</button>
+                            <button type="submit" class="btn btn-primary" onclick="submitUpdate()">저장</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+        <script>
+        function submitUpdate() { 
+            const user = {
+                no: document.querySelector('input[name="no"]').value,
+                name: document.querySelector('input[name="name"]').value,
+                nickname: document.querySelector('input[name="nickname"]').value,
+                username: document.querySelector('input[name="username"]').value
+            };
+
+            fetch("/api/users/update", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(user)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("수정 실패");
+                return res.json();
+            })
+            .then(() => {
+                // 🔥 REST답변 후 이동
+                location.href = "/mypage";
+            })
+            .catch(err => {
+                alert("회원 정보 수정 중 오류 발생");
+                console.log(user)
+                console.error(err);
+            });
+        }
+        </script>
     </div>
-</div>
-</div>
-</div>
-</div>
-</div>
 </div>

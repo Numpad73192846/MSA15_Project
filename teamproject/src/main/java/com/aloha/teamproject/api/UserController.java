@@ -1,5 +1,6 @@
 package com.aloha.teamproject.api;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
@@ -153,9 +156,9 @@ public class UserController {
 		return ApiResponse.ok(errorMap, SuccessCode.OK);
 	}
 
-	@PutMapping()
+	@PutMapping("/update")
 	public ApiResponse<Void> update(@RequestBody Users user) throws Exception {
-		log.info("[Put] - update");
+		log.info("[Put] - update");		
 		userService.update(user);
 		return ApiResponse.ok(SuccessCode.UPDATED);
 	}

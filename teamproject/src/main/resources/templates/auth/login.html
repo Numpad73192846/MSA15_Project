@@ -226,6 +226,10 @@
                     return;
                 }
 
+                if (data.data && data.data.accessToken && typeof setAccessToken === 'function') {
+                    setAccessToken(data.data.accessToken);
+                }
+
                 location.href = '/';
             });
 
@@ -308,6 +312,10 @@
                 if (!loginData.success) {
                     alert(loginData.message || '로그인에 실패했습니다.');
                     return;
+                }
+
+                if (loginData.data && loginData.data.accessToken && typeof setAccessToken === 'function') {
+                    setAccessToken(loginData.data.accessToken);
                 }
 
                 const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';
