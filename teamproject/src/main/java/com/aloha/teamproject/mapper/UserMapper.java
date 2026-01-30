@@ -10,34 +10,19 @@ import com.aloha.teamproject.dto.Users;
 @Mapper
 public interface UserMapper {
 	
-<<<<<<< HEAD
-=======
 	// 전체 회원 조회
 	public List<Users> list() throws Exception;
 
 	// 회원 조회
 	public Users selectById(String id) throws Exception;
 	
->>>>>>> parent of de2fadc (..)
 	// 회원 가입
 	public int join(Users user) throws Exception;
 	
 	// 회원 수정
 	public int update(Users user) throws Exception;
-<<<<<<< HEAD
-
-	// 회원 삭제
-	public int delete(Long no) throws Exception;
-=======
->>>>>>> parent of de2fadc (..)
 	
 	// 회원 권한 등록
 	public int insertAuth(UserAuth userAuth) throws Exception;
 
-<<<<<<< HEAD
-	// 회원 권한 삭제
-	public int deleteAuth(String userId, String auth) throws Exception;
-
-=======
->>>>>>> parent of de2fadc (..)
 }

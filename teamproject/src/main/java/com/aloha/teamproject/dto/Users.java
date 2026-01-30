@@ -21,11 +21,6 @@ public class Users {
 	private String name;
 	private String nickname;
 	@Builder.Default
-<<<<<<< HEAD
-	private String role = "ROLE_USER";
-	@Builder.Default
-=======
->>>>>>> parent of de2fadc (..)
 	private String status = "ACTIVE";
 	private Date createdAt;
 	private Date updatedAt;

@@ -25,8 +25,7 @@
 
 
 	<resultMap id="authMap" type="UserAuth">
-		<id property="no" column="no" />
-		<result property="id" column="id" />
+		<id property="id" column="id" />
 		<result property="userId" column="user_id" />
 		<result property="auth" column="auth" />
 		<result property="createdAt" column="created_at" />
