@@ -6,9 +6,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+<<<<<<< HEAD
 import com.aloha.teamproject.common.exception.AppException;
 import com.aloha.teamproject.common.exception.ErrorCode;
 import com.aloha.teamproject.common.service.BaseServiceImpl;
+=======
+>>>>>>> parent of de2fadc (..)
 import com.aloha.teamproject.dto.UserAuth;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
@@ -17,7 +20,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+<<<<<<< HEAD
 public class UserServiceImpl extends BaseServiceImpl implements UserService {
+=======
+public class UserServiceImpl implements UserService {
+>>>>>>> parent of de2fadc (..)
 
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
@@ -30,6 +37,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
 	@Override
 	public Users selectById(String id) throws Exception {
+<<<<<<< HEAD
 		requiredNotBlank(id, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectById(id);
 		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
@@ -41,11 +49,15 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectByUsername(username);
 		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
+=======
+		Users user = userMapper.selectById(id);
+>>>>>>> parent of de2fadc (..)
 		return user;
 	}
 
 	@Override
 	@Transactional
+<<<<<<< HEAD
 	public boolean insert(Users user) throws Exception {
 		requireNotNull(user, ErrorCode.INVALID_REQUEST);
 		String username = user.getUsername();
@@ -64,6 +76,14 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		}
 		if ("ROLE_TUTOR".equals(role)) {
 			role = "ROLE_TUTOR_PENDING";
+=======
+	public boolean join(Users user) throws Exception {
+		String username = user.getId();
+		String password = user.getPassword();
+
+		if ( password == null || password.isEmpty() ) {
+			return false;
+>>>>>>> parent of de2fadc (..)
 		}
 
 		String encodedPassword = passwordEncoder.encode(password);
@@ -73,6 +93,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
 		if ( result > 0 ) {
 			UserAuth userAuth = new UserAuth();
+<<<<<<< HEAD
 			userAuth.setUserId(user.getId());
 			userAuth.setAuth(role);
 			result = userMapper.insertAuth(userAuth);
@@ -82,12 +103,23 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 			throw new AppException(ErrorCode.INTERNAL_ERROR);
 		}
 		return true;
+=======
+			userAuth.setId(username);
+			userAuth.setAuth("ROLE_USER");
+			result = userMapper.insertAuth(userAuth);
+		}
+
+		return result > 0;
+>>>>>>> parent of de2fadc (..)
 	}
 
 	@Override
 	public boolean update(Users user) throws Exception {
+<<<<<<< HEAD
 		requireNotNull(user, ErrorCode.INVALID_REQUEST);
 		requireNotNull(user.getNo(), ErrorCode.INVALID_REQUEST);
+=======
+>>>>>>> parent of de2fadc (..)
 		String password = user.getPassword();
 		
 		if ( password != null && !password.isEmpty() ) {
@@ -96,15 +128,20 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		}
 		
 		int result = userMapper.update(user);
+<<<<<<< HEAD
 		if (result <= 0) {
 			throw new AppException(ErrorCode.NOT_FOUND);
 		}
 		return true;
+=======
+		return result > 0;
+>>>>>>> parent of de2fadc (..)
 		
 	}
 
 	@Override
 	public boolean insertAuth(UserAuth userAuth) throws Exception {
+<<<<<<< HEAD
 		requireNotNull(userAuth, ErrorCode.INVALID_REQUEST);
 		int result = userMapper.insertAuth(userAuth);
 		if (result <= 0) {
@@ -145,4 +182,10 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		return existing == null;
 	}
 
+=======
+		int result = userMapper.insertAuth(userAuth);
+		return result > 0;
+	}
+	
+>>>>>>> parent of de2fadc (..)
 }
