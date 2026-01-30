@@ -4,8 +4,12 @@
     <div layout:fragment="content">
         <div class="container py-5" style="max-width: 720px;">
             <div class="mb-4 text-center">
-                <h2 class="h4 fw-bold">튜터 추가 정보</h2>
-                <p class="text-muted mb-0">프로필 정보를 입력해 주세요.</p>
+                <h2 class="h4 fw-bold">튜터 회원가입 (1/4단계)</h2>
+                <p class="text-muted mb-0">기본 정보를 입력해 주세요.</p>
+            </div>
+
+            <div class="progress mb-4" style="height: 8px;">
+                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
 
             <div class="card shadow-sm">
@@ -16,11 +20,11 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">이름</label>
-                                    <input type="text" class="form-control" id="basicName" placeholder="이름">
+                                    <input type="text" class="form-control" id="basicName" placeholder="이름" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">연락처</label>
-                                    <input type="text" class="form-control" id="basicPhone" placeholder="010-0000-0000">
+                                    <input type="text" class="form-control" id="basicPhone" placeholder="010-0000-0000" required>
                                 </div>
                             </div>
                         </div>
@@ -29,56 +33,21 @@
                             <input type="file" class="form-control" id="profileImage" accept="image/*">
                         </div>
                         <div class="mb-4">
-                            <h5 class="fw-bold">3. 교육 관련 학위 및 증명서</h5>
-                            <input type="file" class="form-control" id="educationCertificate" multiple>
+                            <h5 class="fw-bold">3. 한 줄 소개</h5>
+                            <input type="text" class="form-control" id="headline" placeholder="예) 중고등 수학 10년 경력" required>
                         </div>
                         <div class="mb-4">
-                            <h5 class="fw-bold">4. 학력증명서</h5>
-                            <input type="file" class="form-control" id="academicCertificate" multiple>
+                            <h5 class="fw-bold">4. 소개</h5>
+                            <textarea class="form-control" id="bio" rows="5" placeholder="튜터 소개를 입력하세요" required></textarea>
                         </div>
                         <div class="mb-4">
-                            <h5 class="fw-bold">5. 근무 경력</h5>
-                            <textarea class="form-control" id="career" rows="3" placeholder="근무 경력을 입력하세요"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <h5 class="fw-bold">6. 자기소개서</h5>
-                            <textarea class="form-control" id="selfIntro" rows="4" placeholder="자기소개서를 입력하세요"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <h5 class="fw-bold">7. 수업 과목</h5>
-                            <input type="text" class="form-control" id="lessonSubjects" placeholder="예) 영어 회화, 토익">
-                        </div>
-                        <div class="mb-4">
-                            <h5 class="fw-bold">8. 동영상 소개서</h5>
-                            <input type="url" class="form-control" id="introVideoUrl" placeholder="https://">
+                            <h5 class="fw-bold">5. 동영상 소개</h5>
+                            <label class="form-label">소개 영상 URL</label>
+                            <input type="url" class="form-control mb-2" id="videoUrl" placeholder="https://">
                             <small class="text-muted">또는 파일 업로드</small>
                             <input type="file" class="form-control mt-2" id="introVideoFile" accept="video/*">
                         </div>
-                        <div class="mb-4">
-                            <h5 class="fw-bold">9. 수업 가능 시간대</h5>
-                            <textarea class="form-control" id="availableTime" rows="3" placeholder="예) 평일 19~22시, 주말 오전"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">한 줄 소개</label>
-                            <input type="text" class="form-control" id="headline" placeholder="예) 중고등 수학 10년 경력">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">소개</label>
-                            <textarea class="form-control" id="bio" rows="5" placeholder="튜터 소개를 입력하세요"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">소개 영상 URL (선택)</label>
-                            <input type="url" class="form-control" id="videoUrl" placeholder="https://">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">일반 분야</label>
-                            <div id="generalFields" class="d-flex flex-wrap gap-2"></div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">분야별</label>
-                            <div id="domainFields" class="d-flex flex-wrap gap-2"></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">저장하고 계속하기</button>
+                        <button type="submit" class="btn btn-primary w-100">다음 단계로</button>
                     </form>
                 </div>
             </div>
@@ -144,102 +113,64 @@
                 );
             }
 
-            function renderFieldOptions(fields) {
-                const generalContainer = document.getElementById('generalFields');
-                const domainContainer = document.getElementById('domainFields');
-
-                if (!generalContainer || !domainContainer) {
-                    return;
-                }
-
-                generalContainer.innerHTML = '';
-                domainContainer.innerHTML = '';
-
-                fields.forEach((field) => {
-                    const wrapper = document.createElement('label');
-                    wrapper.className = 'btn btn-sm btn-outline-secondary rounded-pill';
-
-                    const input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.className = 'visually-hidden';
-                    input.value = field.id;
-
-                    const text = document.createElement('span');
-                    text.textContent = field.name;
-
-                    input.addEventListener('change', () => {
-                        if (input.checked) {
-                            wrapper.classList.add('btn-primary');
-                            wrapper.classList.remove('btn-outline-secondary');
-                        } else {
-                            wrapper.classList.add('btn-outline-secondary');
-                            wrapper.classList.remove('btn-primary');
-                        }
-                    });
-
-                    wrapper.appendChild(input);
-                    wrapper.appendChild(text);
-
-                    if (field.category === 'DOMAIN') {
-                        domainContainer.appendChild(wrapper);
-                    } else {
-                        generalContainer.appendChild(wrapper);
-                    }
-                });
-            }
-
-            async function loadFields() {
-                const response = await fetch('/api/language-fields');
-                if (!response.ok) {
-                    return;
-                }
-                const data = await response.json();
-                if (!data || data.success === false || !Array.isArray(data.data)) {
-                    return;
-                }
-                renderFieldOptions(data.data);
-            }
-
             document.addEventListener('DOMContentLoaded', async () => {
-                const me = await fetchMe();
-                if (!me || !isTutor(me.authList)) {
+                const { accessToken } = getStoredTokens();
+                if (!accessToken) {
+                    alert('로그인이 필요합니다.');
                     location.href = '/login';
                     return;
                 }
 
-                await loadFields();
+                const me = await fetchMe(accessToken);
+                console.log('User info:', me); // 디버깅용
+                
+                if (!me) {
+                    alert('사용자 정보를 가져올 수 없습니다.');
+                    location.href = '/';
+                    return;
+                }
+
+                // 튜터 권한 체크를 완화 (회원가입 진행 중일 수 있으므로)
+                // if (!isTutor(me.authList)) {
+                //     alert('튜터 권한이 필요합니다.');
+                //     location.href = '/';
+                //     return;
+                // }
+
+                // 이전에 저장된 데이터 불러오기
+                const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                if (savedData.basicName) document.getElementById('basicName').value = savedData.basicName;
+                if (savedData.basicPhone) document.getElementById('basicPhone').value = savedData.basicPhone;
+                if (savedData.headline) document.getElementById('headline').value = savedData.headline;
+                if (savedData.bio) document.getElementById('bio').value = savedData.bio;
+                if (savedData.videoUrl) document.getElementById('videoUrl').value = savedData.videoUrl;
             });
 
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
-                const selectedFieldIds = Array.from(
-                    document.querySelectorAll('#generalFields input:checked, #domainFields input:checked')
-                ).map((input) => input.value);
+                console.log('Form submitted'); // 디버깅용
 
-                const payload = {
+                // 1단계 데이터 저장
+                const step1Data = {
+                    basicName: document.getElementById('basicName').value,
+                    basicPhone: document.getElementById('basicPhone').value,
                     headline: document.getElementById('headline').value,
                     bio: document.getElementById('bio').value,
-                    videoUrl: document.getElementById('videoUrl').value,
-                    fieldIds: selectedFieldIds
+                    videoUrl: document.getElementById('videoUrl').value
                 };
 
-                const response = await fetch('/api/tutors/profile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...buildAuthHeaders()
-                    },
-                    body: JSON.stringify(payload)
-                });
+                console.log('Step1 data:', step1Data); // 디버깅용
+                sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(step1Data));
+                console.log('Data saved to sessionStorage'); // 디버깅용
 
-                const data = await response.json();
-                if (!data.success) {
-                    alert(data.message || '튜터 정보를 저장하지 못했습니다.');
-                    return;
-                }
+                // 파일 처리는 추후 구현 예정
+                // const profileImage = document.getElementById('profileImage').files[0];
+                // const introVideoFile = document.getElementById('introVideoFile').files[0];
 
-                location.href = '/tutor/mypage';
+                // 다음 단계로 이동
+                console.log('Redirecting to /tutor/register1'); // 디버깅용
+                window.location.href = '/tutor/register1';
             });
         </script>
     </div>

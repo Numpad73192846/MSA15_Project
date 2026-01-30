@@ -33,10 +33,15 @@ public class HomeController{
 		return "redirect:/login#tabSignup";
 	}
 
-	@GetMapping("/tutor/register")
-	public String tutorRegister() {
-		return "tutor/register";
-	}
+	// ============================== 수정 (튜터 회원가입 매핑 이동) ==============================
+	// 작성일: 2026-01-30
+	// 수정 내용: /tutor/register 매핑을 TutorsPageController로 이동 (중복 제거)
+	// 기존 코드 주석 처리:
+	// @GetMapping("/tutor/register")
+	// public String tutorRegister() {
+	//     return "tutor/register";
+	// }
+	// ============================== 수정 종료 ==============================
 
 	@GetMapping("/mypage")
 	public String mypage(Authentication authentication, Model model) {

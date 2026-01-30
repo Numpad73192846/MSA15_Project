@@ -113,13 +113,16 @@ function fetchUserInfo() {
         })
         .then (data => {
             if ( data && data.success && data.data ) {
-                if (data.data.accessToken) {
-                    setAccessToken(data.data.accessToken);
+                const authList = data.data.authList || [];
+                setNavState(true, authList);
+
+                // ====== 수정: 튜터 회원가입 페이지들도 허용 ======
+                const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
+                const isRegisterPage = location.pathname.startsWith("/tutor/register");
+                if (isTutorPending && !isRegisterPage) {
+                    location.href = "/tutor/register";
                 }
-                return fetch("/api/users/me", {
-                    method: "GET",
-                    headers: buildAuthHeaders()
-                });
+                // ====== 수정 종료 ======
             }
             throw new Error("토큰 갱신 응답이 올바르지 않습니다.");
         })
