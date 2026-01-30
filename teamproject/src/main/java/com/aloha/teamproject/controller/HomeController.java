@@ -21,8 +21,6 @@ public class HomeController{
 	@GetMapping("/")
 	public String home() {
 		return "index";
-<<<<<<< HEAD
-=======
 	}
 
 	@GetMapping("/login")
@@ -64,7 +62,6 @@ public class HomeController{
 	@GetMapping({"/tutor/mypage", "/mypages"})
 	public String tutorMyPage() {
 		return "tutor/mypage";
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740
 	}
 
 }

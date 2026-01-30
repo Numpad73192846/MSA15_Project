@@ -17,36 +17,19 @@
                 <div class="card-body">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
-<<<<<<< HEAD
-                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin"
-                                type="button" role="tab">로그인</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup" type="button"
-                                role="tab">회원가입</button>
-=======
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin">로그인</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup">회원가입</button>
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740
                         </li>
                     </ul>
 
                     <div class="tab-content pt-4">
-<<<<<<< HEAD
-                        <div class="tab-pane fade show active" id="tabLogin" role="tabpanel">
-                            <form id="loginForm">
-                                <div class="mb-3">
-                                    <label class="form-label">이메일</label>
-                                    <input name="email" type="email" class="form-control"
-=======
                         <div class="tab-pane fade show active" id="tabLogin">
                             <form id="loginForm">
                                 <div class="mb-3">
                                     <label class="form-label">이메일</label>
                                     <input name="username" type="email" class="form-control"
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740
                                         placeholder="example@email.com" required>
                                 </div>
                                 <div class="mb-3">
@@ -56,43 +39,16 @@
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="form-check">
-<<<<<<< HEAD
-                                        <input class="form-check-input" type="checkbox" value="" id="rememberMe">
-                                        <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
-                                    </div>
-                                    <a href="#" class="small">비밀번호 찾기</a>
-=======
                                         <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe">
                                         <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
                                     </div>
                                     <!-- 현재 준비 중 -->
                                     <a href="javascript:void(0)" class="small">비밀번호 찾기</a>
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">로그인</button>
                             </form>
                         </div>
 
-<<<<<<< HEAD
-                        <div class="tab-pane fade" id="tabSignup" role="tabpanel">
-                            <form id="signupForm">
-                                <div class="mb-3">
-                                    <label class="form-label">이름</label>
-                                    <input name="name" type="text" class="form-control" placeholder="홍길동" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">이메일</label>
-                                    <input name="email" type="email" class="form-control"
-                                        placeholder="example@email.com" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">비밀번호</label>
-                                    <input name="password" type="password" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">비밀번호 확인</label>
-                                    <input name="confirmPassword" type="password" class="form-control" required>
-=======
                         <div class="tab-pane fade" id="tabSignup">
                             <form id="signupForm" class="needs-validation" onsubmit="event.preventDefault();" novalidate>
                                 <input type="hidden" name="role" id="role" value="ROLE_USER">
@@ -127,21 +83,12 @@
                                     <label class="form-label">비밀번호 확인</label>
                                     <input type="password" class="form-control" id="passwordCheck" placeholder="비밀번호 확인">
                                     <div id="passwordCheck-inline-error" class="text-danger small"></div>
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">회원가입</button>
                             </form>
                         </div>
                     </div>
 
-<<<<<<< HEAD
-                    <div class="text-muted small mt-3">로그인/회원가입은 브라우저(localStorage)에 저장되는 mock 동작입니다.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-=======
                     <div class="text-muted small mt-3">로그인/회원가입은 서버 사용자 정보를 기준으로 처리됩니다.</div>
                 </div>
             </div>
@@ -370,4 +317,3 @@
     </div>
     <!-- fragment end -->
 </div>
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740

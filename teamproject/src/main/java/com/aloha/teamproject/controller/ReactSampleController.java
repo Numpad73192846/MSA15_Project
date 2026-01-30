@@ -5,12 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.stereotype.Controller;
+// import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@Controller
+//@Controller  // Disabled: duplicate mappings with TutorsPageController
 public class ReactSampleController {
 
         @GetMapping("/tutors")
@@ -34,11 +34,6 @@ public class ReactSampleController {
                 model.addAttribute("tutor", tutor);
                 model.addAttribute("reviews", mockReviews());
                 return "tutors/detail";
-        }
-
-        @GetMapping("/login")
-        public String login() {
-                return "auth/login";
         }
 
         @GetMapping("/tutor/dashboard")

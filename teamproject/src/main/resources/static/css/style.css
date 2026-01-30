@@ -146,8 +146,6 @@ header .navbar-right {
     flex-shrink: 0;
 }
 
-<<<<<<< HEAD
-=======
 header .navbar-right .nav-action-btn {
     min-width: 96px;
     text-align: center;
@@ -157,7 +155,6 @@ header .navbar-right .nav-action-btn {
     line-height: 1.2;
 }
 
->>>>>>> 8a3bd2c10a11174655af324738be5e15cb6e2740
 /* Footer Styles */
 footer {
     background-color: #1a2332;
