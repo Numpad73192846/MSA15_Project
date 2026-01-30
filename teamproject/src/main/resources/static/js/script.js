@@ -8,6 +8,7 @@ function setNavState(isAuth, authList) {
     const navGuestArea = document.getElementById("navGuestArea");
     const navUserArea = document.getElementById("navUserArea");
     const navUserMyPageBtn = document.getElementById("navUserMyPageBtn");
+    const navTutorDashboardBtn = document.getElementById("navTutorDashboardBtn");
     const navTutorMyPageBtn = document.getElementById("navTutorMyPageBtn");
 
     if ( !navGuestArea || !navUserArea ) {
@@ -27,19 +28,21 @@ function setNavState(isAuth, authList) {
 
         if ( isTutor || isTutorPending ) {
             navUserMyPageBtn.style.display = "none";
-            navTutorMyPageBtn.style.display = "inline-block";
 
             if (isTutorPending) {
+                navTutorDashboardBtn.style.display = "none";
+                navTutorMyPageBtn.style.display = "inline-block";
                 navTutorMyPageBtn.textContent = "추가 정보 작성";
                 navTutorMyPageBtn.onclick = () => { location.href = "/tutor/register"; };
             } else {
-                navTutorMyPageBtn.textContent = "마이페이지";
-                navTutorMyPageBtn.onclick = () => { location.href = "/tutor/mypage"; };
+                navTutorDashboardBtn.style.display = "inline-block";
+                navTutorMyPageBtn.style.display = "inline-block";
             }
         }
         
         else {
             navUserMyPageBtn.style.display = "inline-block";
+            navTutorDashboardBtn.style.display = "none";
             navTutorMyPageBtn.style.display = "none";
         }
     }

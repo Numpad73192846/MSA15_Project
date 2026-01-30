@@ -13,20 +13,30 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <label class="form-label">검색</label>
                             <input id="tutorSearch" type="text" class="form-control" placeholder="튜터 이름 또는 과목 검색...">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">과목</label>
+                            <label class="form-label">언어</label>
                             <select id="subjectFilter" class="form-select">
-                                <option value="all" selected>전체 과목</option>
+                                <option value="all" selected>전체 언어</option>
                                 <option value="영어">영어</option>
-                                <option value="수학">수학</option>
-                                <option value="프로그래밍">프로그래밍</option>
-                                <option value="과학">과학</option>
                                 <option value="일본어">일본어</option>
                                 <option value="중국어">중국어</option>
+                                <option value="한국어">한국어</option>
+                                <option value="스페인어">스페인어</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">분야</label>
+                            <select id="subjectFilter" class="form-select">
+                                <option value="all" selected>분야별</option>
+                                <option value="영어">학교</option>
+                                <option value="일본어">비지니스</option>
+                                <option value="중국어">여행</option>
+                                <option value="한국어">노래</option>
+                                <option value="스페인어">드라마/영화</option>
                             </select>
                         </div>
                         <div class="col-md-3">
