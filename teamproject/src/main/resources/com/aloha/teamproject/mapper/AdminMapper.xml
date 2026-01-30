@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aloha.teamproject.mapper.AdminMapper">
 
-    <select id="selectPendingDocuments" resultType="com.aloha.teamproject.dto.TutorDocument">
+    <select id="selectPendingDocuments" resultType="TutorDocument">
         SELECT d.*, u.name as userName
         FROM tutor_document d
         JOIN users u ON d.user_id = u.id
@@ -19,7 +19,7 @@
         WHERE id = #{id}
     </update>
 
-    <select id="selectTutorSettlements" resultType="com.aloha.teamproject.dto.TutorSettlement">
+    <select id="selectTutorSettlements" resultType="TutorSettlement">
         SELECT 
             u.id as userId,
             u.name as userName,

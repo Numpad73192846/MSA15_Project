@@ -114,15 +114,7 @@
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
-                const { accessToken } = getStoredTokens();
-                if (!accessToken) {
-                    alert('로그인이 필요합니다.');
-                    location.href = '/login';
-                    return;
-                }
-
-                const me = await fetchMe(accessToken);
-                console.log('User info:', me); // 디버깅용
+                const me = await fetchMe();
                 
                 if (!me) {
                     alert('사용자 정보를 가져올 수 없습니다.');
@@ -149,8 +141,6 @@
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
-                console.log('Form submitted'); // 디버깅용
-
                 // 1단계 데이터 저장
                 const step1Data = {
                     basicName: document.getElementById('basicName').value,
@@ -160,16 +150,13 @@
                     videoUrl: document.getElementById('videoUrl').value
                 };
 
-                console.log('Step1 data:', step1Data); // 디버깅용
                 sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(step1Data));
-                console.log('Data saved to sessionStorage'); // 디버깅용
 
                 // 파일 처리는 추후 구현 예정
                 // const profileImage = document.getElementById('profileImage').files[0];
                 // const introVideoFile = document.getElementById('introVideoFile').files[0];
 
                 // 다음 단계로 이동
-                console.log('Redirecting to /tutor/register1'); // 디버깅용
                 window.location.href = '/tutor/register1';
             });
         </script>

@@ -15,6 +15,9 @@ public class TutorProfile {
 
     private Long no;
     private String userId;
+    private String name;
+    private String email;
+    private String nickname;
     @Builder.Default
     private String id = UUID.randomUUID().toString();
     private String profileImg;

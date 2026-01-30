@@ -93,62 +93,44 @@ function fetchUserInfo() {
         method: "GET",
         headers: buildAuthHeaders()
     })
-    .then (response => {
-        if ( response.ok ) {
+    .then(response => {
+        if (response.ok) {
             return response.json();
         }
 
-        return fetch("/api/auth/refresh", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({})
-        })
-        .then (res => {
-            if ( res.ok ) {
-                return res.json();
-            }
-            throw new Error("토큰 갱신에 실패했습니다.");
-        })
-        .then (data => {
-            if ( data && data.success && data.data ) {
-                const authList = data.data.authList || [];
-                setNavState(true, authList);
-
-                // ====== 수정: 튜터 회원가입 페이지들도 허용 ======
-                const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
-                const isRegisterPage = location.pathname.startsWith("/tutor/register");
-                if (isTutorPending && !isRegisterPage) {
-                    location.href = "/tutor/register";
+        return refreshAccessToken()
+            .then((refreshed) => {
+                if (!refreshed) {
+                    throw new Error("토큰 갱신에 실패했습니다.");
                 }
-                // ====== 수정 종료 ======
-            }
-            throw new Error("토큰 갱신 응답이 올바르지 않습니다.");
-        })
-        .then (res => {
-            if ( res.ok ) {
-                return res.json();
-            }
-            throw new Error("토큰 갱신 후 사용자 정보를 불러오지 못했습니다.");
-        })
-        .catch (error => {
-            console.error(error);
-            setNavState(false);
-            return null;
-        });
+                return fetch("/api/users/me", {
+                    method: "GET",
+                    headers: buildAuthHeaders()
+                });
+            })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+                throw new Error("토큰 갱신 후 사용자 정보를 불러오지 못했습니다.");
+            });
     })
-    .then (data => {
-        if ( data && data.success && data.data ) {
+    .catch((error) => {
+        console.error(error);
+        setNavState(false);
+        return null;
+    })
+    .then((data) => {
+        if (data && data.success && data.data) {
             const authList = data.data.authList || [];
             setNavState(true, authList);
 
             const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
-            if (isTutorPending && location.pathname !== "/tutor/register") {
+            const isRegisterPage = location.pathname.startsWith("/tutor/register");
+            if (isTutorPending && !isRegisterPage) {
                 location.href = "/tutor/register";
             }
-        }
-        else {
+        } else {
             setNavState(false);
         }
     });

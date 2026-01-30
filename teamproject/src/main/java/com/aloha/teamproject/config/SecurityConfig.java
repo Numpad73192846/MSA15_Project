@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.http.HttpMethod;
 
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,11 +32,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-            .requestMatchers(new AntPathRequestMatcher("/admin/**"))
-            .requestMatchers(new AntPathRequestMatcher("/admin"))
-            .requestMatchers(new AntPathRequestMatcher("/api/admin/**"))
-            .requestMatchers(new AntPathRequestMatcher("/favicon.ico"))
-            .requestMatchers(new AntPathRequestMatcher("/error"));
+            .requestMatchers("/favicon.ico", "/error");
     }
 
     // 비밀번호 암호화 빈 설정
@@ -58,16 +53,11 @@ public class SecurityConfig {
             "/api/admin/**"
             ))
             .authorizeHttpRequests(auth -> auth
-                // ============================== 수정 (명시적 AntPathRequestMatcher 사용) ==============================
-                .requestMatchers(new AntPathRequestMatcher("/admin/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/admin")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/admin/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/admin")).permitAll()
+                .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
                 .requestMatchers("/tutor/mypage", "/mypages", "/mypage", "/member/mypage").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
-                // ============================== 수정 종료 ==============================
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
