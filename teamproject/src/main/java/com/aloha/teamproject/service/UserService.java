@@ -15,12 +15,9 @@ public interface UserService extends BaseCrudService<Users> {
 	// 회원 권한 등록
 	boolean insertAuth(UserAuth userAuth) throws Exception;
 
-<<<<<<< HEAD
-=======
 	// 회원 권한 삭제
 	boolean deleteAuth(String userId, String auth) throws Exception;
 
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	// 중복 체크
 	boolean isUsernameAvailable(String username) throws Exception;
 	boolean isNicknameAvailable(String nickname) throws Exception;

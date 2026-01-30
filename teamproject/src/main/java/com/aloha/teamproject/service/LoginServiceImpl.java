@@ -1,21 +1,5 @@
 package com.aloha.teamproject.service;
 
-<<<<<<< HEAD
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.aloha.teamproject.common.exception.ErrorCode;
-import com.aloha.teamproject.common.service.BaseServiceImpl;
-import com.aloha.teamproject.dto.Users;
-import com.aloha.teamproject.mapper.UserMapper;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-=======
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Date;
@@ -34,7 +18,6 @@ import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
 import com.aloha.teamproject.util.JwtTokenProvider;
 
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -43,28 +26,6 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
-<<<<<<< HEAD
-	private final AuthenticationManager authenticationManager;
-
-	@Override
-	public Users login(Users user, HttpServletRequest request) throws Exception {
-		requiredNotBlank(user.getUsername(), ErrorCode.INVALID_REQUEST);
-		requiredNotBlank(user.getPassword(), ErrorCode.INVALID_REQUEST);
-
-		Users existing = userMapper.selectByUsername(user.getUsername());
-		requireNotNull(existing, ErrorCode.USER_NOT_FOUND);
-		require(passwordEncoder.matches(user.getPassword(), existing.getPassword()), ErrorCode.INVALID_PASSWORD);
-
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
-		Authentication authentication = authenticationManager.authenticate(token);
-		require(authentication.isAuthenticated(), ErrorCode.UNAUTHORIZED);
-
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		HttpSession session = request.getSession(true);
-		session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-		return existing;
-=======
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenService refreshTokenService;
 
@@ -179,7 +140,6 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 			sb.append(String.format("%02x", b));
 		}
 		return sb.toString();
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	}
 	
 }

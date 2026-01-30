@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
--- 테스트용 샘플 데이터: 회원 5명
-INSERT INTO users (id, username, password, name, nickname, status) VALUES
-('user1-id', 'user1-uuid', 'password1', '김철수', '철수닉', 'ACTIVE'),
-('user2-id', 'user2-uuid', 'password2', '이영희', '영희닉', 'ACTIVE'),
-('user3-id', 'user3-uuid', 'password3', '박민수', '민수닉', 'ACTIVE'),
-('user4-id', 'user4-uuid', 'password4', '정수진', '수진닉', 'ACTIVE'),
-('user5-id', 'user5-uuid', 'password5', '홍길동', '길동닉', 'ACTIVE');
-=======
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 -- 테스트 유저 데이터 삽입
 INSERT INTO users (id, username, password, name, nickname)
 VALUES
@@ -107,9 +95,4 @@ VALUES
 INSERT INTO featured_tutor (user_id, id, seq, visible)
 VALUES
 ('u-tutor-1', 'ft-1', 1, TRUE),
-<<<<<<< HEAD
 ('u-tutor-2', 'ft-2', 2, TRUE);
-=======
-('u-tutor-2', 'ft-2', 2, TRUE);
->>>>>>> 50541e7b7c5eae10bfb683199d66648f407b06a8
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1

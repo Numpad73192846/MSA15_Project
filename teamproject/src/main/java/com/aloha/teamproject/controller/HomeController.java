@@ -13,29 +13,16 @@ import lombok.RequiredArgsConstructor;
 
 @Slf4j
 @Controller
-<<<<<<< HEAD
-public class HomeController{
-=======
 @RequiredArgsConstructor
 public class HomeController{
 
 	private final UserService userService;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 
 	@GetMapping("")
 	public String home() {
 		return "index";
 	}
 
-<<<<<<< HEAD
-    @GetMapping("/mypage")
-	public String mypage() {
-		return "member/mypage";
-	}
-
-    @GetMapping("/mypages")
-	public String mypages() {
-=======
 	@GetMapping("/login")
 	public String login() {
 		return "auth/login";
@@ -74,7 +61,6 @@ public class HomeController{
 
 	@GetMapping({"/tutor/mypage", "/mypages"})
 	public String tutorMyPage() {
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 		return "tutor/mypage";
 	}
 

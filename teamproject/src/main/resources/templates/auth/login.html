@@ -17,42 +17,19 @@
                 <div class="card-body">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
-<<<<<<< HEAD
-                            <button class="nav-link"
-                                th:classappend="${activeTab != 'signup'} ? 'active' : ''"
-                                data-bs-toggle="tab"
-                                data-bs-target="#tabLogin">로그인</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link"
-                                th:classappend="${activeTab == 'signup'} ? 'active' : ''"
-                                 data-bs-toggle="tab"
-                                data-bs-target="#tabSignup">회원가입</button>
-=======
                             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin">로그인</button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup">회원가입</button>
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                         </li>
                     </ul>
 
                     <div class="tab-content pt-4">
-<<<<<<< HEAD
-                        <div class="tab-pane fade"
-                            th:classappend="${activeTab != 'signup'} ? 'show active' : ''"
-                            id="tabLogin">
-                            <form id="loginForm">
-                                <div class="mb-3">
-                                    <label class="form-label">이메일</label>
-                                    <input name="email" type="email" class="form-control"
-=======
                         <div class="tab-pane fade show active" id="tabLogin">
                             <form id="loginForm">
                                 <div class="mb-3">
                                     <label class="form-label">이메일</label>
                                     <input name="username" type="email" class="form-control"
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                         placeholder="example@email.com" required>
                                 </div>
                                 <div class="mb-3">
@@ -62,41 +39,16 @@
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="form-check">
-<<<<<<< HEAD
-                                        <input class="form-check-input" type="checkbox" value="" id="rememberMe">
-                                        <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
-                                    </div>
-                                    <a href="#" class="small">비밀번호 찾기</a>
-=======
                                         <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe">
                                         <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
                                     </div>
                                     <!-- 현재 준비 중 -->
                                     <a href="javascript:void(0)" class="small">비밀번호 찾기</a>
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">로그인</button>
                             </form>
                         </div>
 
-<<<<<<< HEAD
-                        <div class="tab-pane fade"
-                            th:classappend="${activeTab == 'signup'} ? 'show active' : ''"
-                            id="tabSignup">
-                            <form th:object="${joinRequest}" id="signupForm" action="/join" method="post" class="needs-validation" onsubmit="return checkSubmit(event)" novalidate>
-                                <input type="hidden" name="role" id="role" value="ROLE_USER">
-                                <input type="hidden" name="usernameChecked" th:value="${joinRequest.usernameChecked}" />
-                                <input type="hidden" name="nicknameChecked" th:value="${joinRequest.nicknameChecked}" />
-                                <!-- CSRF TOKEN -->
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                <div class="mb-3">
-                                    <label for="username" class="form-label">아이디(이메일)</label>
-                                    <div class="input-group">
-                                        <input type="email" class="form-control" id="username" th:field="*{username}" oninput="setChecked('username', false); clearInlineError('username')" placeholder="example@email.com">                                
-                                        <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('username')" >중복확인</button>
-                                    </div>
-                                    <div id="username-error" class="text-danger small" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
-=======
                         <div class="tab-pane fade" id="tabSignup">
                             <form id="signupForm" class="needs-validation" onsubmit="event.preventDefault();" novalidate>
                                 <input type="hidden" name="role" id="role" value="ROLE_USER">
@@ -106,41 +58,19 @@
                                         <input type="email" class="form-control" id="username" oninput="setChecked('username', false); clearInlineError('username')" placeholder="example@email.com">                                
                                         <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('username')" >중복확인</button>
                                     </div>
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                     <div id="username-inline-error" class="text-danger small"></div> 
                                 </div>  
                                 
                                 <div class="mb-3">
                                     <label for="nickname" class="form-label">닉네임</label>
                                     <div class="input-group">
-<<<<<<< HEAD
-                                        <input type="text" class="form-control" id="nickname" th:field="*{nickname}" oninput="setChecked('nickname', false); clearInlineError('nickname')" placeholder="닉네임">
-                                        <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('nickname')" >중복확인</button>
-                                    </div>                    
-                                    <div id="nickname-error" class="text-danger small" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}"></div>
-=======
                                         <input type="text" class="form-control" id="nickname" oninput="setChecked('nickname', false); clearInlineError('nickname')" placeholder="닉네임">
                                         <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('nickname')" >중복확인</button>
                                     </div>                    
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                     <div id="nickname-inline-error" class="text-danger small"></div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">이름</label>
-<<<<<<< HEAD
-                                    <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="홍길동">
-                                    <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>  
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">비밀번호</label>                                    
-                                    <input type="password" class="form-control" id="password" th:field="*{password}" placeholder="비밀번호">
-                                    <div class="text-danger small" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">비밀번호 확인</label>
-                                    <input type="password" class="form-control" id="passwordCheck" th:field="*{passwordCheck}" placeholder="비밀번호 확인">
-                                    <div class="text-danger small" th:if="${#fields.hasErrors('passwordCheck')}" th:errors="*{passwordCheck}"></div>
-=======
                                     <input type="text" class="form-control" id="name" placeholder="홍길동">
                                     <div id="name-inline-error" class="text-danger small"></div>
                                 </div>
@@ -153,7 +83,6 @@
                                     <label class="form-label">비밀번호 확인</label>
                                     <input type="password" class="form-control" id="passwordCheck" placeholder="비밀번호 확인">
                                     <div id="passwordCheck-inline-error" class="text-danger small"></div>
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">회원가입</button>
                             </form>
@@ -165,17 +94,6 @@
             </div>
         </div>    
         <script>
-<<<<<<< HEAD
-            // 💍 CRSF TOKEN
-            const csrfToken = "[[${_csrf.token}]]"    
-
-            // hidden 필드 제어
-            function setChecked(type, value) {
-                document.querySelector(`[name="${type}Checked"]`).value = value;
-            }
-            function isChecked(type) {
-                return document.querySelector(`[name="${type}Checked"]`).value === "true";
-=======
             const checkedState = {
                 username: false,
                 nickname: false
@@ -187,7 +105,6 @@
 
             function isChecked(type) {
                 return checkedState[type] === true;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
             }
 
             function setInlineError(type, message) {
@@ -201,8 +118,6 @@
                 setInlineError(type, "");
             }
 
-<<<<<<< HEAD
-=======
             async function validateFields(fields) {
                 const payload = {
                     username: document.getElementById('username').value,
@@ -232,53 +147,12 @@
                 return errors;
             }
 
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
             // 중복검사
             async function checkDuplicate(type) {
                 const input = document.getElementById(type);
                 const value = input.value;
 
                 const label = document.querySelector(`label[for="${type}"]`);
-<<<<<<< HEAD
-                const labelText = label ? label.innerText : "";
-
-                try {
-                    const response = await fetch(`/check?type=${encodeURIComponent(type)}&value=${encodeURIComponent(value)}`, {
-                        method: 'GET'
-                        // headers: {
-                        //     'X-CSRF-TOKEN': csrfToken
-                        // }
-                    });
-
-                    console.log(csrfToken);
-
-                    const data = await response.json();        
-
-                    if (!data.ok) {
-                        setInlineError(type, data.message || `${labelText} 중복 확인 중 오류가 발생했습니다.`);
-                        setChecked(type, false);
-
-                        console.log(type);
-                        console.log(value);
-                        
-                        return false;
-                    }
-
-                    if (data.ok) {
-                        setInlineError(type, data.message || `사용 가능한 ${labelText}입니다.`);
-                        input.classList.add('was-validated');
-                        input.classList.remove('needs-validation');
-
-                        setChecked(type, true);   // 통과
-                        return true;
-                    }
-
-                    setInlineError(type, data.message || `중복된 ${labelText}입니다.`);
-                    input.classList.add('needs-validation');
-                    input.classList.remove('was-validated');
-
-                    setChecked(type, false);  // 실패
-=======
                 const labelText = type === 'username' ? '아이디' : '닉네임';
 
                 const validationErrors = await validateFields([type]);
@@ -314,7 +188,6 @@
                     input.classList.add('needs-validation');
                     input.classList.remove('was-validated');
                     setChecked(type, false);
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                     return false;
                     
                 } catch (error) {
@@ -325,23 +198,6 @@
                 }           
             }
 
-<<<<<<< HEAD
-            // 제출 확인
-            async function checkSubmit(event) {
-                event.preventDefault(); // 폼 제출 방지
-
-                if (!isChecked("username")) {
-                    setInlineError("username", "아이디 중복 확인을 해주세요");
-                    return false;
-                }
-
-                if (!isChecked("nickname")) {
-                    setInlineError("nickname", "닉네임 중복 확인을 해주세요");
-                    return false;
-                }
-                document.getElementById("signupForm").submit();                
-            }
-=======
             const signupFields = ['username', 'nickname', 'name', 'password', 'passwordCheck'];
             signupFields.forEach((field) => {
                 const input = document.getElementById(field);
@@ -457,7 +313,6 @@
                 const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';
                 location.href = redirectUrl;
             });
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
         </script>
     </div>
     <!-- fragment end -->

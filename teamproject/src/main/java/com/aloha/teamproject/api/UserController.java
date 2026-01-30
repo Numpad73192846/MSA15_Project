@@ -13,22 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
-<<<<<<< HEAD
-import com.aloha.teamproject.dto.Users;
-=======
 import com.aloha.teamproject.dto.JoinRequest;
 import com.aloha.teamproject.dto.JoinRequestValidator;
 import com.aloha.teamproject.dto.Users;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-<<<<<<< HEAD
-=======
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,7 +31,6 @@ import java.util.Set;
 
 import org.springframework.validation.FieldError;
 
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 
 
 
@@ -49,10 +42,7 @@ import org.springframework.validation.FieldError;
 public class UserController {
 	
 	private final UserService userService;
-<<<<<<< HEAD
-=======
 	private final JoinRequestValidator joinRequestValidator;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 
 	@GetMapping()
 	public ApiResponse<String> home() {
@@ -66,11 +56,7 @@ public class UserController {
 		}
 
 		try {
-<<<<<<< HEAD
-			Users user = userService.selectByUsername(authentication.getName());
-=======
 			Users user = userService.selectById(authentication.getName());
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 			return ApiResponse.ok(user, SuccessCode.OK);
 		} catch (Exception e) {
 			log.error("/api/users/me 조회 실패", e);
@@ -99,10 +85,6 @@ public class UserController {
 	}
 
 	@PostMapping()
-<<<<<<< HEAD
-	public ApiResponse<Void> join(@RequestBody Users user) throws Exception {
-		log.info("[Post] - join");
-=======
 	public ApiResponse<Void> join(@Valid @RequestBody JoinRequest joinRequest, BindingResult bindingResult) throws Exception {
 		log.info("[Post] - join");
 
@@ -121,13 +103,10 @@ public class UserController {
 							.role(joinRequest.getRole())
 							.build();
 
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 		userService.join(user);
 		return ApiResponse.ok(SuccessCode.CREATED);
 	}
 
-<<<<<<< HEAD
-=======
 	@PostMapping("/validate")
 	public ApiResponse<Map<String, String>> validate(@Valid @RequestBody JoinRequest joinRequest,
 			BindingResult bindingResult,
@@ -174,7 +153,6 @@ public class UserController {
 		return ApiResponse.ok(errorMap, SuccessCode.OK);
 	}
 
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	@PutMapping()
 	public ApiResponse<Void> update(@RequestBody Users user) throws Exception {
 		log.info("[Put] - update");

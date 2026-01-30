@@ -59,8 +59,6 @@
 	</select>
 
 <<<<<<< HEAD
-=======
-<<<<<<< HEAD
 	<select id="selectAuth" resultMap="authMap">
 		SELECT *
 		FROM user_auth
@@ -68,7 +66,6 @@
 	</select>
 
 =======
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	<select id="selectById" resultMap="userMap"> 
 		SELECT *
 		FROM users
@@ -110,8 +107,5 @@
 		WHERE no = #{no}
 	</delete>
 
-<<<<<<< HEAD
-=======
 >>>>>>> 50541e7b7c5eae10bfb683199d66648f407b06a8
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 </mapper>

@@ -1,14 +1,11 @@
 package com.aloha.teamproject.api;
 
-<<<<<<< HEAD
-=======
 import java.util.List;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,19 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aloha.teamproject.common.exception.AppException;
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
-<<<<<<< HEAD
-=======
 import com.aloha.teamproject.dto.AuthTokenResponse;
 import com.aloha.teamproject.dto.RefreshTokenRequest;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.service.LoginService;
 
 import jakarta.servlet.http.HttpServletRequest;
-<<<<<<< HEAD
-=======
 import jakarta.servlet.http.HttpServletResponse;
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,31 +34,16 @@ public class AuthApiController {
 	private final LoginService loginService;
 
 	@PostMapping("/login")
-<<<<<<< HEAD
-	public ApiResponse<Users> login(@RequestBody Users user, HttpServletRequest request) {
-		
-		try {
-			Users result = loginService.login(user, request);
-			return ApiResponse.ok(result, SuccessCode.OK);
-=======
 	public ApiResponse<AuthTokenResponse> login(@RequestBody Users user, HttpServletRequest httpRequest, HttpServletResponse response) {
 		
 		AuthTokenResponse result;
 
 		try {
 			result = loginService.login(user);
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 		} catch (AppException e) {
 			log.error("로그인 실패: {}", e.getMessage());
 			return ApiResponse.error(e.getErrorCode().getMessage());
 		} catch (Exception e) {
-<<<<<<< HEAD
-			log.error("로그인 중 오류가 발생했습니다: {}", e.getMessage(), e);
-			return ApiResponse.error("서버 오류가 발생했습니다.");
-		}
-
-	}
-=======
 			log.error("로그인 중 오류가 발생했습니다.", e);
 			return ApiResponse.error("로그인에 실패했습니다.");
 		}
@@ -194,7 +170,6 @@ public class AuthApiController {
 			}
 		}
 	}
->>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	
 
 
