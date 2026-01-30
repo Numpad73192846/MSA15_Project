@@ -1,7 +1,44 @@
 // 사용자 정의 자바스크립트
 
+let accessTokenMemory = null;
+
+function setAccessToken(token) {
+    accessTokenMemory = token || null;
+}
+
+function getAccessToken() {
+    return accessTokenMemory;
+}
+
+function buildAuthHeaders() {
+    const token = getAccessToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function refreshAccessToken() {
+    const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+    });
+
+    if (!response.ok) {
+        return false;
+    }
+
+    const data = await response.json();
+    if (data && data.success && data.data && data.data.accessToken) {
+        setAccessToken(data.data.accessToken);
+        return true;
+    }
+
+    return false;
+}
+
 function clearTokens() {
-    // JWT는 HttpOnly 쿠키로 관리됨
+    accessTokenMemory = null;
 }
 
 function setNavState(isAuth, authList) {
@@ -53,7 +90,8 @@ function setNavState(isAuth, authList) {
 
 function fetchUserInfo() {
     fetch("/api/users/me", {
-        method: "GET"
+        method: "GET",
+        headers: buildAuthHeaders()
     })
     .then (response => {
         if ( response.ok ) {
@@ -75,8 +113,12 @@ function fetchUserInfo() {
         })
         .then (data => {
             if ( data && data.success && data.data ) {
+                if (data.data.accessToken) {
+                    setAccessToken(data.data.accessToken);
+                }
                 return fetch("/api/users/me", {
-                    method: "GET"
+                    method: "GET",
+                    headers: buildAuthHeaders()
                 });
             }
             throw new Error("토큰 갱신 응답이 올바르지 않습니다.");
@@ -127,4 +169,7 @@ if ( logoutBtn ) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", fetchUserInfo);
+document.addEventListener("DOMContentLoaded", async () => {
+    await refreshAccessToken();
+    fetchUserInfo();
+});

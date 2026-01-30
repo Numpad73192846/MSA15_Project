@@ -85,25 +85,51 @@
         </div>
 
         <script>
-            function getStoredTokens() {
-                return {
-                    accessToken: localStorage.getItem('accessToken'),
-                    refreshToken: localStorage.getItem('refreshToken')
-                };
+            function getMemoryAccessToken() {
+                return typeof getAccessToken === 'function' ? getAccessToken() : null;
             }
 
-            async function fetchMe(accessToken) {
-                const response = await fetch('/api/users/me', {
-                    headers: { Authorization: `Bearer ${accessToken}` }
+            function setMemoryAccessToken(token) {
+                if (typeof setAccessToken === 'function') {
+                    setAccessToken(token);
+                }
+            }
+
+            function buildAuthHeaders() {
+                const accessToken = getMemoryAccessToken();
+                return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+            }
+
+            async function fetchMe() {
+                let response = await fetch('/api/users/me', {
+                    headers: buildAuthHeaders()
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data && data.success ? data.data : null;
+                }
+
+                const refreshResponse = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (!refreshResponse.ok) {
+                    return null;
+                }
+                const refreshData = await refreshResponse.json();
+                if (refreshData && refreshData.success && refreshData.data && refreshData.data.accessToken) {
+                    setMemoryAccessToken(refreshData.data.accessToken);
+                }
+
+                response = await fetch('/api/users/me', {
+                    headers: buildAuthHeaders()
                 });
                 if (!response.ok) {
                     return null;
                 }
                 const data = await response.json();
-                if (!data || data.success === false) {
-                    return null;
-                }
-                return data.data || null;
+                return data && data.success ? data.data : null;
             }
 
             function isTutor(authList) {
@@ -175,15 +201,9 @@
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
-                const { accessToken } = getStoredTokens();
-                if (!accessToken) {
-                    location.href = '/login';
-                    return;
-                }
-
-                const me = await fetchMe(accessToken);
+                const me = await fetchMe();
                 if (!me || !isTutor(me.authList)) {
-                    location.href = '/';
+                    location.href = '/login';
                     return;
                 }
 
@@ -192,12 +212,6 @@
 
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
-
-                const { accessToken } = getStoredTokens();
-                if (!accessToken) {
-                    location.href = '/login';
-                    return;
-                }
 
                 const selectedFieldIds = Array.from(
                     document.querySelectorAll('#generalFields input:checked, #domainFields input:checked')
@@ -214,7 +228,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${accessToken}`
+                        ...buildAuthHeaders()
                     },
                     body: JSON.stringify(payload)
                 });
