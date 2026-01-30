@@ -1,0 +1,84 @@
+
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5">
+            <div class="mb-4">
+                <h2 class="h3 fw-bold mb-1">튜터 찾기</h2>
+                <p class="text-muted mb-0">나에게 맞는 전문 튜터를 찾아보세요</p>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label">검색</label>
+                            <input id="tutorSearch" type="text" class="form-control" placeholder="튜터 이름 또는 과목 검색...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">과목</label>
+                            <select id="subjectFilter" class="form-select">
+                                <option value="all" selected>전체 과목</option>
+                                <option value="영어">영어</option>
+                                <option value="수학">수학</option>
+                                <option value="프로그래밍">프로그래밍</option>
+                                <option value="과학">과학</option>
+                                <option value="일본어">일본어</option>
+                                <option value="중국어">중국어</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">가격대</label>
+                            <select id="priceFilter" class="form-select">
+                                <option value="all" selected>전체 가격</option>
+                                <option value="low">~35,000원</option>
+                                <option value="mid">35,000~40,000원</option>
+                                <option value="high">40,000원~</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tutorList" class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="t : ${tutors}">
+                    <div class="card h-100 shadow-sm tutor-card"
+                         th:attr="data-name=${t.name},data-hourly-rate=${t.hourlyRate},data-subjects=${#strings.arrayJoin(t.subjects, ',')} ">
+                        <div class="card-body">
+                            <div class="d-flex gap-3">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                     style="width:64px;height:64px;font-size:24px;flex:0 0 auto;"
+                                     th:text="${#strings.substring(t.name,0,1)}">김</div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold fs-5" th:text="${t.name}">튜터명</div>
+                                    <div class="small text-muted mb-2">
+                                        <span class="me-1">⭐</span>
+                                        <span class="fw-semibold" th:text="${t.rating}">4.9</span>
+                                        <span class="text-muted">(</span><span class="text-muted" th:text="${t.reviews}">127</span><span class="text-muted">)</span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 mb-2">
+                                        <span class="badge text-bg-light" th:each="s : ${t.subjects}" th:text="${s}">영어</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-muted mt-3 mb-3" th:text="${t.bio}">소개</p>
+
+                            <div class="small text-muted mb-1">⏱️ 경력 <span th:text="${t.experience}">5년</span></div>
+                            <div class="small mb-3">💰 <span class="fw-semibold text-primary">시간당 <span th:text="${#numbers.formatInteger(t.hourlyRate, 0, 'COMMA')}">35,000</span>원</span></div>
+
+                            <a class="btn btn-primary w-100"
+                               th:href="@{'/tutors/' + ${t.id}}">프로필 보기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tutorEmpty" class="text-center py-5 d-none">
+                <p class="text-muted fs-5 mb-0">검색 결과가 없습니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
