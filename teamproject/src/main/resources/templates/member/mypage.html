@@ -20,14 +20,16 @@
                                     <span class="fs-1">👤</span>
                                 </div>
                             </div>
-                            <h3 class="h5 fw-bold mb-1" id="memberName">홍길동</h3>
-                            <p class="text-muted small mb-3" id="memberEmail">hong@example.com</p>
+                            <h3 class="h5 fw-bold mb-1" id="memberName" th:text="${user.name}">홍길동</h3>
+                            <p class="text-muted small mb-3" id="memberEmail" th:text="${user.username}">
+                                hong@example.com</p>
 
                             <div class="mb-3">
                                 <span class="badge bg-light text-dark">회원</span>
                             </div>
 
-                            <button class="btn btn-outline-primary w-100 mb-2" id="btnEditMemberProfile">
+                            <button class="btn btn-outline-primary w-100 mb-2" id="btnEditMemberProfile"
+                                data-bs-toggle="modal" data-bs-target="#profileEditModal">
                                 프로필 수정
                             </button>
                             <button class="btn btn-primary w-100" onclick="location.href='/tutors'">
@@ -36,36 +38,27 @@
                         </div>
                     </div>
 
-                    <!-- Learning Stats -->
-                    <div class="card shadow-sm mt-3">
-                        <div class="card-body">
-                            <h4 class="h6 fw-bold mb-3">학습 통계</h4>
-                            <div class="d-grid gap-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">총 수업 시간</span>
-                                    <span class="fw-semibold">48시간</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">완료한 수업</span>
-                                    <span class="fw-semibold">24회</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">즐겨찾기 튜터</span>
-                                    <span class="fw-semibold">5명</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Interests -->
-                    <div class="card shadow-sm mt-3">
+
+                    <!-- My Class Card -->
+                    <div class="card shadow-sm mt-3 border-primary">
+                        <div class="card-header">
+                            <h3 class="h6 fw-bold mb-0">내 수업</h3>
+                        </div>
                         <div class="card-body">
-                            <h4 class="h6 fw-bold mb-2">관심 과목</h4>
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-primary">영어</span>
-                                <span class="badge bg-primary">수학</span>
-                                <span class="badge bg-primary">프로그래밍</span>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar-circle bg-light text-primary d-flex align-items-center justify-content-center"
+                                        style="width: 50px; height: 50px; border-radius: 50%;">
+                                        <span class="fs-4">📖</span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h4 class="h6 fw-bold mb-1">비즈니스 영어 회화 (심화)</h4>
+                                    <p class="text-muted small mb-0">김민지 튜터 | 매주 화, 목 14:00</p>
+                                </div>
                             </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">강의실 입장</button>
                         </div>
                     </div>
                 </div>
@@ -74,7 +67,7 @@
                 <div class="col-lg-8">
                     <!-- Quick Stats -->
                     <div class="row g-3 mb-4">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="stat-card card shadow-sm h-100">
                                 <div class="card-body text-center">
                                     <div class="stat-icon mb-2">📅</div>
@@ -83,7 +76,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="stat-card card shadow-sm h-100">
                                 <div class="card-body text-center">
                                     <div class="stat-icon mb-2">✅</div>
@@ -92,14 +85,34 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="stat-card card shadow-sm h-100">
-                                <div class="card-body text-center">
-                                    <div class="stat-icon mb-2">⭐</div>
-                                    <div class="stat-value fw-bold text-warning">5</div>
-                                    <div class="stat-label small text-muted">즐겨찾기</div>
+                    </div>
+
+
+
+                    <!-- Tutor Messages Card -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                            <h3 class="h6 fw-bold mb-0">튜터 메시지</h3>
+                        </div>
+                        <div class="list-group list-group-flush pt-2">
+                            <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal"
+                                data-bs-target="#messageModal" data-tutor="김민지 튜터" data-date="10분 전"
+                                data-message="오늘 수업 자료 미리 보내드립니다. 확인해주세요!">
+                                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                    <h5 class="mb-0 small fw-bold text-dark">김민지 튜터</h5>
+                                    <small class="text-xs text-muted">10분 전</small>
                                 </div>
-                            </div>
+                                <p class="mb-0 small text-muted text-truncate">오늘 수업 자료 미리 보내드립니다. 확인해주세요!</p>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal"
+                                data-bs-target="#messageModal" data-tutor="이준호 튜터" data-date="어제"
+                                data-message="다음 수업 시간 조정 가능할까요?">
+                                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                    <h5 class="mb-0 small fw-bold text-dark">이준호 튜터</h5>
+                                    <small class="text-xs text-muted">어제</small>
+                                </div>
+                                <p class="mb-0 small text-muted text-truncate">다음 수업 시간 조정 가능할까요?</p>
+                            </button>
                         </div>
                     </div>
 
@@ -111,11 +124,7 @@
                                 예약 내역
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#favoritesTab" type="button">
-                                즐겨찾기
-                            </button>
-                        </li>
+
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviewsTab" type="button">
                                 내 리뷰
@@ -143,7 +152,11 @@
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="badge bg-light text-dark">영어</span>
-                                                <span class="fw-semibold text-primary">70,000원</span>
+                                                <div class="d-flex gap-2">
+                                                    <span class="fw-semibold text-primary">70,000원</span>
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        onclick="if(confirm('수업을 취소하시겠습니까?')) alert('취소되었습니다.');">취소</button>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="booking-item p-3 border rounded">
@@ -158,7 +171,11 @@
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="badge bg-light text-dark">수학</span>
-                                                <span class="fw-semibold text-primary">40,000원</span>
+                                                <div class="d-flex gap-2">
+                                                    <span class="fw-semibold text-primary">40,000원</span>
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        onclick="if(confirm('수업을 취소하시겠습니까?')) alert('취소되었습니다.');">취소</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -204,60 +221,7 @@
                             </div>
                         </div>
 
-                        <!-- Favorites Tab -->
-                        <div class="tab-pane fade" id="favoritesTab">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h4 class="h6 fw-bold mb-3">즐겨찾기 튜터</h4>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="card border">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                                        <div>
-                                                            <div class="fw-semibold">김민지 튜터</div>
-                                                            <div class="small text-warning">★★★★★ 4.9</div>
-                                                        </div>
-                                                        <button class="btn btn-sm btn-outline-danger">♥</button>
-                                                    </div>
-                                                    <div class="mb-2">
-                                                        <span class="badge bg-light text-dark small">영어</span>
-                                                        <span class="badge bg-light text-dark small">수학</span>
-                                                    </div>
-                                                    <div class="small text-muted mb-2">35,000원/시간</div>
-                                                    <button class="btn btn-sm btn-primary w-100"
-                                                        onclick="location.href='/tutors/1'">
-                                                        프로필 보기
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card border">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                                        <div>
-                                                            <div class="fw-semibold">이준호 튜터</div>
-                                                            <div class="small text-warning">★★★★★ 4.8</div>
-                                                        </div>
-                                                        <button class="btn btn-sm btn-outline-danger">♥</button>
-                                                    </div>
-                                                    <div class="mb-2">
-                                                        <span class="badge bg-light text-dark small">수학</span>
-                                                        <span class="badge bg-light text-dark small">과학</span>
-                                                    </div>
-                                                    <div class="small text-muted mb-2">40,000원/시간</div>
-                                                    <button class="btn btn-sm btn-primary w-100"
-                                                        onclick="location.href='/tutors/2'">
-                                                        프로필 보기
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- Reviews Tab -->
                         <div class="tab-pane fade" id="reviewsTab">
@@ -265,9 +229,11 @@
                                 <div class="card-body">
                                     <h4 class="h6 fw-bold mb-3">내가 작성한 리뷰</h4>
                                     <div class="d-grid gap-3">
-                                        <div class="review-item p-3 bg-light rounded">
+                                        <div class="review-item p-3 bg-light rounded" style="cursor: pointer;"
+                                            onclick="location.href='/tutors/detail'">
                                             <div class="d-flex justify-content-between mb-2">
-                                                <div class="fw-semibold">박서준 튜터</div>
+                                                <div class="fw-semibold">박서준 튜터 <small
+                                                        class="text-primary opacity-75 ms-1">상세되기 ↗</small></div>
                                                 <div class="text-warning">★★★★★</div>
                                             </div>
                                             <p class="small mb-1">
@@ -275,9 +241,11 @@
                                             </p>
                                             <div class="small text-muted">2026-01-20</div>
                                         </div>
-                                        <div class="review-item p-3 bg-light rounded">
+                                        <div class="review-item p-3 bg-light rounded" style="cursor: pointer;"
+                                            onclick="location.href='/tutors/detail'">
                                             <div class="d-flex justify-content-between mb-2">
-                                                <div class="fw-semibold">김민지 튜터</div>
+                                                <div class="fw-semibold">김민지 튜터 <small
+                                                        class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>
                                                 <div class="text-warning">★★★★★</div>
                                             </div>
                                             <p class="small mb-1">
@@ -293,5 +261,132 @@
                 </div>
             </div>
         </div>
+
+        <!-- Message Detail & Reply Modal -->
+        <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title fw-bold">메시지 확인</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar-circle bg-light text-primary d-flex align-items-center justify-content-center me-3"
+                                style="width: 48px; height: 48px; font-size: 20px;">
+                                <span id="msgTutorInitial">T</span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0" id="msgTutorName">튜터 이름</h6>
+                                <small class="text-muted" id="msgDate">시간</small>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-light rounded-3 mb-4">
+                            <p class="mb-0 text-dark small" id="msgContent">메시지 내용...</p>
+                        </div>
+
+                        <hr class="border-light my-4">
+
+                        <h6 class="fw-bold small mb-3">답장 보내기</h6>
+                        <div class="mb-3">
+                            <textarea class="form-control bg-light border-0" id="replyMessageArea" rows="4"
+                                placeholder="답장을 입력하세요..." style="resize: none;"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0">
+                        <button type="button" class="btn btn-light text-muted" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary px-4" onclick="alert('답장이 전송되었습니다.');"
+                            data-bs-dismiss="modal">
+                            <span class="me-1">📤</span> 전송하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Simple script to populate modal based on clicked item
+            document.addEventListener('DOMContentLoaded', function () {
+                var messageModal = document.getElementById('messageModal');
+                messageModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var tutor = button.getAttribute('data-tutor');
+                    var date = button.getAttribute('data-date');
+                    var message = button.getAttribute('data-message');
+
+                    document.getElementById('msgTutorName').textContent = tutor;
+                    document.getElementById('msgDate').textContent = date;
+                    document.getElementById('msgContent').textContent = message;
+
+                    // Initial extraction for avatar
+                    var initial = tutor.trim().charAt(0);
+                    document.getElementById('msgTutorInitial').textContent = initial;
+
+                    // Clear reply area
+                    document.getElementById('replyMessageArea').value = '';
+                })
+            });
+        </script>
+        <!-- Profile Edit Modal -->
+        <div class="modal fade" id="profileEditModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="/member/mypage/update" method="POST" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">프로필 수정</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="editName" class="form-label">이름</label>
+                                <input type="text" class="form-control" id="editName" name="name"
+                                    th:value="${user.name}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editNickname" class="form-label">닉네임</label>
+                                <input type="text" class="form-control" id="editNickname" name="nickname"
+                                    th:value="${user.nickname}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">이메일(ID)</label>
+                                <input type="email" class="form-control" id="editEmail" name="username"
+                                    th:value="${user.username}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editProfileImage" class="form-label">프로필 이미지</label>
+                                <input type="file" class="form-control" id="editProfileImage" name="profileImage"
+                                    accept="image/*">
+                                <div class="mt-2 text-center" id="imagePreviewContainer" style="display: none;">
+                                    <img id="imagePreview" src="" alt="Profile Preview" class="rounded-circle shadow-sm"
+                                        style="width: 100px; height: 100px; object-fit: cover;">
+                                </div>
+                            </div>
+                            <script>
+                                document.getElementById('editProfileImage').addEventListener('change', function (e) {
+                                    if (e.target.files && e.target.files[0]) {
+                                        var reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            document.getElementById('imagePreview').src = e.target.result;
+                                            document.getElementById('imagePreviewContainer').style.display = 'block';
+                                        }
+                                        reader.readAsDataURL(e.target.files[0]);
+                                    }
+                                });
+                            </script>
+                            <!-- Password change could be added here -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>

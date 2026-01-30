@@ -1,24 +1,35 @@
-<!-- 프래그먼트 : 레이아웃에서 공통적으로 사용할 UI -->
-<!-- th:fragment="프래그먼트 명" -->
 <th:block th:fragment="header">
     <header class="navbar">
         <div class="navbar-container">
-            <a class="navbar-logo" href="/"><img src="/img/logo.png" alt="튜터링고로고"></a>
+            <a class="navbar-logo" href="/">
+                <img src="/img/logo.png" alt="투코스 로고" style="height: 36px;">
+            </a>
 
-            <!-- 검색 바 -->
-            <!-- <div class="search-bar">
-                <span class="search-icon">🔍</span>
-                <input type="text" placeholder="튜터 찾기" class="search-input">
-            </div> -->
+            <!-- 중앙 네비게이션 (데스크탑) -->
+            <nav class="d-none d-md-flex gap-4">
+                <a href="/" class="text-decoration-none text-secondary fw-semibold">홈</a>
+                <a href="/tutors" class="text-decoration-none text-secondary fw-semibold">튜터 찾기</a>
+            </nav>
 
-            <!-- 오른쪽 버튼 -->
+            <!-- 오른쪽 버튼 영역 -->
             <div class="navbar-right">
-                <button class="btn btn-outline-primary" onclick="location.href='/tutors'">튜터 찾기</button>
-                <button class="btn btn-outline-primary" onclick="location.href='/bookings'">내 예약</button>
-                <button class="btn btn-outline-primary" id="navMyPageBtn" style="display: none;">마이페이지</button>
-                <div id="navAuthArea" class="d-flex gap-2">
-                    <button class="btn btn-outline-primary" onclick="location.href='/login'">로그인</button>
-                    <button class="btn btn-primary" onclick="location.href='/login?tab=signup'">회원가입</button>
+                <!-- 로그인 전 -->
+                <div id="navGuestArea" class="gap-2" style="display: flex;">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 nav-action-btn" onclick="location.href='/login'">로그인</button>
+                    <button class="btn btn-sm btn-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/join'">회원가입</button>
+                </div>
+
+                <!-- 로그인 후 -->
+                <div id="navUserArea" class="gap-2" style="display: none;">
+                    <button id="navUserMyPageBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/mypage'">
+                        마이페이지
+                    </button>
+                    <button id="navTutorMyPageBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/mypages'">
+                        마이페이지
+                    </button>
+                    <button id="navLogoutBtn" class="btn btn-sm btn-danger rounded-pill px-3 nav-action-btn">
+                        로그아웃
+                    </button>
                 </div>
             </div>
         </div>
