@@ -226,8 +226,6 @@
                     return;
                 }
 
-                localStorage.setItem('accessToken', data.data.accessToken);
-                localStorage.setItem('refreshToken', data.data.refreshToken);
                 location.href = '/';
             });
 
@@ -311,9 +309,6 @@
                     alert(loginData.message || '로그인에 실패했습니다.');
                     return;
                 }
-
-                localStorage.setItem('accessToken', loginData.data.accessToken);
-                localStorage.setItem('refreshToken', loginData.data.refreshToken);
 
                 const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';
                 location.href = redirectUrl;

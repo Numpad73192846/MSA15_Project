@@ -26,26 +26,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String token = null;
+
         String header = request.getHeader("Authorization");
-
         if (header != null && header.startsWith("Bearer ")) {
+            token = header.substring(7);
+        }
 
-            String token = header.substring(7);
+        if (token == null && request.getCookies() != null) {
+            token = Arrays.stream(request.getCookies())
+                          .filter(cookie -> "accessToken".equals(cookie.getName()))
+                          .map(cookie -> cookie.getValue())
+                          .findFirst()
+                          .orElse(null);
+        }
 
-            if ( jwtTokenProvider.validateToken(token) ) {
+        if (token != null && jwtTokenProvider.validateToken(token)) {
 
-                String userId = jwtTokenProvider.getUserIdFromToken(token);
-                List<String> authList = jwtTokenProvider.getAuthListFromToken(token);
-        
-                SimpleGrantedAuthority[] authorities = authList.stream()
-                                                               .map(SimpleGrantedAuthority::new)
-                                                               .toArray(SimpleGrantedAuthority[]::new);
-        
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, Arrays.asList(authorities));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            String userId = jwtTokenProvider.getUserIdFromToken(token);
+            List<String> authList = jwtTokenProvider.getAuthListFromToken(token);
 
-            }
-    
+            SimpleGrantedAuthority[] authorities = authList.stream()
+                                                           .map(SimpleGrantedAuthority::new)
+                                                           .toArray(SimpleGrantedAuthority[]::new);
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, Arrays.asList(authorities));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         
         filterChain.doFilter(request, response);
