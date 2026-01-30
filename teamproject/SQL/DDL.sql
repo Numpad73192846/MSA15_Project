@@ -2,17 +2,22 @@ CREATE DATABASE IF NOT EXISTS matching;
 
 USE matching;
 
-DROP TABLE IF EXISTS `featured_tuter`,
-                     `tuter_availability`,
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `featured_tutor`,
+                     `tutor_availability`,
                      `tutor_subject`,
+                     `tutor_field`,
                      `subject`,
                      `subject_group`,
+                     `language_field`,
                      `review`,
                      `payment`,
+                     `refresh_token`,
                      `booking`,
                      `lesson`,
                      `persistent_logins`,
-                     `tuter_profile`,
+                     `tutor_profile`,
                      `user_auth`,
                      `users`,
                      `tutor_career`,
@@ -20,13 +25,15 @@ DROP TABLE IF EXISTS `featured_tuter`,
                      `tutor_time_range`,
                      `tutor_document`;
 
+SET FOREIGN_KEY_CHECKS = 1;
+
 CREATE TABLE `users` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,
     `username` VARCHAR(64) NOT NULL UNIQUE,
     `password` VARCHAR(255) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
-    `nickname` VARCHAR(64) NOT NULL,
+    `nickname` VARCHAR(64) NOT NULL UNIQUE,
     `status` ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -45,7 +52,7 @@ CREATE TABLE `user_auth` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `tuter_profile` (
+CREATE TABLE `tutor_profile` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL UNIQUE,
     `id` VARCHAR(64) NOT NULL UNIQUE,
@@ -84,6 +91,33 @@ CREATE TABLE `subject_group` (
     INDEX `idx_name` (`name`)
 );
 
+CREATE TABLE `language_field` (
+    `no` BIGINT AUTO_INCREMENT NOT NULL,
+    `id` VARCHAR(64) NOT NULL UNIQUE,
+    `name` VARCHAR(64) NOT NULL,
+    `category` ENUM('GENERAL', 'DOMAIN') NOT NULL,
+    `seq` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`no`),
+    INDEX `idx_category` (`category`),
+    INDEX `idx_name` (`name`)
+);
+
+CREATE TABLE `tutor_field` (
+    `no` BIGINT AUTO_INCREMENT NOT NULL,
+    `user_id` VARCHAR(64) NOT NULL,
+    `field_id` VARCHAR(64) NOT NULL,
+    `id` VARCHAR(64) NOT NULL UNIQUE,
+    `seq` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`no`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_field_id` (`field_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`field_id`) REFERENCES `language_field`(`id`) ON DELETE CASCADE
+);
+
 CREATE TABLE `subject` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `group_id` VARCHAR(64) NOT NULL,
@@ -116,7 +150,7 @@ CREATE TABLE `lesson` (
     FOREIGN KEY (`subject_id`) REFERENCES `subject`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `tuter_availability` (
+CREATE TABLE `tutor_availability` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,
@@ -149,7 +183,7 @@ CREATE TABLE `booking` (
     INDEX `idx_availability_id` (`availability_id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`lesson_id`) REFERENCES `lesson`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`availability_id`) REFERENCES `tuter_availability`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`availability_id`) REFERENCES `tutor_availability`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `payment` (
@@ -198,7 +232,7 @@ CREATE TABLE `tutor_subject` (
     FOREIGN KEY (`subject_id`) REFERENCES `subject`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `featured_tuter` (
+CREATE TABLE `featured_tutor` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,
@@ -274,5 +308,22 @@ CREATE TABLE `tutor_document` (
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`no`),
     INDEX `idx_user_id` (`user_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `refresh_token` (
+    `no` BIGINT AUTO_INCREMENT NOT NULL,
+    `user_id` VARCHAR(64) NOT NULL,
+    `id` VARCHAR(64) NOT NULL UNIQUE,
+    `token_hash` VARCHAR(255) NOT NULL,
+    `expires_at` DATETIME NOT NULL,
+    `revoked_at` DATETIME NULL,
+    `user_agent` VARCHAR(255) NULL,
+    `ip` VARCHAR(64) NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`no`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_expires_at` (`expires_at`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
