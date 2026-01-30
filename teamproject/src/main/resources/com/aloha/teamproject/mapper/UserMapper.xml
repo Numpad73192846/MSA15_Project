@@ -31,13 +31,13 @@
 	</resultMap>
 
 	<insert id="join">
-        INSERT INTO user ( id, username, password, name, nickname )
+        INSERT INTO users ( id, username, password, name, nickname )
         VALUES ( #{id}, #{username}, #{password}, #{name}, #{nickname} )
     </insert>
 
 	<insert id="insertAuth">
-        INSERT INTO user_auth ( id, username, auth )
-        VALUES ( #{id}, #{username}, #{auth} )
+        INSERT INTO user_auth ( id, user_id, auth )
+        VALUES ( #{id}, #{userId}, #{auth} )
     </insert>
 
 	<delete id="deleteAuth">
