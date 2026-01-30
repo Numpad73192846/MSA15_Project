@@ -1,17 +1,5 @@
 package com.aloha.teamproject.controller;
 
-<<<<<<< HEAD
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@Controller
-public class HomeController {
-
-	@GetMapping("/")
-=======
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,13 +19,10 @@ public class HomeController{
 	private final UserService userService;
 
 	@GetMapping("")
->>>>>>> 50541e7b7c5eae10bfb683199d66648f407b06a8
 	public String home() {
 		return "index";
 	}
 
-<<<<<<< HEAD
-=======
 	@GetMapping("/login")
 	public String login() {
 		return "auth/login";
@@ -79,5 +64,4 @@ public class HomeController{
 		return "tutor/mypage";
 	}
 
->>>>>>> 50541e7b7c5eae10bfb683199d66648f407b06a8
 }
