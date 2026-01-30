@@ -41,6 +41,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectByUsername(username);
 		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
+<<<<<<< HEAD
 		return user;
 	}
 
@@ -49,6 +50,8 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		requiredNotBlank(nickname, ErrorCode.INVALID_REQUEST);
 		Users user = userMapper.selectByNickname(nickname);
 		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
+=======
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 		return user;
 	}
 
@@ -64,6 +67,18 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
 		Users existing = userMapper.selectByUsername(username);
 		require(existing == null, ErrorCode.USERNAME_DUPLICATED);
+<<<<<<< HEAD
+=======
+
+
+		String role = user.getRole();
+		if (role == null || role.isBlank()) {
+			role = "ROLE_USER";
+		}
+		if ("ROLE_TUTOR".equals(role)) {
+			role = "ROLE_TUTOR_PENDING";
+		}
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 
 		String encodedPassword = passwordEncoder.encode(password);
 		user.setPassword(encodedPassword);
@@ -73,7 +88,11 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		if ( result > 0 ) {
 			UserAuth userAuth = new UserAuth();
 			userAuth.setUserId(user.getId());
+<<<<<<< HEAD
 			userAuth.setAuth("ROLE_USER");
+=======
+			userAuth.setAuth(role);
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 			result = userMapper.insertAuth(userAuth);
 		}
 
@@ -113,6 +132,17 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 	}
 
 	@Override
+<<<<<<< HEAD
+=======
+	public boolean deleteAuth(String userId, String auth) throws Exception {
+		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+		requiredNotBlank(auth, ErrorCode.INVALID_REQUEST);
+		userMapper.deleteAuth(userId, auth);
+		return true;
+	}
+
+	@Override
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	public boolean delete(Long no) throws Exception {
 		requireNotNull(no, ErrorCode.INVALID_REQUEST);
 		int result = userMapper.delete(no);
@@ -134,6 +164,10 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		requiredNotBlank(nickname, ErrorCode.INVALID_REQUEST);
 		Users existing = userMapper.selectByNickname(nickname);
 		return existing == null;
+<<<<<<< HEAD
 	}	
+=======
+	}
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 
 }

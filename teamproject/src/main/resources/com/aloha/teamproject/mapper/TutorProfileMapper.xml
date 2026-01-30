@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.teamproject.mapper.TutorProfileMapper">
+
+    <resultMap id="tutorProfileMap" type="TutorProfile">
+        <id property="no" column="no" />
+        <result property="userId" column="user_id" />
+        <result property="id" column="id" />
+        <result property="profileImg" column="profile_img" />
+        <result property="headline" column="headline" />
+        <result property="bio" column="bio" />
+        <result property="videoUrl" column="video_url" />
+        <result property="verified" column="is_verified" />
+        <result property="ratingAvg" column="rating_avg" />
+        <result property="reviewCount" column="review_count" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
+    </resultMap>
+
+    <insert id="upsertProfile">
+        INSERT INTO tutor_profile (
+            id, user_id, profile_img, headline, bio, video_url, is_verified, rating_avg, review_count
+        )
+        VALUES (
+            #{id}, #{userId}, #{profileImg}, #{headline}, #{bio}, #{videoUrl}, #{verified}, #{ratingAvg}, #{reviewCount}
+        )
+        ON DUPLICATE KEY UPDATE
+            profile_img = VALUES(profile_img),
+            headline = VALUES(headline),
+            bio = VALUES(bio),
+            video_url = VALUES(video_url),
+            updated_at = NOW();
+    </insert>
+
+    <select id="selectByUserId" resultMap="tutorProfileMap">
+        SELECT *
+        FROM tutor_profile
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

@@ -12,14 +12,20 @@ import lombok.ToString;
 
 @Getter
 @ToString
+<<<<<<< HEAD
 public class CustomUser implements UserDetails {    
    
+=======
+public class CustomUser implements UserDetails {
+
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
     private Users user;
 
     public CustomUser(Users user) {
         this.user = user;
     }
 
+<<<<<<< HEAD
     /**
      * 권한 정보 메소드
      * UserDetails 를 CustomUser 로 구현
@@ -30,6 +36,14 @@ public class CustomUser implements UserDetails {
                    .stream()
                    .map( (auth) -> new SimpleGrantedAuthority(auth.getAuth()) )
                    .collect(Collectors.toList());
+=======
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return user.getAuthList()
+            .stream()
+            .map( (auth) -> new SimpleGrantedAuthority(auth.getAuth()))
+            .collect(Collectors.toList());
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
     }
 
     @Override
@@ -41,8 +55,13 @@ public class CustomUser implements UserDetails {
     public String getUsername() {
         return user.getUsername();
     }
+<<<<<<< HEAD
 
     @Override
+=======
+    
+        @Override
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
     public boolean isAccountNonExpired() {
         return true;
     }
@@ -61,5 +80,8 @@ public class CustomUser implements UserDetails {
     public boolean isEnabled() {
         return "ACTIVE".equals(user.getStatus());
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 }

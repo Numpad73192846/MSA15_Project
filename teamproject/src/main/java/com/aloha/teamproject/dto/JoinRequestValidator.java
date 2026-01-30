@@ -26,7 +26,11 @@ public class JoinRequestValidator implements Validator {
                     errors.rejectValue(
                         "nickname",
                         "nickname.size",
+<<<<<<< HEAD
                         "닉네임은 2~20자"
+=======
+                        "닉네임은 2~20자 이내여야 합니다"
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                     );
                 }
             }

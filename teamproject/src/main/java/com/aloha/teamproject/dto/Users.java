@@ -21,6 +21,8 @@ public class Users {
 	private String name;
 	private String nickname;
 	@Builder.Default
+	private String role = "ROLE_USER";
+	@Builder.Default
 	private String status = "ACTIVE";
 	private Date createdAt;
 	private Date updatedAt;

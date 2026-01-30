@@ -42,6 +42,15 @@
         INSERT INTO user_auth ( id, user_id, auth )
         VALUES ( #{id}, #{userId}, #{auth} )
     </insert>
+<<<<<<< HEAD
+=======
+
+	<delete id="deleteAuth">
+		DELETE FROM user_auth
+		WHERE user_id = #{userId}
+		  AND auth = #{auth}
+	</delete>
+>>>>>>> 50541e7b7c5eae10bfb683199d66648f407b06a8
 	
 	<select id="list" resultMap="userMap"> 
 		SELECT *
@@ -49,6 +58,17 @@
 		ORDER BY created_at DESC
 	</select>
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+	<select id="selectAuth" resultMap="authMap">
+		SELECT *
+		FROM user_auth
+		WHERE user_id = #{value}
+	</select>
+
+=======
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 	<select id="selectById" resultMap="userMap"> 
 		SELECT *
 		FROM users
@@ -90,4 +110,8 @@
 		WHERE no = #{no}
 	</delete>
 
+<<<<<<< HEAD
+=======
+>>>>>>> 50541e7b7c5eae10bfb683199d66648f407b06a8
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 </mapper>

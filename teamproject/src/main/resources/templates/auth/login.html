@@ -17,6 +17,7 @@
                 <div class="card-body">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item" role="presentation">
+<<<<<<< HEAD
                             <button class="nav-link"
                                 th:classappend="${activeTab != 'signup'} ? 'active' : ''"
                                 data-bs-toggle="tab"
@@ -27,10 +28,17 @@
                                 th:classappend="${activeTab == 'signup'} ? 'active' : ''"
                                  data-bs-toggle="tab"
                                 data-bs-target="#tabSignup">회원가입</button>
+=======
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabLogin">로그인</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSignup">회원가입</button>
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                         </li>
                     </ul>
 
                     <div class="tab-content pt-4">
+<<<<<<< HEAD
                         <div class="tab-pane fade"
                             th:classappend="${activeTab != 'signup'} ? 'show active' : ''"
                             id="tabLogin">
@@ -38,6 +46,13 @@
                                 <div class="mb-3">
                                     <label class="form-label">이메일</label>
                                     <input name="email" type="email" class="form-control"
+=======
+                        <div class="tab-pane fade show active" id="tabLogin">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label class="form-label">이메일</label>
+                                    <input name="username" type="email" class="form-control"
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                         placeholder="example@email.com" required>
                                 </div>
                                 <div class="mb-3">
@@ -47,15 +62,24 @@
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div class="form-check">
+<<<<<<< HEAD
                                         <input class="form-check-input" type="checkbox" value="" id="rememberMe">
                                         <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
                                     </div>
                                     <a href="#" class="small">비밀번호 찾기</a>
+=======
+                                        <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe">
+                                        <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
+                                    </div>
+                                    <!-- 현재 준비 중 -->
+                                    <a href="javascript:void(0)" class="small">비밀번호 찾기</a>
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">로그인</button>
                             </form>
                         </div>
 
+<<<<<<< HEAD
                         <div class="tab-pane fade"
                             th:classappend="${activeTab == 'signup'} ? 'show active' : ''"
                             id="tabSignup">
@@ -72,20 +96,38 @@
                                         <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('username')" >중복확인</button>
                                     </div>
                                     <div id="username-error" class="text-danger small" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+=======
+                        <div class="tab-pane fade" id="tabSignup">
+                            <form id="signupForm" class="needs-validation" onsubmit="event.preventDefault();" novalidate>
+                                <input type="hidden" name="role" id="role" value="ROLE_USER">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">아이디(이메일)</label>
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" id="username" oninput="setChecked('username', false); clearInlineError('username')" placeholder="example@email.com">                                
+                                        <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('username')" >중복확인</button>
+                                    </div>
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                     <div id="username-inline-error" class="text-danger small"></div> 
                                 </div>  
                                 
                                 <div class="mb-3">
                                     <label for="nickname" class="form-label">닉네임</label>
                                     <div class="input-group">
+<<<<<<< HEAD
                                         <input type="text" class="form-control" id="nickname" th:field="*{nickname}" oninput="setChecked('nickname', false); clearInlineError('nickname')" placeholder="닉네임">
                                         <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('nickname')" >중복확인</button>
                                     </div>                    
                                     <div id="nickname-error" class="text-danger small" th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}"></div>
+=======
+                                        <input type="text" class="form-control" id="nickname" oninput="setChecked('nickname', false); clearInlineError('nickname')" placeholder="닉네임">
+                                        <button type="button" class="btn btn-outline-secondary h-100" onclick="checkDuplicate('nickname')" >중복확인</button>
+                                    </div>                    
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                     <div id="nickname-inline-error" class="text-danger small"></div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">이름</label>
+<<<<<<< HEAD
                                     <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="홍길동">
                                     <div class="text-danger small" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>  
                                 </div>
@@ -98,6 +140,20 @@
                                     <label class="form-label">비밀번호 확인</label>
                                     <input type="password" class="form-control" id="passwordCheck" th:field="*{passwordCheck}" placeholder="비밀번호 확인">
                                     <div class="text-danger small" th:if="${#fields.hasErrors('passwordCheck')}" th:errors="*{passwordCheck}"></div>
+=======
+                                    <input type="text" class="form-control" id="name" placeholder="홍길동">
+                                    <div id="name-inline-error" class="text-danger small"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호</label>                                    
+                                    <input type="password" class="form-control" id="password" placeholder="비밀번호">
+                                    <div id="password-inline-error" class="text-danger small"></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">비밀번호 확인</label>
+                                    <input type="password" class="form-control" id="passwordCheck" placeholder="비밀번호 확인">
+                                    <div id="passwordCheck-inline-error" class="text-danger small"></div>
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">회원가입</button>
                             </form>
@@ -109,6 +165,7 @@
             </div>
         </div>    
         <script>
+<<<<<<< HEAD
             // 💍 CRSF TOKEN
             const csrfToken = "[[${_csrf.token}]]"    
 
@@ -118,6 +175,19 @@
             }
             function isChecked(type) {
                 return document.querySelector(`[name="${type}Checked"]`).value === "true";
+=======
+            const checkedState = {
+                username: false,
+                nickname: false
+            };
+
+            function setChecked(type, value) {
+                checkedState[type] = value;
+            }
+
+            function isChecked(type) {
+                return checkedState[type] === true;
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
             }
 
             function setInlineError(type, message) {
@@ -131,12 +201,45 @@
                 setInlineError(type, "");
             }
 
+<<<<<<< HEAD
+=======
+            async function validateFields(fields) {
+                const payload = {
+                    username: document.getElementById('username').value,
+                    nickname: document.getElementById('nickname').value,
+                    name: document.getElementById('name').value,
+                    password: document.getElementById('password').value,
+                    passwordCheck: document.getElementById('passwordCheck').value,
+                    role: document.getElementById('role').value
+                };
+
+                const query = fields && fields.length ? `?fields=${fields.join(',')}` : '';
+                const response = await fetch(`/api/users/validate${query}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    return {};
+                }
+
+                const errors = data.data || {};
+                if (fields && fields.length) {
+                    fields.forEach((field) => setInlineError(field, errors[field] || ''));
+                }
+                return errors;
+            }
+
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
             // 중복검사
             async function checkDuplicate(type) {
                 const input = document.getElementById(type);
                 const value = input.value;
 
                 const label = document.querySelector(`label[for="${type}"]`);
+<<<<<<< HEAD
                 const labelText = label ? label.innerText : "";
 
                 try {
@@ -175,6 +278,43 @@
                     input.classList.remove('was-validated');
 
                     setChecked(type, false);  // 실패
+=======
+                const labelText = type === 'username' ? '아이디' : '닉네임';
+
+                const validationErrors = await validateFields([type]);
+                if (validationErrors && validationErrors[type]) {
+                    setChecked(type, false);
+                    return false;
+                }
+
+                try {
+                    const url = type === 'username'
+                        ? `/api/users/check-username?username=${encodeURIComponent(value)}`
+                        : `/api/users/check-nickname?nickname=${encodeURIComponent(value)}`;
+                    const response = await fetch(url, { method: 'GET' });
+
+                    const data = await response.json();        
+
+                    if (data.success === false) {
+                        setInlineError(type, data.message || `${labelText} 중복 확인 중 오류가 발생했습니다.`);
+                        setChecked(type, false);
+                        return false;
+                    }
+
+                    const available = data.data === true;
+                    if (available) {
+                        setInlineError(type, `사용 가능한 ${labelText}입니다.`);
+                        input.classList.add('was-validated');
+                        input.classList.remove('needs-validation');
+                        setChecked(type, true);
+                        return true;
+                    }
+
+                    setInlineError(type, `이미 존재하는 ${labelText}입니다.`);
+                    input.classList.add('needs-validation');
+                    input.classList.remove('was-validated');
+                    setChecked(type, false);
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
                     return false;
                     
                 } catch (error) {
@@ -185,6 +325,7 @@
                 }           
             }
 
+<<<<<<< HEAD
             // 제출 확인
             async function checkSubmit(event) {
                 event.preventDefault(); // 폼 제출 방지
@@ -200,6 +341,123 @@
                 }
                 document.getElementById("signupForm").submit();                
             }
+=======
+            const signupFields = ['username', 'nickname', 'name', 'password', 'passwordCheck'];
+            signupFields.forEach((field) => {
+                const input = document.getElementById(field);
+                if (!input) return;
+                input.addEventListener('blur', () => {
+                    validateFields([field]);
+                });
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+                const fd = new FormData(event.target);
+                const payload = {
+                    username: fd.get('username'),
+                    password: fd.get('password')
+                };
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    alert(data.message || '로그인에 실패했습니다.');
+                    return;
+                }
+
+                location.href = '/';
+            });
+
+            const roleInput = document.getElementById('role');
+            const userTypeStudentBtn = document.getElementById('userTypeStudent');
+            const userTypeTutorBtn = document.getElementById('userTypeTutor');
+
+            if (userTypeStudentBtn && userTypeTutorBtn && roleInput) {
+                userTypeStudentBtn.addEventListener('click', () => {
+                    roleInput.value = 'ROLE_USER';
+                    userTypeStudentBtn.classList.add('btn-primary');
+                    userTypeStudentBtn.classList.remove('btn-outline-primary');
+                    userTypeTutorBtn.classList.add('btn-outline-primary');
+                    userTypeTutorBtn.classList.remove('btn-primary');
+                });
+
+                userTypeTutorBtn.addEventListener('click', () => {
+                    roleInput.value = 'ROLE_TUTOR';
+                    userTypeTutorBtn.classList.add('btn-primary');
+                    userTypeTutorBtn.classList.remove('btn-outline-primary');
+                    userTypeStudentBtn.classList.add('btn-outline-primary');
+                    userTypeStudentBtn.classList.remove('btn-primary');
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                if (location.hash === '#tabSignup') {
+                    const signupTab = document.querySelector('[data-bs-target="#tabSignup"]');
+                    if (signupTab && window.bootstrap?.Tab) {
+                        const tab = new bootstrap.Tab(signupTab);
+                        tab.show();
+                    }
+                }
+            });
+
+            document.getElementById('signupForm').addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                if (!isChecked('username')) {
+                    setInlineError('username', '아이디 중복 확인을 해주세요');
+                    return;
+                }
+
+                if (!isChecked('nickname')) {
+                    setInlineError('nickname', '닉네임 중복 확인을 해주세요');
+                    return;
+                }
+
+                const errors = await validateFields(['username', 'nickname', 'name', 'password', 'passwordCheck']);
+                if (Object.keys(errors || {}).length > 0) {
+                    return;
+                }
+
+                const payload = {
+                    username: document.getElementById('username').value,
+                    nickname: document.getElementById('nickname').value,
+                    name: document.getElementById('name').value,
+                    password: document.getElementById('password').value,
+                    passwordCheck: document.getElementById('passwordCheck').value,
+                    role: document.getElementById('role').value
+                };
+
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    alert(data.message || '회원가입에 실패했습니다.');
+                    return;
+                }
+
+                const loginResponse = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: payload.username, password: payload.password })
+                });
+                const loginData = await loginResponse.json();
+                if (!loginData.success) {
+                    alert(loginData.message || '로그인에 실패했습니다.');
+                    return;
+                }
+
+                const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';
+                location.href = redirectUrl;
+            });
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
         </script>
     </div>
     <!-- fragment end -->

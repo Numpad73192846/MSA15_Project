@@ -39,4 +39,9 @@ public class JoinRequest {
     @NotBlank(message = "이름은 필수입니다")
     private String name;
 
+<<<<<<< HEAD
+=======
+    private String role = "ROLE_USER";
+
+>>>>>>> 9fa74627305cdc52d340b47f0b0fbd2f8da2fac1
 }
