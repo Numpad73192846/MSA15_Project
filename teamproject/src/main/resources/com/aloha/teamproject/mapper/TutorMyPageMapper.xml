@@ -14,7 +14,7 @@
 	</select>
 
 	<select id="selectTutorFieldsByUserId" resultType="LanguageField">
-		SELECT lf.id AS id, lf.name, lf.category, lf.seq
+		SELECT lf.id, lf.name, lf.category, tf.seq
 		FROM tutor_field tf
 		JOIN language_field lf ON tf.field_id = lf.id
 		WHERE tf.user_id = #{userId}
@@ -22,7 +22,7 @@
 	</select>
 
 	<select id="selectUpcomingBookingsByUserId" resultType="UpcomingLesson">
-		SELECT b.id AS bookingId, l.id AS lessonId, u.id AS studentId, u.name AS studentName, l.title AS subjectName,
+		SELECT b.id AS bookingId, l.id AS lessonId, u.id AS studentId, u.name AS studentName, l.title AS subject,
 		       ta.start_at AS startAt, ta.end_at AS endAt,
 		  CASE
 		    WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'

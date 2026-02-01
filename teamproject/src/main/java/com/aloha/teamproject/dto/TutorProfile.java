@@ -2,6 +2,7 @@ package com.aloha.teamproject.dto;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -38,5 +39,14 @@ public class TutorProfile {
         this.verified = false;
         this.ratingAvg = BigDecimal.ZERO;
         this.reviewCount = 0;
+    }
+
+    @Data
+    public static class Request {
+        private String profileImg;
+        private String headline;
+        private String bio;
+        private String videoUrl;
+        private List<String> fieldIds;
     }
 }

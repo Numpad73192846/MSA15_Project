@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 @Data
 public class JoinRequest {
@@ -40,5 +41,36 @@ public class JoinRequest {
     private String name;
 
     private String role = "ROLE_USER";
+
+    public void validate(Errors errors) {
+        // 닉네임: 공백 먼저, 그 다음 길이 검사
+        if (!errors.hasFieldErrors("nickname")) {
+            String nickname = getNickname();
+            if (nickname != null) {
+                int len = nickname.length();
+                if (len < 2 || len > 20) {
+                    errors.rejectValue(
+                        "nickname",
+                        "nickname.size",
+                        "닉네임은 2~20자 이내여야 합니다"
+                    );
+                }
+            }
+        }
+
+        // 이미 password / passwordCheck 자체 에러가 있으면 비교 안 함
+        if (errors.hasFieldErrors("password") ||
+            errors.hasFieldErrors("passwordCheck")) {
+            return;
+        }
+
+        if (getPassword() != null && !getPassword().equals(getPasswordCheck())) {
+            errors.rejectValue(
+                "passwordCheck",
+                "password.mismatch",
+                "비밀번호가 일치하지 않습니다"
+            );
+        }
+    }
 
 }

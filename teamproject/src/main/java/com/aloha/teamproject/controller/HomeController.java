@@ -69,4 +69,9 @@ public class HomeController{
 		return "tutor/mypage";
 	}
 
+	@GetMapping("/tutor/schedule-edit")
+	public String tutorScheduleEdit() {
+		return "tutor/schedule-edit";
+	}
+
 }

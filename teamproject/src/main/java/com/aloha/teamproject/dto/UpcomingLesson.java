@@ -12,10 +12,26 @@ public class UpcomingLesson {
 	private String lessonId;
 	private String studentId;
 	private String studentName;
-	private String subjectName;
+	private String subject;
 	private LocalDateTime startAt;
 	private LocalDateTime endAt;
 	private String status;
 	private BigDecimal price;
+	
+	// 뷰에서 사용할 편의 필드
+	public String getLessonDate() {
+		if (startAt == null) return "";
+		return startAt.toLocalDate().toString();
+	}
+	
+	public String getStartTime() {
+		if (startAt == null) return "";
+		return String.format("%02d:%02d", startAt.getHour(), startAt.getMinute());
+	}
+	
+	public Long getDurationHours() {
+		if (startAt == null || endAt == null) return 0L;
+		return java.time.temporal.ChronoUnit.HOURS.between(startAt, endAt);
+	}
 
 }

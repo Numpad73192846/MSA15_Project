@@ -50,13 +50,15 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers(
             "/api/auth/**",
             "/api/users/**",
-            "/api/admin/**"
+            "/api/admin/**",
+            "/api/tutors/**"
             ))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
                 .requestMatchers("/tutor/mypage", "/mypages", "/mypage", "/member/mypage").permitAll()
+                .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()

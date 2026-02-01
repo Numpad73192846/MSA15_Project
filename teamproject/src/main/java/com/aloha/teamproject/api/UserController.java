@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.JoinRequest;
-import com.aloha.teamproject.dto.JoinRequestValidator;
+import com.aloha.teamproject.dto.MemberMyPage;
 import com.aloha.teamproject.dto.Users;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
+import com.aloha.teamproject.service.MemberMyPageService;
 import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -42,7 +43,7 @@ import org.springframework.validation.FieldError;
 public class UserController {
 	
 	private final UserService userService;
-	private final JoinRequestValidator joinRequestValidator;
+	private final MemberMyPageService memberMyPageService;
 
 	@GetMapping()
 	public ApiResponse<String> home() {
@@ -63,7 +64,28 @@ public class UserController {
 			return ApiResponse.error("사용자 정보를 불러오지 못했습니다.");
 		}
 	}
-	
+
+	@GetMapping("/me/mypage")
+	public ApiResponse<MemberMyPage> memberMyPage(Authentication authentication) {
+		if (authentication == null || !authentication.isAuthenticated()) {
+			return ApiResponse.error("로그인이 필요합니다.");
+		}
+
+		try {
+			String userId = authentication.getName();
+			
+			MemberMyPage memberMyPage = memberMyPageService.selectMemberByUserId(userId);
+			memberMyPage.setMemberStats(memberMyPageService.selectMemberStats(userId));
+			memberMyPage.setUpcomingBookings(memberMyPageService.selectUpcomingBookings(userId));
+			memberMyPage.setPastBookings(memberMyPageService.selectPastBookings(userId));
+			memberMyPage.setStudentReviews(memberMyPageService.selectStudentReviews(userId));
+			
+			return ApiResponse.ok(memberMyPage);
+		} catch (Exception e) {
+			log.error("/api/users/me/mypage 조회 실패", e);
+			return ApiResponse.error("마이페이지 정보를 조회하지 못했습니다.");
+		}
+	}
 
 	@GetMapping("/check-username")
 	public ApiResponse<Boolean> checkUsername(@RequestParam("username") String username) throws Exception {
@@ -88,7 +110,7 @@ public class UserController {
 	public ApiResponse<Void> join(@Valid @RequestBody JoinRequest joinRequest, BindingResult bindingResult) throws Exception {
 		log.info("[Post] - join");
 
-		joinRequestValidator.validate(joinRequest, bindingResult);
+		joinRequest.validate(bindingResult);
 
 		if (bindingResult.hasErrors()) {
 			String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
@@ -112,7 +134,7 @@ public class UserController {
 			BindingResult bindingResult,
 			@RequestParam(value = "fields", required = false) String fields) {
 
-		joinRequestValidator.validate(joinRequest, bindingResult);
+		joinRequest.validate(bindingResult);
 
 		Set<String> fieldSet = null;
 		if (fields != null && !fields.isBlank()) {
