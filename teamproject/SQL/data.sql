@@ -1,3 +1,4 @@
+
 -- 관리자 계정 생성 id: admin@local.com password: Admin102938$&
 SET @admin_id = UUID();
 
