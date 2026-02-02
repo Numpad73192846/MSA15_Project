@@ -31,7 +31,6 @@ public class AdminApiController {
 
     @PostMapping("/settlements/remit")
     public ApiResponse<Void> remit(@RequestBody Map<String, String> body) {
-        // In a real app, this would call a bank API. Here we just return success.
         return ApiResponse.ok();
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.aloha.teamproject.common.exception.ErrorCode;
 import com.aloha.teamproject.common.service.BaseServiceImpl;
-import com.aloha.teamproject.dto.AuthDto;
+import com.aloha.teamproject.dto.Auth;
 import com.aloha.teamproject.dto.RefreshToken;
 import com.aloha.teamproject.dto.UserAuth;
 import com.aloha.teamproject.dto.Users;
@@ -36,7 +36,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	private long refreshExpMs;
 
 	@Override
-	public AuthDto.TokenResponse login(Users user) throws Exception {
+	public Auth.TokenResponse login(Users user) throws Exception {
 		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
 		String username = user.getUsername();
 		String password = user.getPassword();
@@ -65,7 +65,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 													  .build();
 		refreshTokenService.insert(refreshTokenEntity);
 
-		AuthDto.TokenResponse authTokenResponse = new AuthDto.TokenResponse();
+		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
 		authTokenResponse.setAccessToken(accessToken);
 		authTokenResponse.setRefreshToken(refreshToken);
 		authTokenResponse.setExpiresIn(accessExpMs);
@@ -76,7 +76,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	}
 
 	@Override
-	public AuthDto.TokenResponse tokenRefresh(String refreshToken) throws Exception {
+	public Auth.TokenResponse tokenRefresh(String refreshToken) throws Exception {
 		requiredNotBlank(refreshToken, ErrorCode.INVALID_REQUEST);
 		require(jwtTokenProvider.validateToken(refreshToken), ErrorCode.UNAUTHORIZED);
 
@@ -110,7 +110,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 
 		refreshTokenService.insert(refreshTokenEntity);
 
-		AuthDto.TokenResponse authTokenResponse = new AuthDto.TokenResponse();
+		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
 		authTokenResponse.setAccessToken(newAccessToken);
 		authTokenResponse.setRefreshToken(newRefreshToken);
 		authTokenResponse.setExpiresIn(accessExpMs);

@@ -1,67 +1,99 @@
 package com.aloha.teamproject.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.aloha.teamproject.dto.Review;
+import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.service.ReviewService;
+import com.aloha.teamproject.service.TutorListService;
+
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 public class TutorsPageController {
 
-    @GetMapping("/tutors")
-    public String tutors(Model model) {
-        List<Map<String, Object>> tutors = List.of(
-            Map.of(
-                "id", "u-tutor-1",
-                "name", "김튜터",
-                "rating", 4.9,
-                "reviews", 127,
-                "subjects", List.of("영어 회화", "문법"),
-                "bio", "회화/문법 집중 코칭",
-                "experience", "5년",
-                "hourlyRate", 35000
-            ),
-            Map.of(
-                "id", "u-tutor-2",
-                "name", "이튜터",
-                "rating", 4.7,
-                "reviews", 89,
-                "subjects", List.of("비즈니스 영어", "발음"),
-                "bio", "실무 중심 회화",
-                "experience", "4년",
-                "hourlyRate", 40000
-            )
-        );
+    private final TutorListService tutorListService;
+    private final ReviewService reviewService;
 
-        model.addAttribute("tutors", tutors);
+    @GetMapping("/tutors")
+    public String tutors(Authentication authentication, Model model) {
+        try {
+            List<TutorList> tutors = tutorListService.selectAllTutors();
+            
+            // 각 튜터의 리뷰 평점 계산
+            for (TutorList tutor : tutors) {
+                List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
+                
+                double avgRating = 0.0;
+                if (!reviews.isEmpty()) {
+                    avgRating = reviews.stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
+                }
+                
+                tutor.setRatingAvg(BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
+                tutor.setReviewCount(reviews.size());
+            }
+            
+            model.addAttribute("tutors", tutors);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "tutors/list";
     }
 
     @GetMapping("/tutors/{id}")
     public String tutorDetail(@PathVariable("id") String id, Model model) {
-        Map<String, Object> tutor = Map.of(
-            "id", id,
-            "name", "김튜터",
-            "rating", 4.9,
-            "reviews", 127,
-            "subjects", List.of("영어 회화", "문법", "발음"),
-            "bio", "중고급 회화/발음 집중",
-            "experience", "5년",
-            "hourlyRate", 35000,
+
+        try {
+            // 직접 단일 튜터 조회 (효율적)
+            TutorList tutor = tutorListService.selectTutorById(id);
+
+            if ( tutor == null ) {
+                return "redirect:/tutors";
+            }
+
+            Map<String, Object> tutorMap = Map.of(
+            "id", tutor.getUserId(),  // ← 중요! user_id를 사용
+            "name", tutor.getName(),
+            "ratingAvg", tutor.getRatingAvg(),
+            "reviewCount", tutor.getReviewCount(),
+            "subjects", tutor.getSubjects() != null ? tutor.getSubjects().split(",") : new String[]{},
+            "bio", tutor.getBio(),
+            "experience", tutor.getExperience(),
+            "hourlyRate", tutor.getPrice(),
             "availability", "평일 저녁, 주말"
-        );
+            );
 
-        List<Map<String, Object>> reviews = List.of(
-            Map.of("name", "학생A", "date", "2026-01-20", "rating", 5, "comment", "설명이 정말 이해 잘 됐어요!"),
-            Map.of("name", "학생B", "date", "2026-01-12", "rating", 4, "comment", "친절하고 꼼꼼해요."),
-            Map.of("name", "학생C", "date", "2026-01-05", "rating", 5, "comment", "발음 교정이 좋았습니다.")
-        );
+            List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
+            
+            // 리뷰 평점 계산
+            double avgRating = 0.0;
+            if (!reviews.isEmpty()) {
+                avgRating = reviews.stream()
+                    .mapToInt(Review::getRating)
+                    .average()
+                    .orElse(0.0);
+            }
+            
+            model.addAttribute("tutor", tutorMap);
+            model.addAttribute("reviews", reviews);
+            model.addAttribute("avgRating", BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
+            model.addAttribute("reviewCount", reviews.size());
 
-        model.addAttribute("tutor", tutor);
-        model.addAttribute("reviews", reviews);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "tutors/detail";
     }
 
