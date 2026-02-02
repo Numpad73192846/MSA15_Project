@@ -36,7 +36,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	private long refreshExpMs;
 
 	@Override
-	public AuthDto.TokenResponse login(Users user) throws Exception {
+	public Auth.TokenResponse login(Users user) throws Exception {
 		requireNotNull(user, ErrorCode.USER_NOT_FOUND);
 		String username = user.getUsername();
 		String password = user.getPassword();
@@ -59,15 +59,13 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 		String refreshTokenHash = sha256(refreshToken);
 
 		RefreshToken refreshTokenEntity = RefreshToken.builder()
-													  .userId(existing.getId())
-													  .tokenHash(refreshTokenHash)
-													  .expiresAt(new Date(System.currentTimeMillis() + refreshExpMs))
-													  .build();
+												  .userId(existing.getId())
+												  .tokenHash(refreshTokenHash)
+												  .expiresAt(new Date(System.currentTimeMillis() + refreshExpMs))
+												  .build();
 		refreshTokenService.insert(refreshTokenEntity);
 
 		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
-		AuthDto.TokenResponse authTokenResponse = new AuthDto.TokenResponse();
-		authTokenResponse.setAccessToken(accessToken);
 		authTokenResponse.setRefreshToken(refreshToken);
 		authTokenResponse.setExpiresIn(accessExpMs);
 		authTokenResponse.setUserId(existing.getId());
@@ -77,7 +75,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	}
 
 	@Override
-	public AuthDto.TokenResponse tokenRefresh(String refreshToken) throws Exception {
+	public Auth.TokenResponse tokenRefresh(String refreshToken) throws Exception {
 		requiredNotBlank(refreshToken, ErrorCode.INVALID_REQUEST);
 		require(jwtTokenProvider.validateToken(refreshToken), ErrorCode.UNAUTHORIZED);
 
@@ -104,16 +102,14 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 		String newRefreshTokenHash = sha256(newRefreshToken);
 
 		RefreshToken refreshTokenEntity = RefreshToken.builder()
-													  .userId(existing.getId())
-													  .tokenHash(newRefreshTokenHash)
-													  .expiresAt(new Date(System.currentTimeMillis() + refreshExpMs))
-													  .build();
+												  .userId(existing.getId())
+												  .tokenHash(newRefreshTokenHash)
+												  .expiresAt(new Date(System.currentTimeMillis() + refreshExpMs))
+												  .build();
 
 		refreshTokenService.insert(refreshTokenEntity);
 
 		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
-		AuthDto.TokenResponse authTokenResponse = new AuthDto.TokenResponse();
-		authTokenResponse.setAccessToken(newAccessToken);
 		authTokenResponse.setRefreshToken(newRefreshToken);
 		authTokenResponse.setExpiresIn(accessExpMs);
 		authTokenResponse.setUserId(existing.getId());

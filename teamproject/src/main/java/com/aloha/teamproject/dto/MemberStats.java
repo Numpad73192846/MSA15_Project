@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package com.aloha.teamproject.dto;
 
 import java.math.BigDecimal;
@@ -14,20 +13,3 @@ public class MemberStats {
 	private BigDecimal totalSpent;
 
 }
-=======
-package com.aloha.teamproject.dto;
-
-import java.math.BigDecimal;
-
-import lombok.Data;
-
-@Data
-public class MemberStats {
-	
-	private Integer upcomingLessons;
-	private Integer completedLessons;
-	private Integer totalReviews;
-	private BigDecimal totalSpent;
-
-}
->>>>>>> origin/cheshire
