@@ -1,6 +1,5 @@
 package com.aloha.teamproject.controller;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -10,9 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.aloha.teamproject.dto.Review;
 import com.aloha.teamproject.dto.TutorList;
-import com.aloha.teamproject.service.ReviewService;
 import com.aloha.teamproject.service.TutorListService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,29 +19,13 @@ import lombok.RequiredArgsConstructor;
 public class TutorsPageController {
 
     private final TutorListService tutorListService;
-    private final ReviewService reviewService;
 
     @GetMapping("/tutors")
     public String tutors(Authentication authentication, Model model) {
         try {
             List<TutorList> tutors = tutorListService.selectAllTutors();
             
-            // 각 튜터의 리뷰 평점 계산
-            for (TutorList tutor : tutors) {
-                List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
-                
-                double avgRating = 0.0;
-                if (!reviews.isEmpty()) {
-                    avgRating = reviews.stream()
-                        .mapToInt(Review::getRating)
-                        .average()
-                        .orElse(0.0);
-                }
-                
-                tutor.setRatingAvg(BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
-                tutor.setReviewCount(reviews.size());
-            }
-            
+            // DB에서 이미 rating_avg와 review_count를 가져왔으므로 별도 처리 불필요
             model.addAttribute("tutors", tutors);
         } catch (Exception e) {
             e.printStackTrace();
@@ -64,7 +45,7 @@ public class TutorsPageController {
             }
 
             Map<String, Object> tutorMap = Map.of(
-            "id", tutor.getUserId(),  // ← 중요! user_id를 사용
+            "id", tutor.getUserId(),
             "name", tutor.getName(),
             "ratingAvg", tutor.getRatingAvg(),
             "reviewCount", tutor.getReviewCount(),
@@ -74,22 +55,10 @@ public class TutorsPageController {
             "hourlyRate", tutor.getPrice(),
             "availability", "평일 저녁, 주말"
             );
-
-            List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
             
-            // 리뷰 평점 계산
-            double avgRating = 0.0;
-            if (!reviews.isEmpty()) {
-                avgRating = reviews.stream()
-                    .mapToInt(Review::getRating)
-                    .average()
-                    .orElse(0.0);
-            }
-            
+            // TODO: Review 기능이 재구현되면 여기에 리뷰 데이터 추가
             model.addAttribute("tutor", tutorMap);
-            model.addAttribute("reviews", reviews);
-            model.addAttribute("avgRating", BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
-            model.addAttribute("reviewCount", reviews.size());
+            model.addAttribute("reviews", List.of()); // 빈 리스트로 임시 처리
 
         } catch (Exception e) {
             e.printStackTrace();
