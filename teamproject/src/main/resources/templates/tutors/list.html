@@ -101,37 +101,7 @@
             </div>
 
             <div id="tutorList" class="row g-4">
-                <div class="col-md-6 col-lg-4" th:each="t : ${tutors}">
-                    <div class="card h-100 shadow-sm tutor-card"
-                         th:attr="data-name=${t.name},data-hourly-rate=${t.price},data-subjects=${t.subjects} ">
-                        <div class="card-body">
-                            <div class="d-flex gap-3">
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                     style="width:64px;height:64px;font-size:24px;flex:0 0 auto;"
-                                     th:text="${#strings.substring(t.name,0,1)}">김</div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-bold fs-5" th:text="${t.name}">튜터명</div>
-                                    <div class="small text-muted mb-2">
-                                        <span class="me-1">⭐</span>
-                                        <span class="fw-semibold" th:text="${t.ratingAvg}">4.9</span>
-                                        <span class="text-muted">(</span><span class="text-muted" th:text="${t.reviewCount}">127</span><span class="text-muted">)</span>
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-1 mb-2">
-                                        <span class="badge text-bg-light" th:each="s : ${#strings.listSplit(t.subjects, ',')}" th:text="${s}">영어</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p class="text-muted mt-3 mb-3" th:text="${t.bio}">소개</p>
-
-                            <div class="small text-muted mb-1">⏱️ 경력 <span th:text="${t.experience}">5년</span></div>
-                            <div class="small mb-3">💰 <span class="fw-semibold text-primary">수업당 <span th:text="${#numbers.formatInteger(t.price, 0, 'COMMA')}">35,000</span>원</span></div>
-
-                            <a class="btn btn-primary w-100"
-                               th:href="@{'/tutors/' + ${t.id}}">프로필 보기</a>
-                        </div>
-                    </div>
-                </div>
+              <!-- 동적 렌더링 -->
             </div>
 
             <div id="tutorEmpty" class="text-center py-5 d-none">
@@ -141,6 +111,21 @@
     </div>
 <th:block layout:fragment="extra-scripts">
   <script th:inline="javascript">
+
+    const filterState = {
+      searchTerm: '',
+      selectedLanguage: 'all',
+      selectedPrice: 'all',
+      selectedFields: new Set()
+    };
+
+    const priceMap = {
+      low: { min: 0, max: 35000 },
+      mid: { min: 35000, max: 40000 },
+      high: { min: 40000, max: 1000000 }
+    };
+
+
     function toggleMenu(menuId) {
       const menu = document.getElementById(menuId);
       if (!menu) return;
@@ -188,6 +173,114 @@
         btn.style.backgroundColor = '#f0f0f0';
         btn.style.color = '#000';
       }
+
+    }
+
+    async function fetchTutors() {
+      const params = new URLSearchParams();
+
+      if ( filterState.searchTerm ) {
+        params.append('searchTerm', filterState.searchTerm);
+      }
+
+      if ( filterState.selectedLanguage && filterState.selectedLanguage !== 'all' ) {
+        params.append('language', filterState.selectedLanguage);
+      }
+      
+      if ( filterState.selectedFields.size > 0 ) {
+        params.append('subjects', Array.from(filterState.selectedFields).join(','));
+      }
+
+      if ( filterState.selectedPrice !== 'all' ) {
+        const range = priceMap[filterState.selectedPrice];
+        if ( range ) {
+          params.append('minPrice', range.min);
+          params.append('maxPrice', range.max);
+        }
+      }
+
+      try {
+        const response = await fetch('/api/tutors?' + params.toString());
+        const result = await response.json();
+        
+        if ( result.success ) {
+          renderTutors(result.data);
+        }
+        else {
+          renderTutors([]);
+        }
+      } catch (error) {
+        renderTutors([]);
+      }
+
+    }
+
+    function renderTutors(tutors) {
+      const tutorList = document.getElementById('tutorList');
+      const tutorEmpty = document.getElementById('tutorEmpty');
+
+      if ( !tutors || tutors.length === 0 ) {
+        tutorList.innerHTML = '';
+        tutorEmpty.classList.remove('d-none');
+        return;
+      }
+
+      tutorEmpty.classList.add('d-none');
+
+      const html = tutors.map( tutor => {
+        const subjects = (tutor.subjects || '' ).split(',').map(subject => subject.trim()).filter(Boolean);
+        const subjectBadges = subjects.map(subject => 
+            `<span class="badge text-bg-light">${subject}</span>`
+        ).join('');
+
+        return `
+          <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm tutor-card">
+                    <div class="card-body">
+                        <div class="d-flex gap-3">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                 style="width:64px;height:64px;font-size:24px;flex:0 0 auto;">
+                                ${(tutor.name || 'T').charAt(0)}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold fs-5">${tutor.name || '튜터'}</div>
+                                <div class="small text-muted mb-2">
+                                    <span class="me-1">⭐</span>
+                                    <span class="fw-semibold">${tutor.ratingAvg || '-'}</span>
+                                    <span class="text-muted">(${tutor.reviewCount || 0})</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    ${subjectBadges}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="text-muted mt-3 mb-3">${tutor.bio || ''}</p>
+                        
+                        <div class="small text-muted mb-1">⏱️ 경력 <span>${tutor.experience || '정보 없음'}</span></div>
+                        <div class="small mb-3">💰 <span class="fw-semibold text-primary">수업당 <span>${tutor.price ? Number(tutor.price).toLocaleString() : '가격 미정'}</span>원</span></div>
+                        
+                        <a class="btn btn-primary w-100" href="/tutors/${tutor.id}">프로필 보기</a>
+                    </div>
+                </div>
+            </div>
+        `;
+      }).join('');
+
+      tutorList.innerHTML = html;
+
+    }
+
+    let searchTimer = null;
+    function handleSearchInput(value) {
+      if (searchTimer) {
+        clearTimeout(searchTimer);
+      }
+
+      searchTimer = setTimeout(() => {
+        filterState.searchTerm = value.trim();
+        fetchTutors();
+      }, 300);
     }
 
     // DOM 로드 완료 후 이벤트 리스너 등록 (★ 1번만!)
@@ -200,6 +293,7 @@
           e.stopPropagation();
 
           selectedLanguage = this.value;
+          filterState.selectedLanguage = selectedLanguage;
 
           // 전체 초기화 후 선택만 강조
           document.querySelectorAll('.languageFilterBtn').forEach(b =>
@@ -211,6 +305,8 @@
           if (langBtn) {
             langBtn.textContent = (selectedLanguage === 'all') ? '전체 언어' : this.textContent;
           }
+
+          fetchTutors();
         });
       });
 
@@ -221,6 +317,7 @@
           e.stopPropagation();
 
           selectedPrice = this.value;
+          filterState.selectedPrice = selectedPrice;
 
           document.querySelectorAll('.priceFilterBtn').forEach(b =>
             setChipSelected(b, b.value === selectedPrice)
@@ -230,6 +327,8 @@
           if (priceBtn) {
             priceBtn.textContent = (selectedPrice === 'all') ? '전체 가격' : this.textContent;
           }
+          
+          fetchTutors();
         });
       });
 
@@ -251,15 +350,30 @@
             this.style.color = '#fff';
           }
 
+          filterState.selectedFields = selectedFields;
+
           const categoryBtn = document.getElementById('categoryDropdown');
           if (categoryBtn) {
             categoryBtn.textContent = (selectedFields.size === 0)
               ? '수업 분야 선택'
               : (selectedFields.size + '개 선택됨');
           }
+
+          fetchTutors();
         });
       });
 
+      // ✅ 검색 입력
+      const searchInput = document.getElementById('tutorSearch');
+      if ( searchInput ) {
+        searchInput.addEventListener('input', (e) => {
+          handleSearchInput(e.target.value);
+        });
+      }
+
+      fetchTutors();
+
     });
+
   </script>
 </th:block>

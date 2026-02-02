@@ -57,15 +57,12 @@ public class SecurityConfig {
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
-                .requestMatchers("/tutor/mypage", "/mypages", "/mypage", "/member/mypage").permitAll()
+                .requestMatchers("/tutor/mypage", "/mypage", "/member/mypage").permitAll()
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
-<<<<<<< HEAD
-                .requestMatchers(HttpMethod.GET, "/api/tutors/**").permitAll()
-=======
                 .requestMatchers("/uploads/**").permitAll()
->>>>>>> origin/cheshire
+                .requestMatchers(HttpMethod.GET, "/api/tutors/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()

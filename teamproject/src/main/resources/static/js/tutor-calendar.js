@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * 튜터 캘린더 공통 JS 라이브러리
  * 용도: register3, mypage(인라인), schedule-edit, tutors/detail(읽기)
@@ -364,7 +363,6 @@ class TutorCalendar {
         }
     }
 }
-=======
 /**
  * 튜터 캘린더 공통 JS 라이브러리
  * 용도: register3, mypage(인라인), schedule-edit, tutors/detail(읽기)
@@ -716,4 +714,3 @@ class TutorCalendar {
         }
     }
 }
->>>>>>> origin/cheshire

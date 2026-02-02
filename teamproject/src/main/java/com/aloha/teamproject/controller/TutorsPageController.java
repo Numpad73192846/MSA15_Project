@@ -3,65 +3,57 @@ package com.aloha.teamproject.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.dto.TutorReview;
+import com.aloha.teamproject.service.TutorListService;
+import com.aloha.teamproject.service.TutorMyPageService;
+
 @Controller
 public class TutorsPageController {
+    
+    @Autowired
+    private TutorListService tutorListService;
+    
+    @Autowired
+    private TutorMyPageService tutorMyPageService;
 
     @GetMapping("/tutors")
     public String tutors(Model model) {
-        List<Map<String, Object>> tutors = List.of(
-            Map.of(
-                "id", "u-tutor-1",
-                "name", "김튜터",
-                "rating", 4.9,
-                "reviews", 127,
-                "subjects", List.of("영어 회화", "문법"),
-                "bio", "회화/문법 집중 코칭",
-                "experience", "5년",
-                "hourlyRate", 35000
-            ),
-            Map.of(
-                "id", "u-tutor-2",
-                "name", "이튜터",
-                "rating", 4.7,
-                "reviews", 89,
-                "subjects", List.of("비즈니스 영어", "발음"),
-                "bio", "실무 중심 회화",
-                "experience", "4년",
-                "hourlyRate", 40000
-            )
-        );
-
-        model.addAttribute("tutors", tutors);
         return "tutors/list";
     }
 
     @GetMapping("/tutors/{id}")
     public String tutorDetail(@PathVariable("id") String id, Model model) {
-        Map<String, Object> tutor = Map.of(
-            "id", id,
-            "name", "김튜터",
-            "rating", 4.9,
-            "reviews", 127,
-            "subjects", List.of("영어 회화", "문법", "발음"),
-            "bio", "중고급 회화/발음 집중",
-            "experience", "5년",
-            "hourlyRate", 35000,
-            "availability", "평일 저녁, 주말"
-        );
-
-        List<Map<String, Object>> reviews = List.of(
-            Map.of("name", "학생A", "date", "2026-01-20", "rating", 5, "comment", "설명이 정말 이해 잘 됐어요!"),
-            Map.of("name", "학생B", "date", "2026-01-12", "rating", 4, "comment", "친절하고 꼼꼼해요."),
-            Map.of("name", "학생C", "date", "2026-01-05", "rating", 5, "comment", "발음 교정이 좋았습니다.")
-        );
-
-        model.addAttribute("tutor", tutor);
-        model.addAttribute("reviews", reviews);
+        try {
+            // 튜터 정보 조회
+            TutorList tutor = tutorListService.selectTutorById(id);
+            
+            // 리뷰 목록 조회
+            List<TutorReview> reviews = tutorMyPageService.selectTutorReviewsByUserId(id);
+            
+            if (tutor != null) {
+                model.addAttribute("tutor", tutor);
+                model.addAttribute("reviews", reviews);
+                model.addAttribute("reviewCount", reviews != null ? reviews.size() : 0);
+                if (reviews != null && !reviews.isEmpty()) {
+                    double avgRating = reviews.stream()
+                        .mapToInt(TutorReview::getRating)
+                        .average()
+                        .orElse(0.0);
+                    model.addAttribute("avgRating", avgRating);
+                } else {
+                    model.addAttribute("avgRating", 0.0);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "tutors/detail";
     }
 

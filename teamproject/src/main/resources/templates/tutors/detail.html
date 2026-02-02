@@ -36,13 +36,12 @@
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-1 mb-3">
-                                        <span class="badge text-bg-light" th:each="s : ${tutor.subjects}"
-                                            th:text="${s}">영어</span>
+                                        <span class="badge text-bg-light" th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                            th:text="${#strings.trim(s)}">영어</span>
                                     </div>
 
                                     <div class="small text-muted">
                                         <span class="me-3">⏱️ 경력 <span th:text="${tutor.experience}">5년</span></span>
-                                        <span>📅 <span th:text="${tutor.availability}">평일 오후, 주말</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -98,14 +97,13 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="fw-bold">수업 예약</div>
                                 <div class="text-primary fw-semibold">시간당 <span
-                                        th:text="${#numbers.formatInteger(tutor.hourlyRate, 0, 'COMMA')}">35,000</span>원
+                                        th:text="${#numbers.formatInteger(tutor.price, 0, 'COMMA')}">35,000</span>원
                                 </div>
                             </div>
 
                             <h4 class="h6 fw-bold mb-3">수업 가능 시간</h4>
                             <div class="mb-3">
                                 <div class="d-flex align-items-center gap-2 mb-3">
-<<<<<<< HEAD
                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전
                                         주</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음
@@ -189,46 +187,13 @@
                                 </div>
 
                                 <small class="text-muted d-block mt-2">
-                                    <span class="badge bg-primary">●</span> 수업 가능
-=======
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전 주</button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음 주</button>
-                                    <span class="fw-semibold ms-2" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
-                                </div>
-                                
-                                <div class="weekly_calendar_wrap" id="tutorScheduleCalendar">
-                                    <div class="weekly_head">
-                                        <ul class="dayHead flex" id="calendarDayHead">
-                                            <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
-                                        </ul>
-                                    </div>
-                                    <div class="weekly_con">
-                                        <ul class="dayCon flex" id="calendarDayBody">
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <small class="text-muted d-block mt-2">
                                     <span class="badge bg-primary">●</span> 수업 가능 
->>>>>>> origin/cheshire
                                     <span class="badge bg-danger ms-2">●</span> 예약됨
                                 </small>
                             </div>
 
                             <form id="bookingForm"
-                                th:attr="data-tutor-id=${tutor.id},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.hourlyRate}">
+                                th:attr="data-tutor-id=${tutor.id},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.price}">
                                 <input type="hidden" name="date" id="selectedDate" required>
                                 <input type="hidden" name="time" id="selectedTime" required>
 
@@ -250,7 +215,7 @@
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
                                         <option value="" selected>선택</option>
-                                        <option th:each="s : ${tutor.subjects}" th:value="${s}" th:text="${s}">영어</option>
+                                        <option th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}" th:value="${#strings.trim(s)}" th:text="${#strings.trim(s)}">영어</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -258,12 +223,8 @@
                                     <textarea name="message" class="form-control" rows="3"
                                         placeholder="추가로 전달할 내용을 입력하세요"></textarea>
                                 </div>
-<<<<<<< HEAD
                                 <button id="bookingSubmit" type="submit" class="btn btn-primary w-100"
                                     disabled>예약하기</button>
-=======
-                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100" disabled>예약하기</button>
->>>>>>> origin/cheshire
                             </form>
 
                             <link rel="stylesheet" href="/css/tutor-calendar.css">

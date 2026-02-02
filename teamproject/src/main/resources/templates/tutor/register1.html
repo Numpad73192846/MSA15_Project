@@ -1,6 +1,12 @@
-<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layouts/main_layout}">
-
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+<head>
+    <th:block layout:fragment="title">
+        <title>튜터 회원가입 (2/4) | 튜터 플랫폼</title>
+    </th:block>
+</head>
+<body>
     <div layout:fragment="content">
         <div class="container py-5" style="max-width: 720px;">
             <div class="mb-4 text-center">
@@ -19,8 +25,6 @@
                             <h5 class="fw-bold">1. 학력증명서</h5>
                             <input type="file" class="form-control" id="academicCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
                             <small class="text-muted">여러 파일을 선택할 수 있습니다.</small>
-<<<<<<< HEAD
-=======
                             <div id="academicListCard" class="card mt-2 overflow-hidden" style="display:none;">
                                 <ul id="academicList" class="list-group list-group-flush"></ul>                                 
                                 <!-- 추가 -->
@@ -38,14 +42,11 @@
                                 </div>
                                 <!-- 추가 END -->
                             </div>
->>>>>>> origin/cheshire
                         </div>
                         <div class="mb-4">
                             <h5 class="fw-bold">2. 교육 관련 학위 및 증명서</h5>
                             <input type="file" class="form-control" id="educationCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
                             <small class="text-muted">자격증, 수료증 등을 업로드하세요.</small>
-<<<<<<< HEAD
-=======
                             <div id="educationListCard" class="card mt-2 overflow-hidden" style="display:none;">
                                 <ul id="educationList" class="list-group list-group-flush"></ul> 
                                 <!-- 추가 -->
@@ -63,7 +64,6 @@
                                 </div>
                                 <!-- 추가 END -->
                             </div>
->>>>>>> origin/cheshire
                         </div>
                         <div class="mb-4">
                             <h5 class="fw-bold">3. 근무 경력</h5>
@@ -116,10 +116,6 @@
                 );
             }
 
-<<<<<<< HEAD
-            document.addEventListener('DOMContentLoaded', async () => {
-                // ====== 수정: 권한 체크 완전 제거 (회원가입 진행) ======
-=======
             // 파일을 base64로 변환하는 함수
             function fileToBase64(file) {
                 return new Promise((resolve, reject) => {
@@ -239,14 +235,11 @@
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
->>>>>>> origin/cheshire
                 // 이전에 저장된 데이터 불러오기
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
                 if (savedData.career) document.getElementById('career').value = savedData.career;
                 if (savedData.selfIntro) document.getElementById('selfIntro').value = savedData.selfIntro;
-<<<<<<< HEAD
-                // ====== 수정 종료 ======
-=======
+
                 // 파일 리스트 복원
                 if (savedData.academicCertificates && Array.isArray(savedData.academicCertificates)) {
                     renderFileList('academicList', 'academicListCard', savedData.academicCertificates, 'academicCertificate', 'academicCertificates');
@@ -262,25 +255,11 @@
                 document.getElementById('educationCertificate').addEventListener('change', function () {
                     handleFilesSelected(this, 'educationCertificates', 'educationList', 'educationListCard');
                 });
->>>>>>> origin/cheshire
             });
 
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
-<<<<<<< HEAD
-                // 2단계 데이터 저장
-                const step2Data = {
-                    career: document.getElementById('career').value,
-                    selfIntro: document.getElementById('selfIntro').value
-                };
-
-                sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(step2Data));
-
-                // 파일 처리는 추후 구현 예정
-                // const academicCertificate = document.getElementById('academicCertificate').files;
-                // const educationCertificate = document.getElementById('educationCertificate').files;
-=======
                 // 필수 필드 검증
                 const career = document.getElementById('career').value.trim();
                 const selfIntro = document.getElementById('selfIntro').value.trim();
@@ -323,11 +302,11 @@
                 }
 
                 sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(step2Data));
->>>>>>> origin/cheshire
 
                 // 다음 단계로 이동
                 location.href = '/tutor/register2';
             });
         </script>
     </div>
-</div>
+</body>
+</html>

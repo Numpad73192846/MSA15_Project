@@ -218,7 +218,8 @@
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (!data.success) {
@@ -226,8 +227,12 @@
                     return;
                 }
 
-                if (data.data && data.data.accessToken && typeof setAccessToken === 'function') {
+                if (data.data && typeof setAccessToken === 'function') {
                     setAccessToken(data.data.accessToken);
+                    // refreshToken도 localStorage에 저장
+                    if (data.data.refreshToken) {
+                        localStorage.setItem('refreshToken', data.data.refreshToken);
+                    }
                 }
 
                 location.href = '/';
@@ -308,7 +313,8 @@
                 const loginResponse = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: payload.username, password: payload.password })
+                    body: JSON.stringify({ username: payload.username, password: payload.password }),
+                    credentials: 'include'
                 });
                 
                 if (!loginResponse.ok) {
@@ -324,8 +330,12 @@
                     return;
                 }
 
-                if (loginData.data && loginData.data.accessToken && typeof setAccessToken === 'function') {
+                if (loginData.data && typeof setAccessToken === 'function') {
                     setAccessToken(loginData.data.accessToken);
+                    // refreshToken도 localStorage에 저장
+                    if (loginData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', loginData.data.refreshToken);
+                    }
                 }
 
                 const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';

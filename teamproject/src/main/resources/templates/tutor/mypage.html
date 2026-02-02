@@ -389,8 +389,6 @@
                         // 프로필 정보 바인딩
                         if (mypage.tutorProfile) {
                             const profile = mypage.tutorProfile;
-<<<<<<< HEAD
-=======
 
                             const profileImageContainer = document.getElementById('profileImg');
                             if (profile.profileImg) {
@@ -407,7 +405,6 @@
                             }
 
 
->>>>>>> origin/cheshire
                             document.getElementById('tutorName').textContent = (profile.name || '튜터') + ' 튜터';
                             document.getElementById('tutorEmail').textContent = profile.email || '';
                             document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
@@ -445,11 +442,7 @@
                         
                         // 과목(필드) 바인딩
                         if (mypage.languageFields && mypage.languageFields.length > 0) {
-<<<<<<< HEAD
-                            const fieldContainer = document.querySelector('.d-flex.justify-content-center.gap-2');
-=======
                             const fieldContainer = document.querySelector('#fieldContainer');
->>>>>>> origin/cheshire
                             fieldContainer.innerHTML = '';
                             mypage.languageFields.forEach(field => {
                                 const badge = document.createElement('span');

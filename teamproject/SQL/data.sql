@@ -14,12 +14,9 @@ VALUES (
 INSERT INTO user_auth (user_id, id, auth)
 VALUES (@admin_id, UUID(), 'ROLE_ADMIN');
 
-<<<<<<< HEAD
 -- 테스트 학생, 튜터 데이터 삽입 (30명)
-=======
 
 -- 테스트 유저 데이터 삽입
->>>>>>> origin/cheshire
 INSERT INTO users (id, username, password, name, nickname)
 VALUES
 ('u-student-1','student1@test.com', '{noop}1234', '박학생', '열공중'),
@@ -114,20 +111,14 @@ VALUES
 -- 테스트 과목 그룹 및 과목 데이터 삽입
 INSERT INTO subject_group (id, name, seq)
 VALUES
-<<<<<<< HEAD
 ('sg-kor', '한국어', 1),
 ('sg-eng', '영어', 2),
 ('sg-chn', '중국어', 3),
-('sg-jpn', '일본어', 4);
-=======
-('sg-1', '한국어', 1),
-('sg-2', '영어', 2),
-('sg-3', '중국어', 3),
-('sg-4', '일본어', 4),
+('sg-jpn', '일본어', 4),
 ('sg-5', '스페인어', 5),
-('sg-6', '스페인어', 6),
-('sg-7', '기타', 7);
->>>>>>> origin/cheshire
+('sg-6', '불어', 6),
+('sg-6', '독일어', 7),
+('sg-7', '러시아어', 8);
 
 -- 테스트 언어 분야 데이터 삽입
 INSERT INTO language_field (id, name, category, seq)
@@ -137,13 +128,12 @@ VALUES
 ('lf-general-3', '읽기', 'GENERAL', 3),
 ('lf-general-4', '작문', 'GENERAL', 4),
 ('lf-general-5', '발음', 'GENERAL', 5),
-('lf-general-6', '청취', 'GENERAL', 6),
 ('lf-domain-1', '학교', 'DOMAIN', 1),
 ('lf-domain-2', '비즈니스', 'DOMAIN', 2),
 ('lf-domain-3', '여행', 'DOMAIN', 3),
-('lf-domain-4', '영화', 'DOMAIN', 4),
-('lf-domain-5', '드라마', 'DOMAIN', 5),
-('lf-domain-6', '노래', 'DOMAIN', 6),
+('lf-domain-6', '노래', 'DOMAIN', 4),
+('lf-domain-4', '영화', 'DOMAIN', 5),
+('lf-domain-5', '드라마', 'DOMAIN', 6),
 ('lf-domain-7', '문화', 'DOMAIN', 7);
 
 INSERT INTO subject (group_id, id, name, seq_in_group)
@@ -317,7 +307,6 @@ VALUES
 INSERT INTO featured_tutor (user_id, id, seq, visible)
 VALUES
 ('u-tutor-1', 'ft-1', 1, TRUE),
-<<<<<<< HEAD
 ('u-tutor-2', 'ft-2', 2, TRUE),
 ('u-tutor-6', 'ft-3', 3, TRUE),
 ('u-tutor-10', 'ft-4', 4, TRUE),
@@ -348,6 +337,4 @@ VALUES
 ('u-tutor-8', 'te-8', '東京大学', '일본어 석사', '2016-04-01', '2018-03-31'),
 ('u-tutor-16', 'te-16', '서울대학교', '수학 박사', '2012-03-01', '2018-02-28'),
 ('u-tutor-20', 'te-20', '서울의대', '의학 학사', '2010-03-01', '2016-02-28');
-=======
 ('u-tutor-2', 'ft-2', 2, TRUE);
->>>>>>> origin/cheshire
