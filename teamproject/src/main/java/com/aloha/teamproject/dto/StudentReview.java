@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package com.aloha.teamproject.dto;
 
 import java.time.LocalDateTime;
@@ -16,22 +15,3 @@ public class StudentReview {
 	private LocalDateTime createdAt;
 
 }
-=======
-package com.aloha.teamproject.dto;
-
-import java.time.LocalDateTime;
-
-import lombok.Data;
-
-@Data
-public class StudentReview {
-	
-	private String reviewId;
-	private String tutorId;
-	private String tutorName;
-	private Integer rating;
-	private String content;
-	private LocalDateTime createdAt;
-
-}
->>>>>>> origin/cheshire

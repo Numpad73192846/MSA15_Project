@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.aloha.teamproject.common.exception.ErrorCode;
 import com.aloha.teamproject.common.service.BaseServiceImpl;
-import com.aloha.teamproject.dto.AuthDto;
+import com.aloha.teamproject.dto.Auth;
 import com.aloha.teamproject.dto.RefreshToken;
 import com.aloha.teamproject.dto.UserAuth;
 import com.aloha.teamproject.dto.Users;

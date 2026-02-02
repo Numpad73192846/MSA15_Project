@@ -107,6 +107,7 @@ public class TutorController {
                                                 .videoUrl(request.getVideoUrl())
                                                 .build();
 
+            tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
 
             userService.deleteAuth(authentication.getName(), "ROLE_TUTOR_PENDING");
