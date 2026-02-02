@@ -117,4 +117,30 @@ public class TutorsPageController {
         model.addAttribute("students", students);
         return "tutor/dashboard";
     }
+
+    // ============================== 수정 시작 (튜터 회원가입 페이지 매핑 추가) ==============================
+    // 작성일: 2026-01-30 12:03분 수정했어요~! (조성진)
+    // 수정 내용: 튜터 회원가입을 4단계로 나누어 진행하기 위한 페이지 매핑 추가
+    
+    @GetMapping("/tutor/register")
+    public String tutorRegister() {
+        return "tutor/register";
+    }
+
+    @GetMapping("/tutor/register1")
+    public String tutorRegister1() {
+        return "tutor/register1";
+    }
+
+    @GetMapping("/tutor/register2")
+    public String tutorRegister2() {
+        return "tutor/register2";
+    }
+
+    @GetMapping("/tutor/register3")
+    public String tutorRegister3() {
+        return "tutor/register3";
+    }
+    
+    // ============================== 수정 종료 (튜터 회원가입 페이지 매핑 추가) ==============================
 }

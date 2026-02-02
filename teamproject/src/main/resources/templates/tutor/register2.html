@@ -1,0 +1,177 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <div class="container py-5" style="max-width: 720px;">
+            <div class="mb-4 text-center">
+                <h2 class="h4 fw-bold">튜터 회원가입 (3/4단계)</h2>
+                <p class="text-muted mb-0">수업 과목 및 분야를 선택해 주세요.</p>
+            </div>
+
+            <div class="progress mb-4" style="height: 8px;">
+                <div class="progress-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form id="tutorProfileForm">
+                        <div class="mb-4">
+                            <h5 class="fw-bold">1. 수업 과목</h5>
+                            <input type="text" class="form-control" id="lessonSubjects" placeholder="예) 영어 회화, 토익, 토플" required>
+                            <small class="text-muted">쉼표(,)로 구분하여 여러 과목을 입력할 수 있습니다.</small>
+                        </div>
+                        <div class="mb-4">
+                            <h5 class="fw-bold">2. 일반 분야</h5>
+                            <div id="generalFields" class="d-flex flex-wrap gap-2"></div>
+                            <small class="text-muted d-block mt-2">해당되는 분야를 모두 선택하세요.</small>
+                        </div>
+                        <div class="mb-4">
+                            <h5 class="fw-bold">3. 분야별</h5>
+                            <div id="domainFields" class="d-flex flex-wrap gap-2"></div>
+                            <small class="text-muted d-block mt-2">전문 분야를 선택하세요.</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-secondary" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;" onclick="history.back()">이전</button>
+                            <button type="submit" class="btn btn-primary flex-fill" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;">다음 단계로</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function getStoredTokens() {
+                return {
+                    accessToken: localStorage.getItem('accessToken'),
+                    refreshToken: localStorage.getItem('refreshToken')
+                };
+            }
+
+            async function fetchMe(accessToken) {
+                const response = await fetch('/api/users/me', {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                if (!response.ok) {
+                    return null;
+                }
+                const data = await response.json();
+                if (!data || data.success === false) {
+                    return null;
+                }
+                return data.data || null;
+            }
+
+            function isTutor(authList) {
+                if (!Array.isArray(authList)) {
+                    return false;
+                }
+                return authList.some((a) =>
+                    a.auth === 'ROLE_TUTOR' ||
+                    a.auth === 'ROLE_TUTOR_PENDING' ||
+                    a === 'ROLE_TUTOR' ||
+                    a === 'ROLE_TUTOR_PENDING'
+                );
+            }
+
+            function renderFieldOptions(fields) {
+                const generalContainer = document.getElementById('generalFields');
+                const domainContainer = document.getElementById('domainFields');
+
+                if (!generalContainer || !domainContainer) {
+                    return;
+                }
+
+                generalContainer.innerHTML = '';
+                domainContainer.innerHTML = '';
+
+                // 이전에 저장된 선택 불러오기
+                const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep3') || '{}');
+                const selectedFieldIds = savedData.fieldIds || [];
+
+                fields.forEach((field) => {
+                    const wrapper = document.createElement('label');
+                    wrapper.className = 'btn btn-sm btn-outline-secondary rounded-pill';
+
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.className = 'visually-hidden';
+                    input.value = field.id;
+
+                    // 이전에 선택했던 항목 체크
+                    if (selectedFieldIds.includes(field.id.toString())) {
+                        input.checked = true;
+                        wrapper.classList.add('btn-primary');
+                        wrapper.classList.remove('btn-outline-secondary');
+                    }
+
+                    const text = document.createElement('span');
+                    text.textContent = field.name;
+
+                    input.addEventListener('change', () => {
+                        if (input.checked) {
+                            wrapper.classList.add('btn-primary');
+                            wrapper.classList.remove('btn-outline-secondary');
+                        } else {
+                            wrapper.classList.add('btn-outline-secondary');
+                            wrapper.classList.remove('btn-primary');
+                        }
+                    });
+
+                    wrapper.appendChild(input);
+                    wrapper.appendChild(text);
+
+                    if (field.category === 'DOMAIN') {
+                        domainContainer.appendChild(wrapper);
+                    } else {
+                        generalContainer.appendChild(wrapper);
+                    }
+                });
+            }
+
+            async function loadFields() {
+                const response = await fetch('/api/language-fields');
+                if (!response.ok) {
+                    console.error('Failed to load fields');
+                    return;
+                }
+                const data = await response.json();
+                if (!data || data.success === false || !Array.isArray(data.data)) {
+                    console.error('Invalid fields data');
+                    return;
+                }
+                renderFieldOptions(data.data);
+            }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                // ====== 수정: 권한 체크 완전 제거 (회원가입 진행) ======
+                await loadFields();
+
+                // 이전에 저장된 데이터 불러오기
+                const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep3') || '{}');
+                if (savedData.lessonSubjects) {
+                    document.getElementById('lessonSubjects').value = savedData.lessonSubjects;
+                }
+                // ====== 수정 종료 ======
+            });
+
+            document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const selectedFieldIds = Array.from(
+                    document.querySelectorAll('#generalFields input:checked, #domainFields input:checked')
+                ).map((input) => input.value);
+
+                // 3단계 데이터 저장
+                const step3Data = {
+                    lessonSubjects: document.getElementById('lessonSubjects').value,
+                    fieldIds: selectedFieldIds
+                };
+
+                sessionStorage.setItem('tutorRegisterStep3', JSON.stringify(step3Data));
+
+                // 다음 단계로 이동
+                location.href = '/tutor/register3';
+            });
+        </script>
+    </div>
+</div>

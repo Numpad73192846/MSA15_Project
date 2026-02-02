@@ -6,14 +6,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
+import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
-import com.aloha.teamproject.dto.TutorProfileRequest;
 import com.aloha.teamproject.service.TutorFieldService;
+import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
 import com.aloha.teamproject.service.UserService;
 
@@ -26,45 +28,65 @@ public class TutorController {
 
     private final TutorProfileService tutorProfileService;
     private final TutorFieldService tutorFieldService;
+    private final TutorMyPageService tutorMyPageService;
     private final UserService userService;
 
+    @GetMapping("/me")
+    public ApiResponse<TutorMyPage> me(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            
+            TutorMyPage tutorMyPage = new TutorMyPage();
+            tutorMyPage.setTutorProfile(tutorMyPageService.selectTutorProfileByUserId(userId));
+            tutorMyPage.setLanguageFields(tutorMyPageService.selectTutorFieldsByUserId(userId));
+            tutorMyPage.setTutorStats(tutorMyPageService.selectTutorStatsByUserId(userId));
+            tutorMyPage.setUpcomingLessons(tutorMyPageService.selectUpcomingBookingsByUserId(userId));
+            tutorMyPage.setTutorReviews(tutorMyPageService.selectTutorReviewsByUserId(userId));
+            tutorMyPage.setMonthlyEarnings(tutorMyPageService.selectMonthlyEarningsByUserId(userId));
+            
+            return ApiResponse.ok(tutorMyPage);
+        } catch (Exception e) {
+            log.error("/api/tutors/me 조회 실패", e);
+            return ApiResponse.error("튜터 정보를 조회하지 못했습니다.");
+        }
+    }
+
     @PostMapping("/subjects")
-    public String subjects(@RequestBody String entity) {
-        //TODO: process POST request
-        
-        return entity;
+    public ApiResponse<Void> subjects(@RequestBody String entity) {
+        // TODO: 튜터 과목 관리 - 추후 구현 예정
+        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
     }
 
     @PostMapping("/careers")
-    public String careers(@RequestBody String entity) {
-        //TODO: process POST request
-        
-        return entity;
+    public ApiResponse<Void> careers(@RequestBody String entity) {
+        // TODO: 튜터 경력 관리 - 추후 구현 예정
+        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
     }
 
     @PostMapping("/educations")
-    public String educations(@RequestBody String entity) {
-        //TODO: process POST request
-        
-        return entity;
+    public ApiResponse<Void> educations(@RequestBody String entity) {
+        // TODO: 튜터 학력 관리 - 추후 구현 예정
+        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
     }
 
     @PostMapping("/time-ranges")
-    public String time_ranges(@RequestBody String entity) {
-        //TODO: process POST request
-        
-        return entity;
+    public ApiResponse<Void> time_ranges(@RequestBody String entity) {
+        // TODO: 시간대 관리는 /api/tutors/me/time-ranges에서 처리
+        return ApiResponse.error("시간대 관리는 /api/tutors/me/time-ranges를 사용해주세요.");
     }
 
     @PostMapping("/documents")
-    public String documents(@RequestBody String entity) {
-        //TODO: process POST request
-        
-        return entity;
+    public ApiResponse<Void> documents(@RequestBody String entity) {
+        // TODO: 튜터 문서 관리 - 추후 구현 예정
+        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
     }
 
     @PostMapping("/profile")
-    public ApiResponse<Void> profile(@RequestBody TutorProfileRequest request, Authentication authentication) {
+    public ApiResponse<Void> profile(@RequestBody TutorProfile.Request request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }

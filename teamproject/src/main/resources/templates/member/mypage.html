@@ -305,6 +305,124 @@
         </div>
 
         <script>
+            // 페이지 로드 시 회원 마이페이지 데이터 초기화
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    const response = await fetch('/api/users/me/mypage');
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const mypage = result.data;
+                        
+                        // 프로필 정보 바인딩
+                        document.getElementById('memberName').textContent = mypage.name || '회원';
+                        document.getElementById('memberEmail').textContent = mypage.email || '';
+                        
+                        // 모달 폼에도 바인딩
+                        document.getElementById('editName').value = mypage.name || '';
+                        document.getElementById('editNickname').value = mypage.nickname || '';
+                        document.getElementById('editEmail').value = mypage.email || '';
+                        
+                        // Stats 바인딩
+                        if (mypage.memberStats) {
+                            const stats = mypage.memberStats;
+                            const statValues = document.querySelectorAll('.stat-value');
+                            statValues[0].textContent = stats.upcomingLessons || 0;
+                            statValues[1].textContent = stats.completedLessons || 0;
+                        }
+                        
+                        // 예정된 수업 바인딩
+                        if (mypage.upcomingBookings && mypage.upcomingBookings.length > 0) {
+                            const upcomingContainer = document.querySelector('#bookingsTab .card:first-child .d-grid');
+                            if (upcomingContainer) {
+                                upcomingContainer.innerHTML = '';
+                                mypage.upcomingBookings.forEach(booking => {
+                                    const item = document.createElement('div');
+                                    item.className = 'booking-item p-3 border rounded';
+                                    const statusBadge = booking.status === 'CONFIRMED' ? 'bg-success' : 'bg-warning text-dark';
+                                    const statusText = booking.status === 'CONFIRMED' ? '확정' : 
+                                                      booking.status === 'PENDING' ? '대기중' : '취소됨';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-semibold">${booking.tutorName} 튜터</div>
+                                                <div class="small text-muted mt-1">
+                                                    📅 ${booking.lessonDate} | ⏰ ${booking.startTime} (${booking.durationHours}시간)
+                                                </div>
+                                            </div>
+                                            <span class="badge ${statusBadge}">${statusText}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-light text-dark">${booking.subject}</span>
+                                            <div class="d-flex gap-2">
+                                                <span class="fw-semibold text-primary">${new Intl.NumberFormat('ko-KR').format(booking.price)}원</span>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="if(confirm('수업을 취소하시겠습니까?')) alert('취소되었습니다.');">취소</button>
+                                            </div>
+                                        </div>
+                                    `;
+                                    upcomingContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        
+                        // 지난 수업 바인딩
+                        if (mypage.pastBookings && mypage.pastBookings.length > 0) {
+                            const pastContainer = document.querySelector('#bookingsTab .card:nth-child(2) .d-grid');
+                            if (pastContainer) {
+                                pastContainer.innerHTML = '';
+                                mypage.pastBookings.forEach(booking => {
+                                    const item = document.createElement('div');
+                                    item.className = 'booking-item p-3 border rounded opacity-75';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-semibold">${booking.tutorName} 튜터</div>
+                                                <div class="small text-muted mt-1">
+                                                    📅 ${booking.lessonDate} | ⏰ ${booking.startTime} (${booking.durationHours}시간)
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-secondary">완료</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-light text-dark">${booking.subject}</span>
+                                            <button class="btn btn-sm btn-outline-primary">리뷰 작성</button>
+                                        </div>
+                                    `;
+                                    pastContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        
+                        // 리뷰 바인딩
+                        if (mypage.studentReviews && mypage.studentReviews.length > 0) {
+                            const reviewContainer = document.querySelector('#reviewsTab .d-grid');
+                            if (reviewContainer) {
+                                reviewContainer.innerHTML = '';
+                                mypage.studentReviews.forEach(review => {
+                                    const rating = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                                    const createdDate = new Date(review.createdAt).toLocaleDateString('ko-KR');
+                                    const item = document.createElement('div');
+                                    item.className = 'review-item p-3 bg-light rounded';
+                                    item.style.cursor = 'pointer';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div class="fw-semibold">${review.tutorName} 튜터 <small class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>
+                                            <div class="text-warning">${rating}</div>
+                                        </div>
+                                        <p class="small mb-1">${review.content}</p>
+                                        <div class="small text-muted">${createdDate}</div>
+                                    `;
+                                    reviewContainer.appendChild(item);
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('마이페이지 데이터 로드 실패', e);
+                }
+            });
+            
             // Simple script to populate modal based on clicked item
             document.addEventListener('DOMContentLoaded', function () {
                 var messageModal = document.getElementById('messageModal');
@@ -331,9 +449,7 @@
         <div class="modal fade" id="profileEditModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <!-- <form action="/api/users/update" method="POST" enctype="multipart/form-data"> -->
-                    <form>
-                        <input type="hidden" name="no" th:value="${user.no}">
+                    <form action="/member/mypage/update" method="POST" enctype="multipart/form-data">
                         <div class="modal-header">
                             <h5 class="modal-title fw-bold">프로필 수정</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -355,10 +471,6 @@
                                     th:value="${user.username}" readonly>
                             </div>
                             <div class="mb-3">
-                                <label for="editPassword" class="form-label">비밀번호</label>
-                                <input type="password" class="form-control" id="editPassword" name="password">
-                            </div>
-                            <!-- <div class="mb-3">
                                 <label for="editProfileImage" class="form-label">프로필 이미지</label>
                                 <input type="file" class="form-control" id="editProfileImage" name="profileImage"
                                     accept="image/*">
@@ -366,59 +478,33 @@
                                     <img id="imagePreview" src="" alt="Profile Preview" class="rounded-circle shadow-sm"
                                         style="width: 100px; height: 100px; object-fit: cover;">
                                 </div>
-                            </div> -->
+                            </div>
                             <script>
-                                // document.getElementById('editProfileImage').addEventListener('change', function (e) {
-                                //     if (e.target.files && e.target.files[0]) {
-                                //         var reader = new FileReader();
-                                //         reader.onload = function (e) {
-                                //             document.getElementById('imagePreview').src = e.target.result;
-                                //             document.getElementById('imagePreviewContainer').style.display = 'block';
-                                //         }
-                                //         reader.readAsDataURL(e.target.files[0]);
-                                //     }
-                                // });
+                                document.getElementById('editProfileImage').addEventListener('change', function (e) {
+                                    if (e.target.files && e.target.files[0]) {
+                                        var reader = new FileReader();
+                                        reader.onload = function (e) {
+                                            document.getElementById('imagePreview').src = e.target.result;
+                                            document.getElementById('imagePreviewContainer').style.display = 'block';
+                                        }
+                                        reader.readAsDataURL(e.target.files[0]);
+                                    }
+                                });
                             </script>
                             <!-- Password change could be added here -->
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                            <button type="submit" class="btn btn-primary" onclick="submitUpdate()">저장</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <script>
-        function submitUpdate() { 
-            const user = {
-                no: document.querySelector('input[name="no"]').value,
-                name: document.querySelector('input[name="name"]').value,
-                nickname: document.querySelector('input[name="nickname"]').value,
-                username: document.querySelector('input[name="username"]').value
-            };
-
-            fetch("/api/users/update", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(user)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error("수정 실패");
-                return res.json();
-            })
-            .then(() => {
-                // 🔥 REST답변 후 이동
-                location.href = "/mypage";
-            })
-            .catch(err => {
-                alert("회원 정보 수정 중 오류 발생");
-                console.log(user)
-                console.error(err);
-            });
-        }
-        </script>
     </div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>

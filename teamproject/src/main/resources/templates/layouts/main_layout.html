@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
     <!-- link -->
     <th:block th:replace="~{fragments/link::link}"></th:block>
+    <th:block layout:fragment="extra-css"></th:block>
 </head>
 <body>
     <!-- header -->
@@ -22,5 +24,6 @@
 
     <!-- script -->
     <th:block th:replace="~{fragments/script::script}"></th:block>
+    <th:block layout:fragment="extra-scripts"></th:block>
 </body>
 </html>

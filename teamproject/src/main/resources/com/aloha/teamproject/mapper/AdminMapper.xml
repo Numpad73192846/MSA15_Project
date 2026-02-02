@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aloha.teamproject.mapper.AdminMapper">
+
+    <select id="selectPendingDocuments" resultType="TutorDocument">
+        SELECT d.*, u.name as userName
+        FROM tutor_document d
+        JOIN users u ON d.user_id = u.id
+        WHERE d.reviewed_at IS NULL
+        ORDER BY d.created_at ASC
+    </select>
+
+    <update id="updateDocumentStatus">
+        UPDATE tutor_document
+        SET reviewed_by = #{adminId},
+            reviewed_at = NOW(),
+            reject_reason = #{rejectReason},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectTutorSettlements" resultType="TutorSettlement">
+        SELECT 
+            u.id as userId,
+            u.name as userName,
+            u.nickname,
+            COALESCE(SUM(p.amount), 0) as totalAmount,
+            0 as remittedAmount,
+            COALESCE(SUM(p.amount), 0) as balance
+        FROM users u
+        JOIN user_auth ua ON u.id = ua.user_id
+        LEFT JOIN lesson l ON u.id = l.user_id
+        LEFT JOIN booking b ON l.id = b.lesson_id
+        LEFT JOIN payment p ON b.id = p.booking_id AND p.status = 'PAID'
+        WHERE ua.auth = 'ROLE_TUTOR'
+        GROUP BY u.id, u.name, u.nickname
+    </select>
+
+</mapper>

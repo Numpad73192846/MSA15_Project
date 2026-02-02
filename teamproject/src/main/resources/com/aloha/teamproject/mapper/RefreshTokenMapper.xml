@@ -13,7 +13,12 @@
     <select id="findByUserIdAndTokenHash" resultType="RefreshToken">
         SELECT *
         FROM refresh_token
-        WHERE user_id = #{userId} AND token_hash = #{tokenHash}
+                WHERE user_id = #{userId} 
+                    AND token_hash = #{tokenHash}
+                    AND revoked_at IS NULL
+                    AND expires_at &gt; NOW()
+                ORDER BY created_at DESC
+                LIMIT 1
     </select>
 
     <update id="revoke">

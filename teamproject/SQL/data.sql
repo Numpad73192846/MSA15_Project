@@ -1,3 +1,20 @@
+-- 관리자 계정 생성 id: admin@local.com password: Admin102938$&
+SET @admin_id = UUID();
+
+INSERT INTO users (id, username, password, name, nickname, status)
+VALUES (
+  @admin_id,
+  'admin@local.com',
+  '$2a$10$H0BAEl9U9wCjOdkvsSlOK.E3FtKW8hm4Cj2/RaEvPos3/ww2O3jUu',
+  '관리자',
+  'admin',
+  'ACTIVE'
+);
+
+INSERT INTO user_auth (user_id, id, auth)
+VALUES (@admin_id, UUID(), 'ROLE_ADMIN');
+
+
 -- 테스트 유저 데이터 삽입
 INSERT INTO users (id, username, password, name, nickname)
 VALUES
