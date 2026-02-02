@@ -45,6 +45,7 @@ function setNavState(isAuth, authList) {
     const navGuestArea = document.getElementById("navGuestArea");
     const navUserArea = document.getElementById("navUserArea");
     const navUserMyPageBtn = document.getElementById("navUserMyPageBtn");
+    const navTutorDashboardBtn = document.getElementById("navTutorDashboardBtn");
     const navTutorMyPageBtn = document.getElementById("navTutorMyPageBtn");
     const navTutorDashboardBtn = document.getElementById("navTutorDashboardBtn");
 
@@ -65,7 +66,6 @@ function setNavState(isAuth, authList) {
 
         if ( isTutor || isTutorPending ) {
             navUserMyPageBtn.style.display = "none";
-            navTutorMyPageBtn.style.display = "inline-block";
 
             if (isTutorPending) {
                 navTutorDashboardBtn.style.display = "none";
@@ -80,6 +80,7 @@ function setNavState(isAuth, authList) {
         
         else {
             navUserMyPageBtn.style.display = "inline-block";
+            navTutorDashboardBtn.style.display = "none";
             navTutorMyPageBtn.style.display = "none";
             navTutorDashboardBtn.style.display = "none";
         }

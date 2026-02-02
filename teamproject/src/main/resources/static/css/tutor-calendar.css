@@ -36,7 +36,7 @@
 
 .dayDate {
     color: #6c757d;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     margin: 0;
 }
 
@@ -51,6 +51,7 @@
 
 .dayCon > li {
     flex: 1;
+    min-width: 0;
     border-right: 1px solid #dee2e6;
 }
 
@@ -60,10 +61,16 @@
 
 .con_in {
     padding: 0.25rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .sch_time {
     margin-bottom: 0.25rem;
+    width: 100%;
+    min-width: 0;
+    flex-shrink: 0;
 }
 
 .sch_time.off {
@@ -81,6 +88,7 @@
 
 .sch_time a {
     display: block;
+    width: 100%;
     padding: 0.35rem 0.5rem;
     text-align: center;
     border: 1px solid #dee2e6;
@@ -90,6 +98,11 @@
     text-decoration: none;
     color: #212529;
     font-size: 0.85rem;
+    box-sizing: border-box;
+    word-break: keep-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sch_time:not(.off):not(.booked) a:hover {

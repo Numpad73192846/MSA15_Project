@@ -3,55 +3,53 @@ package com.aloha.teamproject.controller;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.aloha.teamproject.dto.TutorList;
-import com.aloha.teamproject.service.TutorListService;
-
-import lombok.RequiredArgsConstructor;
-
 @Controller
-@RequiredArgsConstructor
 public class TutorsPageController {
 
-    private final TutorListService tutorListService;
-
     @GetMapping("/tutors")
-    public String tutors(Authentication authentication, Model model) {
-        try {
-            List<TutorList> tutors = tutorListService.selectAllTutors();
-            
-            // DB에서 이미 rating_avg와 review_count를 가져왔으므로 별도 처리 불필요
-            model.addAttribute("tutors", tutors);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public String tutors(Model model) {
+        List<Map<String, Object>> tutors = List.of(
+            Map.of(
+                "id", "u-tutor-1",
+                "name", "김튜터",
+                "rating", 4.9,
+                "reviews", 127,
+                "subjects", List.of("영어 회화", "문법"),
+                "bio", "회화/문법 집중 코칭",
+                "experience", "5년",
+                "hourlyRate", 35000
+            ),
+            Map.of(
+                "id", "u-tutor-2",
+                "name", "이튜터",
+                "rating", 4.7,
+                "reviews", 89,
+                "subjects", List.of("비즈니스 영어", "발음"),
+                "bio", "실무 중심 회화",
+                "experience", "4년",
+                "hourlyRate", 40000
+            )
+        );
+
+        model.addAttribute("tutors", tutors);
         return "tutors/list";
     }
 
     @GetMapping("/tutors/{id}")
     public String tutorDetail(@PathVariable("id") String id, Model model) {
-
-        try {
-            // 직접 단일 튜터 조회 (효율적)
-            TutorList tutor = tutorListService.selectTutorById(id);
-
-            if ( tutor == null ) {
-                return "redirect:/tutors";
-            }
-
-            Map<String, Object> tutorMap = Map.of(
-            "id", tutor.getUserId(),
-            "name", tutor.getName(),
-            "ratingAvg", tutor.getRatingAvg(),
-            "reviewCount", tutor.getReviewCount(),
-            "subjects", tutor.getSubjects() != null ? tutor.getSubjects().split(",") : new String[]{},
-            "bio", tutor.getBio(),
-            "experience", tutor.getExperience(),
+        Map<String, Object> tutor = Map.of(
+            "id", id,
+            "name", "김튜터",
+            "rating", 4.9,
+            "reviews", 127,
+            "subjects", List.of("영어 회화", "문법", "발음"),
+            "bio", "중고급 회화/발음 집중",
+            "experience", "5년",
             "hourlyRate", tutor.getPrice(),
             "availability", "평일 저녁, 주말"
             );

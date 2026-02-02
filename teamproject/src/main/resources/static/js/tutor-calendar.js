@@ -115,6 +115,8 @@ class TutorCalendar {
         container.innerHTML = '';
         const step = Math.max(15, Number(this.options.timeStepMinutes) || 30);
         const totalMinutes = 24 * 60;
+        const timeSlots = [];
+
         for (let minutes = 0; minutes < totalMinutes; minutes += step) {
             const h = Math.floor(minutes / 60);
             const m = minutes % 60;
@@ -133,22 +135,34 @@ class TutorCalendar {
             const isBooked = this.state.bookedSlots.get(dateKey)?.has(time);
             const isSelected = this.state.selectedSlots.get(dateKey)?.has(time);
             
+            timeSlots.push({
+                time,
+                inRange,
+                isBooked,
+                isSelected,
+                minutes
+            });
+        }
+
+        timeSlots.sort((a, b) => a.minutes - b.minutes);
+
+        timeSlots.forEach(slot => {
             const wrap = document.createElement('div');
             let className = 'sch_time';
-            if (!inRange) className += ' off';
-            if (isBooked) className += ' booked';
-            else if (isSelected) className += ' selected';
+            if (!slot.inRange) className += ' off';
+            if (slot.isBooked) className += ' booked';
+            else if (slot.isSelected) className += ' selected';
             wrap.className = className;
 
             const a = document.createElement('a');
             a.className = 'time_in en';
-            a.dataset.time = time;
+            a.dataset.time = slot.time;
             a.dataset.date = dateKey;
-            a.dataset.inRange = inRange ? 'true' : 'false';
-            a.innerHTML = `${time}<p class="sch_dsttime ${inRange ? 'on' : 'off'}"></p>`;
+            a.dataset.inRange = slot.inRange ? 'true' : 'false';
+            a.innerHTML = `${slot.time}<p class="sch_dsttime ${slot.inRange ? 'on' : 'off'}"></p>`;
             wrap.appendChild(a);
             container.appendChild(wrap);
-        }
+        });
     }
 
     updateWeekHeader() {

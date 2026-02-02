@@ -303,14 +303,24 @@
                     return;
                 }
 
+                await new Promise(resolve => setTimeout(resolve, 500));
+
                 const loginResponse = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: payload.username, password: payload.password })
                 });
+                
+                if (!loginResponse.ok) {
+                    alert('회원가입은 완료되었습니다. 로그인 페이지에서 다시 로그인해주세요.');
+                    location.reload();
+                    return;
+                }
+
                 const loginData = await loginResponse.json();
                 if (!loginData.success) {
-                    alert(loginData.message || '로그인에 실패했습니다.');
+                    alert('회원가입은 완료되었습니다. 로그인 페이지에서 다시 로그인해주세요.');
+                    location.reload();
                     return;
                 }
 
