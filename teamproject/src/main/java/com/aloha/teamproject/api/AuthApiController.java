@@ -145,13 +145,8 @@ public class AuthApiController {
 				.findFirst()
 				.orElse(null);
 	}
-<<<<<<< HEAD
-	
-	private void setSessionAuthentication(HttpServletRequest request, AuthTokenResponse result) {
-=======
 
 	private void setSessionAuthentication(HttpServletRequest request, AuthDto.TokenResponse result) {
->>>>>>> 5a44d9fe660f3bb25aed0316e0d5f8a20547784a
 		if (request == null || result == null) {
 			return;
 		}

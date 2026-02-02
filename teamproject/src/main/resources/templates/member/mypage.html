@@ -16,7 +16,9 @@
                         <div class="card-body text-center">
                             <div class="profile-avatar mb-3">
                                 <div
-                                    class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto">
+                                    class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto"
+                                    style="cursor: pointer;"
+                                    onclick="document.getElementById('editProfileImage').click(); document.getElementById('profileEditModal').querySelector('[data-bs-dismiss]').click(); setTimeout(() => { var modal = new bootstrap.Modal(document.getElementById('profileEditModal')); modal.show(); }, 100);">
                                     <span class="fs-1">👤</span>
                                 </div>
                             </div>
@@ -198,7 +200,7 @@
                                             </div>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span class="badge bg-light text-dark">영어</span>
-                                                <button class="btn btn-sm btn-outline-primary">리뷰 작성</button>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="location.href='/tutors/${booking.tutorId}'">리뷰 작성</button>
                                             </div>
                                         </div>
                                         <div class="booking-item p-3 border rounded opacity-75">
@@ -230,7 +232,7 @@
                                     <h4 class="h6 fw-bold mb-3">내가 작성한 리뷰</h4>
                                     <div class="d-grid gap-3">
                                         <div class="review-item p-3 bg-light rounded" style="cursor: pointer;"
-                                            onclick="location.href='/tutors/detail'">
+                                            onclick="location.href='/tutors/${review.tutorId}'">
                                             <div class="d-flex justify-content-between mb-2">
                                                 <div class="fw-semibold">박서준 튜터 <small
                                                         class="text-primary opacity-75 ms-1">상세되기 ↗</small></div>
@@ -242,7 +244,7 @@
                                             <div class="small text-muted">2026-01-20</div>
                                         </div>
                                         <div class="review-item p-3 bg-light rounded" style="cursor: pointer;"
-                                            onclick="location.href='/tutors/detail'">
+                                            onclick="location.href='/tutors/${review.tutorId}'">
                                             <div class="d-flex justify-content-between mb-2">
                                                 <div class="fw-semibold">김민지 튜터 <small
                                                         class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>
@@ -386,7 +388,7 @@
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="badge bg-light text-dark">${booking.subject}</span>
-                                            <button class="btn btn-sm btn-outline-primary">리뷰 작성</button>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="location.href='/tutors/${booking.tutorId}'">리뷰 작성</button>
                                         </div>
                                     `;
                                     pastContainer.appendChild(item);
@@ -405,6 +407,7 @@
                                     const item = document.createElement('div');
                                     item.className = 'review-item p-3 bg-light rounded';
                                     item.style.cursor = 'pointer';
+                                    item.onclick = () => location.href = `/tutors/${review.tutorId}`;
                                     item.innerHTML = `
                                         <div class="d-flex justify-content-between mb-2">
                                             <div class="fw-semibold">${review.tutorName} 튜터 <small class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>

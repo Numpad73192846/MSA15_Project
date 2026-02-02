@@ -157,11 +157,7 @@ if ( logoutBtn ) {
     });
 }
 
-<<<<<<< HEAD
-document.addEventListener("DOMContentLoaded", fetchUserInfo);
-=======
 document.addEventListener("DOMContentLoaded", async () => {
     await refreshAccessToken();
     fetchUserInfo();
 });
->>>>>>> 5a44d9fe660f3bb25aed0316e0d5f8a20547784a
