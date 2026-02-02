@@ -19,11 +19,51 @@
                             <h5 class="fw-bold">1. 학력증명서</h5>
                             <input type="file" class="form-control" id="academicCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
                             <small class="text-muted">여러 파일을 선택할 수 있습니다.</small>
+<<<<<<< HEAD
+=======
+                            <div id="academicListCard" class="card mt-2 overflow-hidden" style="display:none;">
+                                <ul id="academicList" class="list-group list-group-flush"></ul>                                 
+                                <!-- 추가 -->
+                                <div class="file-item-template" style="display: none;">
+                                    <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                                        <div class="col text-break">
+                                            <span class="file-name"></span>
+                                            <small class="file-size"></small>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                                        </div>
+                                    </li>
+                                </div>
+                                <!-- 추가 END -->
+                            </div>
+>>>>>>> origin/cheshire
                         </div>
                         <div class="mb-4">
                             <h5 class="fw-bold">2. 교육 관련 학위 및 증명서</h5>
                             <input type="file" class="form-control" id="educationCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
                             <small class="text-muted">자격증, 수료증 등을 업로드하세요.</small>
+<<<<<<< HEAD
+=======
+                            <div id="educationListCard" class="card mt-2 overflow-hidden" style="display:none;">
+                                <ul id="educationList" class="list-group list-group-flush"></ul> 
+                                <!-- 추가 -->
+                                <div class="file-item-template" style="display: none;">
+                                    <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                                        <div class="col text-break">
+                                            <span class="file-name" style="font-weight: 500;"></span>
+                                            <small class="file-size" style="color: #666;"></small>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                                        </div>
+                                    </li>
+                                </div>
+                                <!-- 추가 END -->
+                            </div>
+>>>>>>> origin/cheshire
                         </div>
                         <div class="mb-4">
                             <h5 class="fw-bold">3. 근무 경력</h5>
@@ -76,18 +116,159 @@
                 );
             }
 
+<<<<<<< HEAD
             document.addEventListener('DOMContentLoaded', async () => {
                 // ====== 수정: 권한 체크 완전 제거 (회원가입 진행) ======
+=======
+            // 파일을 base64로 변환하는 함수
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // 파일 용량을 읽기 좋은 형식으로 변환
+            function formatFileSize(bytes) {
+                if (!bytes && bytes !== 0) return '';
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            // 여러 파일을 {name,size,data} 객체 배열로 변환
+            async function filesToObjectArray(files) {
+                const results = [];
+                for (let file of files) {
+                    const data = await fileToBase64(file);
+                    results.push({ name: file.name, size: file.size, data });
+                }
+                return results;
+            }
+
+            // 지정 컨테이너에 파일 리스트 렌더링 (files = [{name,size,data}, ...])
+            function renderFileList(containerId, cardId, files, inputId, storageKey) {
+                const container = document.getElementById(containerId);
+                const card = document.getElementById(cardId);
+                if (!container || !card) return;
+
+                // 기존 파일 항목 제거
+                const fileItems = container.querySelectorAll('li');
+                fileItems.forEach(item => item.remove());
+
+                // 파일이 없으면 카드 숨기기
+                if (!files || files.length === 0) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                // 파일이 있으면 카드 표시
+                card.style.display = 'block';
+
+                // 템플릿 가져오기 (li 태그만)
+                const template = card.querySelector('.file-item-template li');
+                if (!template) return;
+
+                files.forEach((f, idx) => {
+                    const clone = template.cloneNode(true);
+
+                    const fileNameSpan = clone.querySelector('.file-name');
+                    const fileSizeSpan = clone.querySelector('.file-size');
+                    const editBtn = clone.querySelector('.edit-btn');
+                    const deleteBtn = clone.querySelector('.delete-btn');
+
+                    if (fileNameSpan) fileNameSpan.textContent = f.name;
+                    if (fileSizeSpan) fileSizeSpan.textContent = '(' + formatFileSize(f.size) + ')';
+
+                    if (editBtn) {
+                        editBtn.addEventListener('click', () => {
+                            const input = document.getElementById(inputId);
+                            if (input) {
+                                input.dataset.replaceIndex = idx;
+                                input.click();
+                            }
+                        });
+                    }
+
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', () => {
+                            const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
+                            const arr = saved[storageKey] || [];
+                            arr.splice(idx, 1);
+                            saved[storageKey] = arr;
+                            sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(saved));
+                            renderFileList(containerId, cardId, arr, inputId, storageKey);
+                        });
+                    }
+
+                    container.appendChild(clone);
+                });
+            }
+
+            // 파일 선택 처리: 새 파일 추가 또는 특정 인덱스 교체
+            async function handleFilesSelected(inputElem, storageKey, containerId, cardId) {
+                const files = inputElem.files;
+                if (!files || files.length === 0) return;
+                const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
+                const existing = saved[storageKey] || [];
+
+                const objs = await filesToObjectArray(files);
+
+                if (inputElem.dataset.replaceIndex) {
+                    const idx = parseInt(inputElem.dataset.replaceIndex, 10);
+                    if (!isNaN(idx) && idx >= 0 && idx < existing.length) {
+                        existing.splice(idx, 1, objs[0]);
+                    } else {
+                        // index invalid -> append
+                        existing.push(...objs);
+                    }
+                    delete inputElem.dataset.replaceIndex;
+                } else {
+                    existing.push(...objs);
+                }
+
+                saved[storageKey] = existing;
+                sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(saved));
+                renderFileList(containerId, cardId, existing, inputElem.id, storageKey);
+                // clear input to allow same-file reselect
+                inputElem.value = null;
+            }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+>>>>>>> origin/cheshire
                 // 이전에 저장된 데이터 불러오기
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
                 if (savedData.career) document.getElementById('career').value = savedData.career;
                 if (savedData.selfIntro) document.getElementById('selfIntro').value = savedData.selfIntro;
+<<<<<<< HEAD
                 // ====== 수정 종료 ======
+=======
+                // 파일 리스트 복원
+                if (savedData.academicCertificates && Array.isArray(savedData.academicCertificates)) {
+                    renderFileList('academicList', 'academicListCard', savedData.academicCertificates, 'academicCertificate', 'academicCertificates');
+                }
+                if (savedData.educationCertificates && Array.isArray(savedData.educationCertificates)) {
+                    renderFileList('educationList', 'educationListCard', savedData.educationCertificates, 'educationCertificate', 'educationCertificates');
+                }
+
+                // 파일 input 변경 이벤트 연결
+                document.getElementById('academicCertificate').addEventListener('change', function () {
+                    handleFilesSelected(this, 'academicCertificates', 'academicList', 'academicListCard');
+                });
+                document.getElementById('educationCertificate').addEventListener('change', function () {
+                    handleFilesSelected(this, 'educationCertificates', 'educationList', 'educationListCard');
+                });
+>>>>>>> origin/cheshire
             });
 
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
+<<<<<<< HEAD
                 // 2단계 데이터 저장
                 const step2Data = {
                     career: document.getElementById('career').value,
@@ -99,6 +280,50 @@
                 // 파일 처리는 추후 구현 예정
                 // const academicCertificate = document.getElementById('academicCertificate').files;
                 // const educationCertificate = document.getElementById('educationCertificate').files;
+=======
+                // 필수 필드 검증
+                const career = document.getElementById('career').value.trim();
+                const selfIntro = document.getElementById('selfIntro').value.trim();
+
+                if (!career || !selfIntro) {
+                    alert('필수 항목을 모두 입력해주세요.');
+                    return;
+                }
+
+                // 2단계 데이터 저장
+                const step2Data = {
+                    career: career,
+                    selfIntro: selfIntro
+                };
+
+                // 파일 처리
+                const academicCertificateFiles = document.getElementById('academicCertificate').files;
+                const educationCertificateFiles = document.getElementById('educationCertificate').files;
+
+                try {
+                    if (academicCertificateFiles.length > 0) {
+                        step2Data.academicCertificates = await filesToObjectArray(academicCertificateFiles);
+                    }
+                    if (educationCertificateFiles.length > 0) {
+                        step2Data.educationCertificates = await filesToObjectArray(educationCertificateFiles);
+                    }
+                } catch (error) {
+                    console.error('파일 처리 중 오류:', error);
+                    alert('파일 처리 중 오류가 발생했습니다.');
+                    return;
+                }
+
+                // 이전에 저장된 파일 정보가 있고 새로 업로드하지 않았다면 보존
+                const existing = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
+                if (!step2Data.academicCertificates && existing.academicCertificates) {
+                    step2Data.academicCertificates = existing.academicCertificates;
+                }
+                if (!step2Data.educationCertificates && existing.educationCertificates) {
+                    step2Data.educationCertificates = existing.educationCertificates;
+                }
+
+                sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(step2Data));
+>>>>>>> origin/cheshire
 
                 // 다음 단계로 이동
                 location.href = '/tutor/register2';

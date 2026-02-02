@@ -1,6 +1,7 @@
 package com.aloha.teamproject.dto;
 
 import java.util.Date;
+<<<<<<< HEAD
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +18,15 @@ public class TutorDocument {
     private String userId;
     @Builder.Default
     private String id = UUID.randomUUID().toString();
+=======
+import lombok.Data;
+
+@Data
+public class TutorDocument {
+    private Long no;
+    private String userId;
+    private String id;
+>>>>>>> origin/cheshire
     private String docType; // 'EDUCATION', 'DEGREE', 'CERTIFICATE'
     private int fileSize;
     private String reviewedBy;

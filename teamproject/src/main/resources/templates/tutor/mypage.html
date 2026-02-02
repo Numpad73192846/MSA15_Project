@@ -17,13 +17,14 @@
                             <div class="profile-avatar mb-3">
                                 <div
                                     class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto">
-                                    <span class="fs-1">👨‍🏫</span>
+                                    <!-- <span class="fs-1">👨‍🏫</span> -->
+                                    <div id="profileImg"></div>
                                 </div>
                             </div>
                             <h3 class="h5 fw-bold mb-1" id="tutorName">김민지 튜터</h3>
                             <p class="text-muted small mb-3" id="tutorEmail">minji.kim@example.com</p>
 
-                            <div class="d-flex justify-content-center gap-2 mb-3">
+                            <div id="fieldContainer" class="d-flex flex-wrap justify-content-center gap-2 mb-3">
                                 <span class="badge bg-primary">영어</span>
                                 <span class="badge bg-primary">수학</span>
                                 <span class="badge bg-primary">과학</span>
@@ -388,6 +389,25 @@
                         // 프로필 정보 바인딩
                         if (mypage.tutorProfile) {
                             const profile = mypage.tutorProfile;
+<<<<<<< HEAD
+=======
+
+                            const profileImageContainer = document.getElementById('profileImg');
+                            if (profile.profileImg) {
+                                profileImageContainer.innerHTML = `
+                                    <img src="${profile.profileImg}"
+                                        alt="프로필 이미지"
+                                        class="rounded-circle"
+                                        style="width:120px; height:120px; object-fit:cover;">
+                                `;
+                            } else {
+                                profileImageContainer.innerHTML = `
+                                    <span class="fs-1">👨‍🏫</span>
+                                `;
+                            }
+
+
+>>>>>>> origin/cheshire
                             document.getElementById('tutorName').textContent = (profile.name || '튜터') + ' 튜터';
                             document.getElementById('tutorEmail').textContent = profile.email || '';
                             document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
@@ -425,7 +445,11 @@
                         
                         // 과목(필드) 바인딩
                         if (mypage.languageFields && mypage.languageFields.length > 0) {
+<<<<<<< HEAD
                             const fieldContainer = document.querySelector('.d-flex.justify-content-center.gap-2');
+=======
+                            const fieldContainer = document.querySelector('#fieldContainer');
+>>>>>>> origin/cheshire
                             fieldContainer.innerHTML = '';
                             mypage.languageFields.forEach(field => {
                                 const badge = document.createElement('span');

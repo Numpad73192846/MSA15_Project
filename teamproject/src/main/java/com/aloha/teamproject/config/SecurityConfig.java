@@ -61,7 +61,11 @@ public class SecurityConfig {
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
+<<<<<<< HEAD
                 .requestMatchers(HttpMethod.GET, "/api/tutors/**").permitAll()
+=======
+                .requestMatchers("/uploads/**").permitAll()
+>>>>>>> origin/cheshire
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()

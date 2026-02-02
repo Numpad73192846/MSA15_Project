@@ -50,17 +50,18 @@ public class TutorsPageController {
             "subjects", List.of("영어 회화", "문법", "발음"),
             "bio", "중고급 회화/발음 집중",
             "experience", "5년",
-            "hourlyRate", tutor.getPrice(),
+            "hourlyRate", 35000,
             "availability", "평일 저녁, 주말"
-            );
-            
-            // TODO: Review 기능이 재구현되면 여기에 리뷰 데이터 추가
-            model.addAttribute("tutor", tutorMap);
-            model.addAttribute("reviews", List.of()); // 빈 리스트로 임시 처리
+        );
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List<Map<String, Object>> reviews = List.of(
+            Map.of("name", "학생A", "date", "2026-01-20", "rating", 5, "comment", "설명이 정말 이해 잘 됐어요!"),
+            Map.of("name", "학생B", "date", "2026-01-12", "rating", 4, "comment", "친절하고 꼼꼼해요."),
+            Map.of("name", "학생C", "date", "2026-01-05", "rating", 5, "comment", "발음 교정이 좋았습니다.")
+        );
+
+        model.addAttribute("tutor", tutor);
+        model.addAttribute("reviews", reviews);
         return "tutors/detail";
     }
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.aloha.teamproject.api;
 
 import java.time.LocalDateTime;
@@ -166,3 +167,173 @@ public class TutorAvailabilityController {
         }
     }
 }
+=======
+package com.aloha.teamproject.api;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.aloha.teamproject.common.response.ApiResponse;
+import com.aloha.teamproject.common.response.SuccessCode;
+import com.aloha.teamproject.dto.TutorAvailability;
+import com.aloha.teamproject.service.TutorAvailabilityService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/tutors")
+public class TutorAvailabilityController {
+
+    private final TutorAvailabilityService tutorAvailabilityService;
+
+    /**
+     * 내 가용 시간 조회 (기간별)
+     */
+    @GetMapping("/me/availability")
+    public ApiResponse<List<TutorAvailability>> getMyAvailability(
+            @RequestParam String start, // ISO format: "2026-02-01T00:00:00"
+            @RequestParam String end,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            LocalDateTime startDate = LocalDateTime.parse(start);
+            LocalDateTime endDate = LocalDateTime.parse(end);
+
+                List<TutorAvailability> availabilities = tutorAvailabilityService
+                    .selectByUserIdAndDateRange(userId, startDate, endDate);
+
+                return ApiResponse.ok(availabilities);
+        } catch (Exception e) {
+            log.error("가용 시간 조회 실패", e);
+            return ApiResponse.error("가용 시간을 조회하지 못했습니다.");
+        }
+    }
+
+    /**
+     * 특정 튜터의 가용 시간 조회 (학생용)
+     */
+    @GetMapping("/{tutorId}/availability")
+    public ApiResponse<List<TutorAvailability>> getTutorAvailability(
+            @PathVariable String tutorId,
+            @RequestParam String start,
+            @RequestParam String end
+    ) {
+        try {
+            LocalDateTime startDate = LocalDateTime.parse(start);
+            LocalDateTime endDate = LocalDateTime.parse(end);
+
+                List<TutorAvailability> availabilities = tutorAvailabilityService
+                    .selectByUserIdAndDateRange(tutorId, startDate, endDate);
+            
+            // OPEN 상태만 필터링 (학생에게는 예약 가능한 시간만 보여줌)
+                List<TutorAvailability> dtoList = availabilities.stream()
+                    .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN)
+                    .toList();
+
+            return ApiResponse.ok(dtoList);
+        } catch (Exception e) {
+            log.error("튜터 가용 시간 조회 실패", e);
+            return ApiResponse.error("가용 시간을 조회하지 못했습니다.");
+        }
+    }
+
+    /**
+     * 내 가용 시간 일괄 저장 (기간별 삭제 후 재생성)
+     */
+    @PostMapping("/me/availability")
+    public ApiResponse<Void> saveMyAvailability(
+            @RequestParam String start,
+            @RequestParam String end,
+                @RequestBody List<TutorAvailability> availabilityDTOs,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            LocalDateTime startDate = LocalDateTime.parse(start);
+            LocalDateTime endDate = LocalDateTime.parse(end);
+
+            List<TutorAvailability> availabilities = availabilityDTOs.stream()
+                    .peek(dto -> {
+                        dto.setUserId(userId);
+                        if (dto.getStatus() == null) {
+                            dto.setStatus(TutorAvailability.Status.OPEN);
+                        }
+                    })
+                    .toList();
+
+            tutorAvailabilityService.replaceAvailabilities(userId, startDate, endDate, availabilities);
+
+            return ApiResponse.ok(SuccessCode.CREATED);
+        } catch (Exception e) {
+            log.error("가용 시간 저장 실패", e);
+            return ApiResponse.error("가용 시간을 저장하지 못했습니다.");
+        }
+    }
+
+    /**
+     * 가용 시간 상태 변경 (예약 처리 등)
+     */
+    @PatchMapping("/me/availability/{id}/status")
+    public ApiResponse<Void> updateAvailabilityStatus(
+            @PathVariable String id,
+            @RequestParam String status,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            tutorAvailabilityService.updateStatus(id, status);
+            return ApiResponse.ok(SuccessCode.OK);
+        } catch (Exception e) {
+            log.error("가용 시간 상태 변경 실패", e);
+            return ApiResponse.error("상태를 변경하지 못했습니다.");
+        }
+    }
+
+    /**
+     * 가용 시간 삭제
+     */
+    @DeleteMapping("/me/availability/{id}")
+    public ApiResponse<Void> deleteAvailability(
+            @PathVariable String id,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            tutorAvailabilityService.deleteById(id);
+            return ApiResponse.ok(SuccessCode.OK);
+        } catch (Exception e) {
+            log.error("가용 시간 삭제 실패", e);
+            return ApiResponse.error("가용 시간을 삭제하지 못했습니다.");
+        }
+    }
+}
+>>>>>>> origin/cheshire

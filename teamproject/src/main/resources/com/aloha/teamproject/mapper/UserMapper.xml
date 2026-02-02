@@ -93,4 +93,8 @@
 		WHERE no = #{no}
 	</delete>
 
+<<<<<<< HEAD
 </mapper>
+=======
+</mapper>
+>>>>>>> origin/cheshire
