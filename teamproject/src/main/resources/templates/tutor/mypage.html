@@ -122,6 +122,94 @@
 
                         <!-- Schedule Tab -->
                         <div class="tab-pane fade show active" id="scheduleTab">
+                            <!-- 방식 선택 안내 -->
+                            <div class="alert alert-light border mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>스케줄 관리 방식 선택</strong>
+                                        <p class="mb-0 small text-muted mt-1">팀 리뷰를 위해 2가지 방식을 모두 구현했습니다</p>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="toggleScheduleEditor()">
+                                            방식 A: 여기서 편집
+                                        </button>
+                                        <a href="/tutor/schedule-edit" class="btn btn-sm btn-outline-success">
+                                            방식 B: 별도 페이지에서 편집
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 인라인 스케줄 편집기 (방식 A) - 기본 숨김 -->
+                            <div class="card shadow-sm mb-4" id="scheduleEditorCard" style="display: none;">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="h6 fw-bold mb-0">스케줄 편집</h4>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleScheduleEditor()">
+                                            <i class="bi bi-x-lg"></i> 닫기
+                                        </button>
+                                    </div>
+
+                                    <!-- 주간 네비게이션 -->
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnPrevWeek">
+                                                <i class="bi bi-chevron-left"></i> 이전
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnNextWeek">
+                                                다음 <i class="bi bi-chevron-right"></i>
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <span class="fw-semibold" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 캘린더 컨테이너 -->
+                                    <div class="weekly_calendar_wrap" id="mypageScheduleEditor">
+                                        <div class="weekly_head">
+                                            <ul class="dayHead flex" id="calendarDayHead">
+                                                <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
+                                                <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
+                                                <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
+                                                <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
+                                                <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
+                                                <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
+                                                <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
+                                            </ul>
+                                        </div>
+                                        <div class="weekly_con">
+                                            <ul class="dayCon flex" id="calendarDayBody">
+                                                <li class="flex"><div class="con_in"></div></li>
+                                                <li class="flex"><div class="con_in"></div></li>
+                                                <li class="flex"><div class="con_in"></div></li>
+                                                <li class="flex"><div class="con_in"></div></li>
+                                                <li class="flex"><div class="con_in"></div></li>
+                                                <li class="flex"><div class="con_in"></div></li>
+                                                <li class="flex"><div class="con_in"></div></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnApplyPattern">
+                                            <i class="bi bi-arrow-repeat"></i> 9주까지 적용
+                                        </button>
+                                        <small class="text-muted ms-2">현재 주 패턴을 9주간 반복</small>
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                                        <button type="button" class="btn btn-primary" id="btnSaveSchedule">
+                                            <i class="bi bi-check-lg"></i> 저장
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="toggleScheduleEditor()">
+                                            <i class="bi bi-x-lg"></i> 취소
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 다가오는 수업 목록 -->
                             <div class="card shadow-sm">
                                 <div class="card-body">
                                     <h4 class="h6 fw-bold mb-3">다가오는 수업</h4>
@@ -282,5 +370,328 @@
                 </div>
             </div>
         </div>
+
+        <!-- CSS/JS for Schedule Editor -->
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+        <script src="/js/tutor-calendar.js"></script>
+        <script>
+            // 페이지 로드 시 마이페이지 데이터 초기화
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    const response = await fetch('/api/tutors/me');
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const mypage = result.data;
+                        
+                        // 프로필 정보 바인딩
+                        if (mypage.tutorProfile) {
+                            const profile = mypage.tutorProfile;
+                            document.getElementById('tutorName').textContent = (profile.name || '튜터') + ' 튜터';
+                            document.getElementById('tutorEmail').textContent = profile.email || '';
+                            document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
+                            
+                            // 모달 폼에도 바인딩
+                            document.getElementById('editTutorName').value = profile.name || '';
+                            document.getElementById('editTutorBio').value = profile.bio || '';
+                            document.getElementById('editTutorEmail').value = profile.email || '';
+                        }
+                        
+                        // Stats 바인딩
+                        if (mypage.tutorStats) {
+                            const stats = mypage.tutorStats;
+                            // 총 수업 수
+                            document.querySelectorAll('.stat-value')[0].textContent = stats.totalLessons || 0;
+                            // 총 수익
+                            const earnings = stats.totalEarnings || 0;
+                            document.querySelectorAll('.stat-value')[1].textContent = new Intl.NumberFormat('ko-KR').format(earnings);
+                            // 활성 학생 수
+                            document.querySelectorAll('.stat-value')[2].textContent = stats.activeStudents || 0;
+                            // 시간당 요금
+                            const hourly = stats.hourlyRate || 0;
+                            document.querySelectorAll('.stat-value')[3].textContent = new Intl.NumberFormat('ko-KR').format(hourly);
+                            
+                            // 평점 및 리뷰 수
+                            if (stats.ratingAvg) {
+                                const ratingSpan = document.querySelector('.rating .fw-semibold');
+                                if (ratingSpan) ratingSpan.textContent = stats.ratingAvg;
+                            }
+                            if (stats.reviewCount) {
+                                const reviewCountSpan = document.querySelector('.rating .text-muted small');
+                                if (reviewCountSpan) reviewCountSpan.textContent = `(${stats.reviewCount} 리뷰)`;
+                            }
+                        }
+                        
+                        // 과목(필드) 바인딩
+                        if (mypage.languageFields && mypage.languageFields.length > 0) {
+                            const fieldContainer = document.querySelector('.d-flex.justify-content-center.gap-2');
+                            fieldContainer.innerHTML = '';
+                            mypage.languageFields.forEach(field => {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge bg-primary';
+                                badge.textContent = field.name;
+                                fieldContainer.appendChild(badge);
+                            });
+                        }
+                        
+                        // 다가오는 수업 바인딩
+                        if (mypage.upcomingLessons && mypage.upcomingLessons.length > 0) {
+                            const scheduleContainer = document.querySelector('[role="tablist"] + .tab-content #scheduleTab .card:nth-child(2) .d-grid');
+                            if (scheduleContainer) {
+                                scheduleContainer.innerHTML = '';
+                                mypage.upcomingLessons.forEach(lesson => {
+                                    const item = document.createElement('div');
+                                    item.className = 'schedule-item p-3 border rounded';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-semibold">${lesson.studentName} 학생</div>
+                                                <div class="small text-muted mt-1">
+                                                    📅 ${lesson.lessonDate} | ⏰ ${lesson.startTime} (${lesson.durationHours}시간) | 📚 ${lesson.subject}
+                                                </div>
+                                            </div>
+                                            <span class="badge ${lesson.status === '확정' ? 'bg-success' : 'bg-warning'} ${lesson.status === '확정' ? '' : 'text-dark'}">
+                                                ${lesson.status}
+                                            </span>
+                                        </div>
+                                    `;
+                                    scheduleContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        
+                        // 리뷰 바인딩
+                        if (mypage.tutorReviews && mypage.tutorReviews.length > 0) {
+                            const reviewContainer = document.querySelector('#reviewsTab .d-grid');
+                            if (reviewContainer) {
+                                reviewContainer.innerHTML = '';
+                                mypage.tutorReviews.forEach(review => {
+                                    const rating = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                                    const createdDate = new Date(review.createdAt).toLocaleDateString('ko-KR');
+                                    const item = document.createElement('div');
+                                    item.className = 'review-item p-3 bg-light rounded';
+                                    item.innerHTML = `
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <div class="fw-semibold">${review.studentName}</div>
+                                            <div class="text-warning">${rating}</div>
+                                        </div>
+                                        <p class="small mb-1">${review.content}</p>
+                                        <div class="small text-muted">${createdDate}</div>
+                                    `;
+                                    reviewContainer.appendChild(item);
+                                });
+                            }
+                        }
+                        
+                        // 월별 수익 바인딩
+                        if (mypage.monthlyEarnings && mypage.monthlyEarnings.length > 0) {
+                            const tbody = document.querySelector('#earningsTab tbody');
+                            if (tbody) {
+                                tbody.innerHTML = '';
+                                mypage.monthlyEarnings.forEach(earning => {
+                                    const yearMonth = earning.yearMonth.replace('-', '년 ') + '월';
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `
+                                        <td>${yearMonth}</td>
+                                        <td>${earning.lessonCount}회</td>
+                                        <td>${Math.round(earning.totalHours)}시간</td>
+                                        <td class="text-end fw-semibold text-success">${new Intl.NumberFormat('ko-KR').format(earning.totalEarnings)}원</td>
+                                    `;
+                                    tbody.appendChild(row);
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('마이페이지 데이터 로드 실패', e);
+                }
+            });
+            
+            let mypageCalendar = null;
+            const dayEnumToIndex = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 };
+
+            const DEFAULT_BASE_TIME_RANGES = {
+                0: [],
+                1: [{ start: '09:00', end: '18:00' }],
+                2: [{ start: '09:00', end: '18:00' }],
+                3: [{ start: '09:00', end: '18:00' }],
+                4: [{ start: '09:00', end: '18:00' }],
+                5: [{ start: '09:00', end: '18:00' }],
+                6: []
+            };
+
+            function formatLocalDateTime(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                const hh = String(date.getHours()).padStart(2, '0');
+                const mm = String(date.getMinutes()).padStart(2, '0');
+                const ss = String(date.getSeconds()).padStart(2, '0');
+                return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+            }
+
+            function getDateRangeForMaxWeeks(maxWeeks = 9) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const day = today.getDay();
+                const sunday = new Date(today);
+                sunday.setDate(today.getDate() - day);
+
+                const start = new Date(sunday);
+                start.setHours(0, 0, 0, 0);
+
+                const maxWeekStart = new Date(sunday);
+                maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+                const end = new Date(maxWeekStart);
+                end.setDate(end.getDate() + 6);
+                end.setHours(23, 59, 59, 0);
+
+                return {
+                    start: formatLocalDateTime(start),
+                    end: formatLocalDateTime(end)
+                };
+            }
+
+            async function loadBaseTimeRanges() {
+                try {
+                    const response = await fetch('/api/tutors/me/time-ranges');
+                    if (!response.ok) throw new Error('Failed to load');
+                    const result = await response.json();
+
+                    if (result.success && result.data) {
+                        const ranges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+                        result.data.forEach(item => {
+                            const dayIdx = dayEnumToIndex[item.dayOfWeek];
+                            if (dayIdx !== undefined) {
+                                ranges[dayIdx].push({ start: item.startTime, end: item.endTime });
+                            }
+                        });
+                        return ranges;
+                    }
+                } catch (e) {
+                    console.warn('Failed to load time ranges from API', e);
+                }
+
+                return JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+            }
+
+            async function loadAvailability() {
+                try {
+                    const { start, end } = getDateRangeForMaxWeeks(9);
+                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+                    if (!response.ok) throw new Error('Failed to load');
+
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const selectedMap = new Map();
+                        const bookedMap = new Map();
+
+                        result.data.forEach(item => {
+                            if (!item.startAt) return;
+                            const [datePart, timePart] = item.startAt.split('T');
+                            const time = timePart?.substring(0, 5);
+                            if (!datePart || !time) return;
+
+                            if (item.status === 'BOOKED') {
+                                if (!bookedMap.has(datePart)) bookedMap.set(datePart, new Set());
+                                bookedMap.get(datePart).add(time);
+                                return;
+                            }
+
+                            if (item.status && item.status !== 'OPEN') return;
+
+                            if (!selectedMap.has(datePart)) selectedMap.set(datePart, new Set());
+                            selectedMap.get(datePart).add(time);
+                        });
+
+                        const resultData = [];
+                        selectedMap.forEach((times, date) => {
+                            resultData.push({ date, slots: Array.from(times) });
+                        });
+                        bookedMap.forEach((times, date) => {
+                            resultData.push({ date, slots: Array.from(times), booked: true });
+                        });
+
+                        return resultData;
+                    }
+                } catch (e) {
+                    console.warn('Failed to load availability from API', e);
+                }
+                return [];
+            }
+
+            async function toggleScheduleEditor() {
+                const editorCard = document.getElementById('scheduleEditorCard');
+                const isVisible = editorCard.style.display !== 'none';
+                
+                if (isVisible) {
+                    editorCard.style.display = 'none';
+                } else {
+                    editorCard.style.display = 'block';
+                    
+                    // 캘린더 초기화 (최초 1회만)
+                    if (!mypageCalendar) {
+                        const baseTimeRanges = await loadBaseTimeRanges();
+                        const initialData = await loadAvailability();
+
+                        mypageCalendar = new TutorCalendar({
+                            containerId: 'mypageScheduleEditor',
+                            mode: 'edit',
+                            baseTimeRanges: baseTimeRanges,
+                            renderOnlyInRange: true,
+                            timeStepMinutes: 30,
+                            initialData: initialData
+                        });
+
+                        // 9주까지 적용 버튼
+                        document.getElementById('btnApplyPattern').addEventListener('click', () => {
+                            if (confirm('현재 주의 패턴을 9주간 적용하시겠습니까?')) {
+                                mypageCalendar.applyWeekPattern(9);
+                                alert('9주간의 스케줄이 적용되었습니다.');
+                            }
+                        });
+
+                        // 저장 버튼
+                        document.getElementById('btnSaveSchedule').addEventListener('click', async () => {
+                            const selectedData = mypageCalendar.getSelectedData();
+                            
+                            if (selectedData.length === 0) {
+                                alert('선택된 시간이 없습니다.');
+                                return;
+                            }
+
+                            try {
+                                const { start, end } = getDateRangeForMaxWeeks(9);
+                                const availabilities = selectedData.map(item => {
+                                    const startDate = new Date(`${item.date}T${item.time}:00`);
+                                    const endDate = new Date(startDate.getTime() + (mypageCalendar.options.timeStepMinutes * 60000));
+                                    return {
+                                        startAt: formatLocalDateTime(startDate),
+                                        endAt: formatLocalDateTime(endDate),
+                                        status: 'OPEN'
+                                    };
+                                });
+
+                                const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(availabilities)
+                                });
+
+                                const result = await response.json();
+                                if (!result.success) throw new Error(result.message || '저장 실패');
+
+                                alert('스케줄이 저장되었습니다.');
+                                toggleScheduleEditor();
+                            } catch (error) {
+                                console.error('저장 중 오류:', error);
+                                alert('저장에 실패했습니다.');
+                            }
+                        });
+                    }
+                }
+            }
+        </script>
     </div>
 </div>

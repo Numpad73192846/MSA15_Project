@@ -226,6 +226,7 @@
                     return;
                 }
 
+<<<<<<< HEAD
                 if (data.data && data.data.accessToken) {
                     localStorage.setItem('accessToken', data.data.accessToken);
                     if (data.data.refreshToken) {
@@ -239,6 +240,13 @@
                 );
 
                 location.href = isTutor ? '/tutor/mypage' : '/';
+=======
+                if (data.data && data.data.accessToken && typeof setAccessToken === 'function') {
+                    setAccessToken(data.data.accessToken);
+                }
+
+                location.href = '/';
+>>>>>>> 5a44d9fe660f3bb25aed0316e0d5f8a20547784a
             });
 
             const roleInput = document.getElementById('role');
@@ -332,11 +340,16 @@
                     return;
                 }
 
+<<<<<<< HEAD
                 if (loginData.data && loginData.data.accessToken) {
                     localStorage.setItem('accessToken', loginData.data.accessToken);
                     if (loginData.data.refreshToken) {
                         localStorage.setItem('refreshToken', loginData.data.refreshToken);
                     }
+=======
+                if (loginData.data && loginData.data.accessToken && typeof setAccessToken === 'function') {
+                    setAccessToken(loginData.data.accessToken);
+>>>>>>> 5a44d9fe660f3bb25aed0316e0d5f8a20547784a
                 }
 
                 const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';

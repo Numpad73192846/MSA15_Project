@@ -1,7 +1,44 @@
 // 사용자 정의 자바스크립트
 
+let accessTokenMemory = null;
+
+function setAccessToken(token) {
+    accessTokenMemory = token || null;
+}
+
+function getAccessToken() {
+    return accessTokenMemory;
+}
+
+function buildAuthHeaders() {
+    const token = getAccessToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function refreshAccessToken() {
+    const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+    });
+
+    if (!response.ok) {
+        return false;
+    }
+
+    const data = await response.json();
+    if (data && data.success && data.data && data.data.accessToken) {
+        setAccessToken(data.data.accessToken);
+        return true;
+    }
+
+    return false;
+}
+
 function clearTokens() {
-    // JWT는 HttpOnly 쿠키로 관리됨
+    accessTokenMemory = null;
 }
 
 function setNavState(isAuth, authList) {
@@ -56,57 +93,47 @@ function setNavState(isAuth, authList) {
 
 function fetchUserInfo() {
     fetch("/api/users/me", {
-        method: "GET"
+        method: "GET",
+        headers: buildAuthHeaders()
     })
-    .then (response => {
-        if ( response.ok ) {
+    .then(response => {
+        if (response.ok) {
             return response.json();
         }
 
-        return fetch("/api/auth/refresh", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({})
-        })
-        .then (res => {
-            if ( res.ok ) {
-                return res.json();
-            }
-            throw new Error("토큰 갱신에 실패했습니다.");
-        })
-        .then (data => {
-            if ( data && data.success && data.data ) {
+        return refreshAccessToken()
+            .then((refreshed) => {
+                if (!refreshed) {
+                    throw new Error("토큰 갱신에 실패했습니다.");
+                }
                 return fetch("/api/users/me", {
-                    method: "GET"
+                    method: "GET",
+                    headers: buildAuthHeaders()
                 });
-            }
-            throw new Error("토큰 갱신 응답이 올바르지 않습니다.");
-        })
-        .then (res => {
-            if ( res.ok ) {
-                return res.json();
-            }
-            throw new Error("토큰 갱신 후 사용자 정보를 불러오지 못했습니다.");
-        })
-        .catch (error => {
-            console.error(error);
-            setNavState(false);
-            return null;
-        });
+            })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+                throw new Error("토큰 갱신 후 사용자 정보를 불러오지 못했습니다.");
+            });
     })
-    .then (data => {
-        if ( data && data.success && data.data ) {
+    .catch((error) => {
+        console.error(error);
+        setNavState(false);
+        return null;
+    })
+    .then((data) => {
+        if (data && data.success && data.data) {
             const authList = data.data.authList || [];
             setNavState(true, authList);
 
             const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
-            if (isTutorPending && location.pathname !== "/tutor/register") {
+            const isRegisterPage = location.pathname.startsWith("/tutor/register");
+            if (isTutorPending && !isRegisterPage) {
                 location.href = "/tutor/register";
             }
-        }
-        else {
+        } else {
             setNavState(false);
         }
     });
@@ -130,4 +157,11 @@ if ( logoutBtn ) {
     });
 }
 
+<<<<<<< HEAD
 document.addEventListener("DOMContentLoaded", fetchUserInfo);
+=======
+document.addEventListener("DOMContentLoaded", async () => {
+    await refreshAccessToken();
+    fetchUserInfo();
+});
+>>>>>>> 5a44d9fe660f3bb25aed0316e0d5f8a20547784a

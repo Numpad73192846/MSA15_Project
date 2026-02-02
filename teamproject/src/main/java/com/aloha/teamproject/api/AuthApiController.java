@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aloha.teamproject.common.exception.AppException;
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
-import com.aloha.teamproject.dto.AuthTokenResponse;
-import com.aloha.teamproject.dto.RefreshTokenRequest;
+import com.aloha.teamproject.dto.AuthDto;
 import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.service.LoginService;
 
@@ -34,9 +33,9 @@ public class AuthApiController {
 	private final LoginService loginService;
 
 	@PostMapping("/login")
-	public ApiResponse<AuthTokenResponse> login(@RequestBody Users user, HttpServletRequest httpRequest, HttpServletResponse response) {
+	public ApiResponse<AuthDto.TokenResponse> login(@RequestBody Users user, HttpServletRequest httpRequest, HttpServletResponse response) {
 		
-		AuthTokenResponse result;
+		AuthDto.TokenResponse result;
 
 		try {
 			result = loginService.login(user);
@@ -55,11 +54,11 @@ public class AuthApiController {
 	}
 
 	@PostMapping("/refresh")
-	public ApiResponse<AuthTokenResponse> tokenRefresh(@RequestBody(required = false) RefreshTokenRequest request,
+	public ApiResponse<AuthDto.TokenResponse> tokenRefresh(@RequestBody(required = false) AuthDto.RefreshTokenRequest request,
 			HttpServletRequest httpRequest,
 			HttpServletResponse response) {
 
-		AuthTokenResponse result;
+		AuthDto.TokenResponse result;
 
 		try {
 			String refreshToken = (request != null) ? request.getRefreshToken() : null;
@@ -80,7 +79,7 @@ public class AuthApiController {
 	}
 
 	@PostMapping("/logout")
-	public ApiResponse<Void> logout(@RequestBody(required = false) RefreshTokenRequest request,
+	public ApiResponse<Void> logout(@RequestBody(required = false) AuthDto.RefreshTokenRequest request,
 			HttpServletRequest httpRequest,
 			HttpServletResponse response) {
 
@@ -146,8 +145,13 @@ public class AuthApiController {
 				.findFirst()
 				.orElse(null);
 	}
+<<<<<<< HEAD
 	
 	private void setSessionAuthentication(HttpServletRequest request, AuthTokenResponse result) {
+=======
+
+	private void setSessionAuthentication(HttpServletRequest request, AuthDto.TokenResponse result) {
+>>>>>>> 5a44d9fe660f3bb25aed0316e0d5f8a20547784a
 		if (request == null || result == null) {
 			return;
 		}
