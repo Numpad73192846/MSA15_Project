@@ -146,7 +146,7 @@ public class AuthApiController {
 				.findFirst()
 				.orElse(null);
 	}
-
+	
 	private void setSessionAuthentication(HttpServletRequest request, AuthTokenResponse result) {
 		if (request == null || result == null) {
 			return;
