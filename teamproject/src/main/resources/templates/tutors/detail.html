@@ -1,6 +1,10 @@
-<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
-
+<head>
+    <title>튜터 상세</title>
+</head>
+<body>
     <div layout:fragment="content">
         <div class="container py-5">
             <a class="btn btn-link px-0 mb-3" href="/tutors">← 목록으로</a>
@@ -56,36 +60,29 @@
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="h5 fw-bold mb-0">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
-                                <button class="btn btn-sm btn-primary" id="btnWriteReview" style="display: none;">
-                                    <i class="bi bi-pencil-square"></i> 리뷰 작성
-                                </button>
-                            </div>
-                            <div class="py-3 border-bottom review-item" th:each="r : ${reviews}" th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <div class="fw-semibold" th:text="${r.studentName}">학생A</div>
+                            <h3 class="h5 fw-bold mb-4">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
+                            
+                            <div th:each="r : ${reviews}" class="mb-3">
+                                <div class="card border review-item" th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-bold mb-1">
+                                                    <span th:text="${r.studentName}">학생A</span>
+                                                    <span class="text-primary ms-1">님의 후기</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-warning">
+                                                <span th:each="i : ${#numbers.sequence(1,5)}"
+                                                    th:text="${i <= r.rating ? '★' : '☆'}">★</span>
+                                            </div>
+                                        </div>
+                                        <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
                                         <div class="small text-muted">
                                             <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                     </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="small">
-                                            <span th:each="i : ${#numbers.sequence(1,5)}"
-                                                th:text="${i <= r.rating ? '★' : '☆'}">★</span>
-                                        </div>
-                                        <div class="review-actions" style="display: none;">
-                                            <button class="btn btn-sm btn-outline-secondary btn-edit-review" title="수정">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger btn-delete-review" title="삭제">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
-                                <div class="text-muted mt-2 review-comment" th:text="${r.content}">후기</div>
                             </div>
                         </div>
                     </div>
@@ -111,99 +108,80 @@
                                     <span class="fw-semibold ms-2" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
                                 </div>
 
-                                <!DOCTYPE html>
-                                <html lang="ko">
-
-                                <head>
-                                    <meta charset="UTF-8">
-                                    <title>Weekly Calendar</title>
-                                    <link rel="stylesheet" href="style.css">
-                                </head>
-
-                                <body>
-
-                                    <div class="weekly_calendar_wrap" id="tutorScheduleCalendar">
-
-                                        <!-- 요일 헤더 -->
-                                        <div class="weekly_head">
-                                            <ul class="dayHead" id="calendarDayHead">
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">일</p>
-                                                        <p class="dayDate">02.02</p>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">월</p>
-                                                        <p class="dayDate">02.03</p>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">화</p>
-                                                        <p class="dayDate">02.04</p>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">수</p>
-                                                        <p class="dayDate">02.05</p>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">목</p>
-                                                        <p class="dayDate">02.06</p>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">금</p>
-                                                        <p class="dayDate">02.07</p>
-                                                    </div>
-                                                </li>
-                                                <li>
-                                                    <div class="head_in">
-                                                        <p class="dayTit">토</p>
-                                                        <p class="dayDate">02.08</p>
-                                                    </div>
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <!-- 일정 영역 -->
-                                        <div class="weekly_con">
-                                            <ul class="dayCon" id="calendarDayBody">
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                                <li>
-                                                    <div class="con_in"></div>
-                                                </li>
-                                            </ul>
-                                        </div>
-
+                                <div class="weekly_calendar_wrap" id="tutorScheduleCalendar">
+                                    <div class="weekly_head">
+                                        <ul class="dayHead" id="calendarDayHead">
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">일</p>
+                                                    <p class="dayDate">02.02</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">월</p>
+                                                    <p class="dayDate">02.03</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">화</p>
+                                                    <p class="dayDate">02.04</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">수</p>
+                                                    <p class="dayDate">02.05</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">목</p>
+                                                    <p class="dayDate">02.06</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">금</p>
+                                                    <p class="dayDate">02.07</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">토</p>
+                                                    <p class="dayDate">02.08</p>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
 
-                                </body>
-
-                                </html>
+                                    <div class="weekly_con">
+                                        <ul class="dayCon" id="calendarDayBody">
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
 
                                 <small class="text-muted d-block mt-2">
                                     <span class="badge bg-primary">●</span> 수업 가능
@@ -344,226 +322,41 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Review Write/Edit Modal -->
-<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="reviewModalTitle">리뷰 작성</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="reviewId">
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">★</button>
-                        <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">★★</button>
-                        <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">★★★</button>
-                        <button type="button" class="btn btn-outline-warning rating-btn" data-rating="4">★★★★</button>
-                        <button type="button" class="btn btn-outline-warning rating-btn" data-rating="5">★★★★★</button>
+        <!-- Review Write/Edit Modal -->
+        <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="reviewModalTitle">리뷰 작성</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <input type="hidden" id="reviewRating" required>
+                    <div class="modal-body">
+                        <input type="hidden" id="reviewId">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="4">★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="5">★★★★★</button>
+                            </div>
+                            <input type="hidden" id="reviewRating" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reviewComment" rows="5" 
+                                placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveReview">저장</button>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="reviewComment" rows="5" 
-                        placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary" id="btnSaveReview">저장</button>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', async function() {
-        const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
-        let currentUserId = null;
-        let canWriteReview = false;
-
-        // Check if user is logged in and get user info
-        try {
-            const meResponse = await fetch('/api/users/me');
-            if (meResponse.ok) {
-                const meResult = await meResponse.json();
-                if (meResult.success && meResult.data) {
-                    currentUserId = meResult.data.userId;
-                    
-                    // Check if user has completed lessons with this tutor
-                    const eligibilityResponse = await fetch(`/api/tutors/${tutorId}/review-eligibility`);
-                    if (eligibilityResponse.ok) {
-                        const eligibilityResult = await eligibilityResponse.json();
-                        if (eligibilityResult.success && eligibilityResult.data) {
-                            canWriteReview = eligibilityResult.data.canWriteReview;
-                            const hasWrittenReview = eligibilityResult.data.hasWrittenReview;
-                            
-                            // Show write review button only if eligible and hasn't written yet
-                            if (canWriteReview && !hasWrittenReview) {
-                                document.getElementById('btnWriteReview').style.display = 'inline-block';
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('Failed to check user status', e);
-        }
-
-        // Show edit/delete buttons for user's own reviews
-        if (currentUserId) {
-            document.querySelectorAll('.review-item').forEach(item => {
-                const reviewUserId = item.dataset.userId;
-                if (reviewUserId === currentUserId) {
-                    const actions = item.querySelector('.review-actions');
-                    if (actions) actions.style.display = 'flex';
-                }
-            });
-        }
-
-        // Rating button handlers
-        document.querySelectorAll('.rating-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.rating-btn').forEach(b => {
-                    b.classList.remove('btn-warning');
-                    b.classList.add('btn-outline-warning');
-                });
-                this.classList.remove('btn-outline-warning');
-                this.classList.add('btn-warning');
-                document.getElementById('reviewRating').value = this.dataset.rating;
-            });
-        });
-
-        // Write review button
-        document.getElementById('btnWriteReview')?.addEventListener('click', function() {
-            if (!canWriteReview) {
-                alert('이 튜터와 완료된 수업이 있어야 리뷰를 작성할 수 있습니다.');
-                return;
-            }
-            document.getElementById('reviewModalTitle').textContent = '리뷰 작성';
-            document.getElementById('reviewId').value = '';
-            document.getElementById('reviewRating').value = '';
-            document.getElementById('reviewComment').value = '';
-            document.querySelectorAll('.rating-btn').forEach(b => {
-                b.classList.remove('btn-warning');
-                b.classList.add('btn-outline-warning');
-            });
-            new bootstrap.Modal(document.getElementById('reviewModal')).show();
-        });
-
-        // Edit review buttons
-        document.querySelectorAll('.btn-edit-review').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const reviewItem = this.closest('.review-item');
-                const reviewId = reviewItem.dataset.reviewId;
-                const rating = reviewItem.querySelectorAll('.small span').length;
-                const comment = reviewItem.querySelector('.review-comment').textContent;
-
-                document.getElementById('reviewModalTitle').textContent = '리뷰 수정';
-                document.getElementById('reviewId').value = reviewId;
-                document.getElementById('reviewRating').value = rating;
-                document.getElementById('reviewComment').value = comment;
-                
-                document.querySelectorAll('.rating-btn').forEach((b, idx) => {
-                    if (idx < rating) {
-                        b.classList.remove('btn-outline-warning');
-                        b.classList.add('btn-warning');
-                    } else {
-                        b.classList.remove('btn-warning');
-                        b.classList.add('btn-outline-warning');
-                    }
-                });
-
-                new bootstrap.Modal(document.getElementById('reviewModal')).show();
-            });
-        });
-
-        // Delete review buttons
-        document.querySelectorAll('.btn-delete-review').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                if (!confirm('리뷰를 삭제하시겠습니까?')) return;
-
-                const reviewItem = this.closest('.review-item');
-                const reviewId = reviewItem.dataset.reviewId;
-
-                try {
-                    const response = await fetch(`/api/reviews/${reviewId}`, {
-                        method: 'DELETE'
-                    });
-
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('리뷰가 삭제되었습니다.');
-                        location.reload();
-                    } else {
-                        alert(result.message || '리뷰 삭제에 실패했습니다.');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('리뷰 삭제 중 오류가 발생했습니다.');
-                }
-            });
-        });
-
-        // Save review button
-        document.getElementById('btnSaveReview')?.addEventListener('click', async function() {
-            const reviewId = document.getElementById('reviewId').value;
-            const rating = document.getElementById('reviewRating').value;
-            const comment = document.getElementById('reviewComment').value.trim();
-
-            if (!rating) {
-                alert('평점을 선택해주세요.');
-                return;
-            }
-
-            if (!comment) {
-                alert('후기 내용을 입력해주세요.');
-                return;
-            }
-
-            const payload = {
-                tutorId: tutorId,
-                rating: parseInt(rating),
-                comment: comment
-            };
-
-            try {
-                let response;
-                if (reviewId) {
-                    // Update existing review
-                    response = await fetch(`/api/reviews/${reviewId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                } else {
-                    // Create new review
-                    response = await fetch('/api/reviews', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                }
-
-                const result = await response.json();
-                if (result.success) {
-                    alert(reviewId ? '리뷰가 수정되었습니다.' : '리뷰가 작성되었습니다.');
-                    location.reload();
-                } else {
-                    alert(result.message || '리뷰 저장에 실패했습니다.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('리뷰 저장 중 오류가 발생했습니다.');
-            }
-        });
-    });
-</script>
-    </div>
-</div>
+</body>
+</html>

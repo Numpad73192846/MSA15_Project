@@ -54,11 +54,31 @@ public class TutorsPageController {
             "availability", "평일 저녁, 주말"
         );
 
-        List<Map<String, Object>> reviews = List.of(
-            Map.of("name", "학생A", "date", "2026-01-20", "rating", 5, "comment", "설명이 정말 이해 잘 됐어요!"),
-            Map.of("name", "학생B", "date", "2026-01-12", "rating", 4, "comment", "친절하고 꼼꼼해요."),
-            Map.of("name", "학생C", "date", "2026-01-05", "rating", 5, "comment", "발음 교정이 좋았습니다.")
-        );
+        Map<String, Object> review1 = new java.util.HashMap<>();
+        review1.put("studentName", "학생A");
+        review1.put("createdAt", java.time.LocalDateTime.of(2026, 1, 20, 0, 0));
+        review1.put("rating", 5);
+        review1.put("content", "설명이 정말 이해 잘 됐어요!");
+        review1.put("reviewId", 1);
+        review1.put("studentId", "s1");
+
+        Map<String, Object> review2 = new java.util.HashMap<>();
+        review2.put("studentName", "학생B");
+        review2.put("createdAt", java.time.LocalDateTime.of(2026, 1, 12, 0, 0));
+        review2.put("rating", 4);
+        review2.put("content", "친절하고 꼼꼼해요.");
+        review2.put("reviewId", 2);
+        review2.put("studentId", "s2");
+
+        Map<String, Object> review3 = new java.util.HashMap<>();
+        review3.put("studentName", "학생C");
+        review3.put("createdAt", java.time.LocalDateTime.of(2026, 1, 5, 0, 0));
+        review3.put("rating", 5);
+        review3.put("content", "발음 교정이 좋았습니다.");
+        review3.put("reviewId", 3);
+        review3.put("studentId", "s3");
+
+        List<Map<String, Object>> reviews = List.of(review1, review2, review3);
 
         model.addAttribute("tutor", tutor);
         model.addAttribute("reviews", reviews);
