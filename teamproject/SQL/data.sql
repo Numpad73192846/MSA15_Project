@@ -38,8 +38,13 @@ VALUES
 -- 테스트 과목 그룹 및 과목 데이터 삽입
 INSERT INTO subject_group (id, name, seq)
 VALUES
-('sg-math', '수학', 1),
-('sg-eng', '영어', 2);
+('sg-1', '한국어', 1),
+('sg-2', '영어', 2),
+('sg-3', '중국어', 3),
+('sg-4', '일본어', 4),
+('sg-5', '스페인어', 5),
+('sg-6', '스페인어', 6),
+('sg-7', '기타', 7);
 
 -- 테스트 언어 분야 데이터 삽입
 INSERT INTO language_field (id, name, category, seq)

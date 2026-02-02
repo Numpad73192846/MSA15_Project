@@ -61,7 +61,7 @@
                                 </div>
                             </div>
 
-                            <input type="hidden" id="availableTime" name="availableTime" required>
+                            <input type="hidden" id="availableTime" name="availableTime">
                             <small class="text-muted">선택된 시간만 저장됩니다. 요일별 기본 시간대 밖은 자동으로 비활성 처리됩니다.</small>
                         </div>
                         
@@ -86,11 +86,17 @@
         <script>
             let calendar = null;
 
+            // function getStoredTokens() {
+            //     return {
+            //         accessToken: localStorage.getItem('accessToken'),
+            //         refreshToken: localStorage.getItem('refreshToken')
+            //     };
+            // }
+
             function getStoredTokens() {
-                return {
-                    accessToken: localStorage.getItem('accessToken'),
-                    refreshToken: localStorage.getItem('refreshToken')
-                };
+                const accessToken = typeof getAccessToken === 'function' ? getAccessToken() : null;
+                const refreshToken = localStorage.getItem('refreshToken');
+                return { accessToken, refreshToken };
             }
 
             async function fetchMe(accessToken) {
@@ -279,22 +285,28 @@
 
                 // 최종 제출 데이터
                 const payload = {
-                    // Step 1
+                    // Step 1: 기본 정보
                     basicName: step1Data.basicName,
                     basicPhone: step1Data.basicPhone,
                     headline: step1Data.headline,
                     bio: step1Data.bio,
                     videoUrl: step1Data.videoUrl,
+                    profileImage: step1Data.profileImage,
+                    introVideo: step1Data.introVideo,
+                    introVideoFileName: step1Data.introVideoFileName,
+                    introVideoFileSize: step1Data.introVideoFileSize,
                     
-                    // Step 2
+                    // Step 2: 학력 및 경력
                     career: step2Data.career,
                     selfIntro: step2Data.selfIntro,
+                    academicCertificates: step2Data.academicCertificates || [],
+                    educationCertificates: step2Data.educationCertificates || [],
                     
                     // Step 3
                     lessonSubjects: step3Data.lessonSubjects,
                     fieldIds: step3Data.fieldIds || [],
                     
-                    // Step 4
+                    // Step 4: 수업 가능 시간대
                     availableTime: step4Data.availableTime
                 };
 

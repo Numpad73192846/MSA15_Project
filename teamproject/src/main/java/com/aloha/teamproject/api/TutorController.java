@@ -2,22 +2,33 @@ package com.aloha.teamproject.api;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
+import com.aloha.teamproject.dto.UserAuth;
+import com.aloha.teamproject.dto.Users;
+import com.aloha.teamproject.service.FileService;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
 import com.aloha.teamproject.service.UserService;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 
 @Slf4j
@@ -30,6 +41,7 @@ public class TutorController {
     private final TutorFieldService tutorFieldService;
     private final TutorMyPageService tutorMyPageService;
     private final UserService userService;
+    private final FileService fileService;
 
     @GetMapping("/me")
     public ApiResponse<TutorMyPage> me(Authentication authentication) {
@@ -104,14 +116,47 @@ public class TutorController {
             tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
 
             userService.deleteAuth(authentication.getName(), "ROLE_TUTOR_PENDING");
-            userService.insertAuth(com.aloha.teamproject.dto.UserAuth.builder()
-                                                                   .userId(authentication.getName())
-                                                                   .auth("ROLE_TUTOR")
-                                                                   .build());
+            userService.insertAuth(UserAuth.builder()
+                                            .userId(authentication.getName())
+                                            .auth("ROLE_TUTOR")
+                                            .build());
+
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
             log.error("/api/tutors/profile 저장 실패", e);
             return ApiResponse.error("튜터 정보를 저장하지 못했습니다.");
+        }
+    }
+
+    @PutMapping(
+        value = "/profile",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ApiResponse<Void> profile(
+            Authentication authentication,
+            @ModelAttribute TutorProfile.Request request,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
+    ) {
+        try {
+            TutorProfile profile = TutorProfile.builder()
+                    .userId(authentication.getName())
+                    .headline(request.getHeadline())
+                    .bio(request.getBio())
+                    .videoUrl(request.getVideoUrl())
+                    .build();
+
+            if (profileImage != null && !profileImage.isEmpty()) {
+                String imagePath = fileService.saveProfileImage(profileImage);
+                profile.setProfileImg(imagePath);
+            }
+
+            tutorProfileService.upsertProfile(profile);
+            tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
+
+            return ApiResponse.ok(SuccessCode.CREATED);
+        } catch (Exception e) {
+            log.error("튜터 프로필 저장 실패", e);
+            return ApiResponse.error("튜터 프로필 저장 실패");
         }
     }
     
