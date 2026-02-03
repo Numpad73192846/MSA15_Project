@@ -20,8 +20,8 @@
         SELECT no, user_id, id, start_at, end_at, status, created_at, updated_at
         FROM tutor_availability
         WHERE user_id = #{userId}
-          AND start_at &gt;= #{startDate}
-          AND end_at &lt;= #{endDate}
+             AND start_at &lt; #{endDate}
+             AND end_at &gt; #{startDate}
         ORDER BY start_at
     </select>
 

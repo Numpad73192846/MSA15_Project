@@ -9,6 +9,7 @@ public class StudentReview {
 	
 	private String reviewId;
 	private String tutorId;
+	private String tutorProfileId;
 	private String tutorName;
 	private Integer rating;
 	private String content;

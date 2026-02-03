@@ -52,6 +52,7 @@ public class SecurityConfig {
             "/api/users/**",
             "/api/admin/**",
             "/api/tutors/**",
+            "/api/reviews/**",
             "/api/bookings/**"
             ))
             .authorizeHttpRequests(auth -> auth

@@ -17,6 +17,8 @@ public interface TutorMyPageService  {
 
 	public List<UpcomingLesson> selectUpcomingBookingsByUserId(String userId) throws Exception;
 
+	public List<UpcomingLesson> selectPastBookingsByUserId(String userId) throws Exception;
+
 	public List<TutorReview> selectTutorReviewsByUserId(String userId) throws Exception;
 
 	public TutorStats selectTutorStatsByUserId(String userId) throws Exception;

@@ -228,39 +228,21 @@
                             <div class="card shadow-sm">
                                 <div class="card-body">
                                     <h4 class="h6 fw-bold mb-3">다가오는 수업</h4>
-                                    <div class="d-grid gap-2">
-                                        <div class="schedule-item p-3 border rounded">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                    <div class="fw-semibold">박지훈 학생</div>
-                                                    <div class="small text-muted mt-1">
-                                                        📅 2026-01-30 | ⏰ 14:00 (2시간) | 📚 영어
-                                                    </div>
-                                                </div>
-                                                <span class="badge bg-success">확정</span>
-                                            </div>
+                                    <div class="d-grid gap-2" id="upcomingLessonsContainer">
+                                        <div class="text-muted text-center py-3">
+                                            다가오는 수업이 없습니다.
                                         </div>
-                                        <div class="schedule-item p-3 border rounded">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                    <div class="fw-semibold">이서연 학생</div>
-                                                    <div class="small text-muted mt-1">
-                                                        📅 2026-01-31 | ⏰ 10:00 (1시간) | 📚 수학
-                                                    </div>
-                                                </div>
-                                                <span class="badge bg-success">확정</span>
-                                            </div>
-                                        </div>
-                                        <div class="schedule-item p-3 border rounded">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                    <div class="fw-semibold">최민수 학생</div>
-                                                    <div class="small text-muted mt-1">
-                                                        📅 2026-02-01 | ⏰ 16:00 (2시간) | 📚 과학
-                                                    </div>
-                                                </div>
-                                                <span class="badge bg-warning text-dark">대기중</span>
-                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 지난 수업 목록 -->
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">지난 수업</h4>
+                                    <div class="d-grid gap-2" id="pastLessonsContainer">
+                                        <div class="text-muted text-center py-3">
+                                            지난 수업 내역이 없습니다.
                                         </div>
                                     </div>
                                 </div>
@@ -432,15 +414,64 @@
         <link rel="stylesheet" href="/css/tutor-calendar.css">
         <script src="/js/tutor-calendar.js"></script>
         <script>
+            const getFallbackToken = () => localStorage.getItem('accessToken');
+            const getAuthHeaders = () => {
+                if (typeof buildAuthHeaders === 'function') {
+                    return buildAuthHeaders();
+                }
+                const token = getFallbackToken();
+                return token ? { 'Authorization': `Bearer ${token}` } : {};
+            };
+
+            async function ensureAuth() {
+                const token = (typeof getAccessToken === 'function') ? getAccessToken() : getFallbackToken();
+                if (token) return true;
+                if (typeof refreshAccessToken === 'function') {
+                    return await refreshAccessToken();
+                }
+                return false;
+            }
+
+            async function fetchWithAuth(url, options = {}) {
+                const headers = { ...(options.headers || {}), ...getAuthHeaders() };
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 && typeof refreshAccessToken === 'function') {
+                    const refreshed = await refreshAccessToken();
+                    if (refreshed) {
+                        const retryHeaders = { ...(options.headers || {}), ...getAuthHeaders() };
+                        return fetch(url, {
+                            ...options,
+                            headers: retryHeaders,
+                            credentials: 'include'
+                        });
+                    }
+                }
+
+                return response;
+            }
+
             // 페이지 로드 시 마이페이지 데이터 초기화
             document.addEventListener('DOMContentLoaded', async function() {
                 try {
-                    const response = await fetch('/api/tutors/me');
+                    const authed = await ensureAuth();
+                    if (!authed) {
+                        location.href = '/auth/login';
+                        return;
+                    }
+                    const response = await fetchWithAuth('/api/tutors/me');
                     if (!response.ok) throw new Error('Failed to fetch');
                     
                     const result = await response.json();
                     if (result.success && result.data) {
                         const mypage = result.data;
+                        console.log('마이페이지 데이터:', mypage);
+                        console.log('다가오는 수업:', mypage.upcomingLessons);
+                        console.log('지난 수업:', mypage.pastLessons);
                         
                         // 프로필 정보 바인딩
                         if (mypage.tutorProfile) {
@@ -504,13 +535,16 @@
                             document.querySelectorAll('.stat-value')[3].textContent = new Intl.NumberFormat('ko-KR').format(hourly);
                             
                             // 평점 및 리뷰 수
-                            if (stats.ratingAvg) {
-                                const ratingSpan = document.querySelector('.rating .fw-semibold');
-                                if (ratingSpan) ratingSpan.textContent = stats.ratingAvg;
-                            }
-                            if (stats.reviewCount) {
-                                const reviewCountSpan = document.querySelector('.rating .text-muted small');
-                                if (reviewCountSpan) reviewCountSpan.textContent = `(${stats.reviewCount} 리뷰)`;
+                            if (stats.ratingAvg !== undefined && stats.ratingAvg !== null) {
+                                const stars = '★'.repeat(Math.floor(stats.ratingAvg)) + '☆'.repeat(5 - Math.floor(stats.ratingAvg));
+                                const ratingDiv = document.querySelector('.rating');
+                                if (ratingDiv) {
+                                    ratingDiv.innerHTML = `
+                                        <span class="text-warning">${stars}</span>
+                                        <span class="ms-1 fw-semibold">${stats.ratingAvg || 0}</span>
+                                        <span class="text-muted small">(${stats.reviewCount || 0} 리뷰)</span>
+                                    `;
+                                }
                             }
                         }
                         
@@ -526,12 +560,29 @@
                             });
                         }
                         
+                        const statusLabel = (status) => {
+                            if (status === 'CONFIRMED') return '확정';
+                            if (status === 'PENDING') return '대기중';
+                            if (status === 'CANCELLED') return '취소됨';
+                            if (status === 'COMPLETED') return '완료';
+                            return status || '';
+                        };
+                        const statusClass = (status) => {
+                            if (status === 'CONFIRMED') return 'bg-success';
+                            if (status === 'PENDING') return 'bg-warning text-dark';
+                            if (status === 'CANCELLED') return 'bg-danger';
+                            if (status === 'COMPLETED') return 'bg-secondary';
+                            return 'bg-secondary';
+                        };
+
                         // 다가오는 수업 바인딩
                         if (mypage.upcomingLessons && mypage.upcomingLessons.length > 0) {
-                            const scheduleContainer = document.querySelector('[role="tablist"] + .tab-content #scheduleTab .card:nth-child(2) .d-grid');
+                            const scheduleContainer = document.getElementById('upcomingLessonsContainer');
                             if (scheduleContainer) {
                                 scheduleContainer.innerHTML = '';
                                 mypage.upcomingLessons.forEach(lesson => {
+                                    const label = statusLabel(lesson.status);
+                                    const badgeClass = statusClass(lesson.status);
                                     const item = document.createElement('div');
                                     item.className = 'schedule-item p-3 border rounded';
                                     item.innerHTML = `
@@ -542,10 +593,39 @@
                                                     📅 ${lesson.lessonDate} | ⏰ ${lesson.startTime} (${lesson.durationHours}시간) | 📚 ${lesson.subject}
                                                 </div>
                                             </div>
-                                            <span class="badge ${lesson.status === '확정' ? 'bg-success' : 'bg-warning'} ${lesson.status === '확정' ? '' : 'text-dark'}">
-                                                ${lesson.status}
+                                            <span class="badge ${badgeClass}">
+                                                ${label}
                                             </span>
                                         </div>
+                                    `;
+                                    scheduleContainer.appendChild(item);
+                                });
+                            }
+                        }
+                    
+
+                        // 지난 수업 바인딩
+                        if (mypage.pastLessons && mypage.pastLessons.length > 0) {
+                            const scheduleContainer = document.getElementById('pastLessonsContainer');
+                            if (scheduleContainer) {
+                                scheduleContainer.innerHTML = '';
+                                mypage.pastLessons.forEach(lesson => {
+                                    const label = statusLabel(lesson.status);
+                                    const badgeClass = statusClass(lesson.status);
+                                    const item = document.createElement('div');
+                                    item.className = 'schedule-item p-3 border rounded bg-light';
+                                    item.innerHTML = `
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-semibold">${lesson.studentName} 학생</div>
+                                            <div class="small text-muted mt-1">
+                                                📅 ${lesson.lessonDate} | ⏰ ${lesson.startTime} (${lesson.durationHours}시간) | 📚 ${lesson.subject}
+                                            </div>
+                                        </div>
+                                        <span class="badge ${badgeClass}">
+                                            ${label}
+                                        </span>
+                                    </div>
                                     `;
                                     scheduleContainer.appendChild(item);
                                 });
@@ -604,7 +684,7 @@
                 e.preventDefault();
                 const formData = new FormData(e.target);
 
-                const response = await fetch('/api/tutors', {
+                const response = await fetchWithAuth('/api/tutors', {
                     method: 'PUT',
                     body: formData
                 });
@@ -663,7 +743,7 @@
 
             async function loadBaseTimeRanges() {
                 try {
-                    const response = await fetch('/api/tutors/me/time-ranges');
+                    const response = await fetchWithAuth('/api/tutors/me/time-ranges');
                     if (!response.ok) throw new Error('Failed to load');
                     const result = await response.json();
 
@@ -687,7 +767,7 @@
             async function loadAvailability() {
                 try {
                     const { start, end } = getDateRangeForMaxWeeks(9);
-                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+                    const response = await fetchWithAuth(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
                     if (!response.ok) throw new Error('Failed to load');
 
                     const result = await response.json();
@@ -781,7 +861,7 @@
                                     };
                                 });
 
-                                const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                                const response = await fetchWithAuth(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(availabilities)

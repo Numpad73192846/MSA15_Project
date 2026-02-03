@@ -74,7 +74,7 @@ public class TutorsPageController {
             tutorMap.put("name", tutor.getName() != null ? tutor.getName() : "");
             tutorMap.put("ratingAvg", tutor.getRatingAvg() != null ? tutor.getRatingAvg() : 0.0);
             tutorMap.put("reviewCount", tutor.getReviewCount() != null ? tutor.getReviewCount() : 0);
-            tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects().split(",") : new String[]{});
+            tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects() : "");
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
             tutorMap.put("price", tutor.getPrice() != null ? tutor.getPrice() : 0);
@@ -165,10 +165,6 @@ public class TutorsPageController {
         
         return "tutor/dashboard";
     }
-
-    // ============================== 수정 시작 (튜터 회원가입 페이지 매핑 추가) ==============================
-    // 작성일: 2026-01-30 12:03분 수정했어요~! (조성진)
-    // 수정 내용: 튜터 회원가입을 4단계로 나누어 진행하기 위한 페이지 매핑 추가
     
     @GetMapping("/tutor/register")
     public String tutorRegister() {
@@ -189,6 +185,5 @@ public class TutorsPageController {
     public String tutorRegister3() {
         return "tutor/register3";
     }
-    
-    // ============================== 수정 종료 (튜터 회원가입 페이지 매핑 추가) ==============================
+
 }

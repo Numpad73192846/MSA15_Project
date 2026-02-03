@@ -94,8 +94,9 @@ function setNavState(isAuth, authList) {
 
         const isTutor = authList.some(a => a.auth === "ROLE_TUTOR" || a === "ROLE_TUTOR");
         const isTutorPending = authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
+        const isAdmin = authList.some(a => a.auth === "ROLE_ADMIN" || a === "ROLE_ADMIN");
 
-        if ( isTutor || isTutorPending ) {
+        if ( isTutor || isTutorPending || isAdmin ) {
             navUserMyPageBtn.style.display = "none";
 
             if (isTutorPending) {
@@ -103,7 +104,16 @@ function setNavState(isAuth, authList) {
                 navTutorMyPageBtn.style.display = "inline-block";
                 navTutorMyPageBtn.textContent = "추가 정보 작성";
                 navTutorMyPageBtn.onclick = () => { location.href = "/tutor/register"; };
-            } else {
+            }
+
+            else if ( isAdmin ) {
+                navTutorDashboardBtn.style.display = "none";
+                navTutorMyPageBtn.style.display = "inline-block";
+                navTutorMyPageBtn.textContent = "관리자 페이지";
+                navTutorMyPageBtn.onclick = () => { location.href = "/admin"; };
+            }
+
+            else {
                 navTutorDashboardBtn.style.display = "inline-block";
                 navTutorMyPageBtn.style.display = "inline-block";
             }
@@ -164,10 +174,18 @@ function fetchUserInfo() {
 
             const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
             const isRegisterPage = location.pathname.startsWith("/tutor/register");
+            const isAdmin = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_ADMIN" || a === "ROLE_ADMIN");
+            const isAdminPage = location.pathname.startsWith("/admin");
             if (isTutorPending && !isRegisterPage) {
                 location.href = "/tutor/register";
             }
-        } else {
+
+            if (isAdmin && !isAdminPage) {
+                location.href = "/admin";
+            }
+
+        } 
+        else {
             setNavState(false);
         }
     })

@@ -197,11 +197,20 @@
             // 수업 취소 함수
             async function cancelBooking(bookingId) {
                 if (!confirm('수업을 취소하시겠습니까?')) return;
+                const token = localStorage.getItem('accessToken');
+                if (!token) {
+                    alert('로그인이 필요합니다.');
+                    location.href = '/auth/login';
+                    return;
+                }
                 
                 try {
                     const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
                     const result = await response.json();
                     if (result.success) {
@@ -219,7 +228,14 @@
             // 페이지 로드 시 회원 마이페이지 데이터 초기화
             document.addEventListener('DOMContentLoaded', async function() {
                 try {
-                    const response = await fetch('/api/users/me/mypage');
+                    const token = localStorage.getItem('accessToken');
+                    if (!token) {
+                        location.href = '/auth/login';
+                        return;
+                    }
+                    const response = await fetch('/api/users/me/mypage', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
                     if (!response.ok) throw new Error('Failed to fetch');
                     
                     const result = await response.json();
@@ -288,6 +304,10 @@
                                 mypage.pastBookings.forEach(booking => {
                                     const item = document.createElement('div');
                                     item.className = 'booking-item p-3 border rounded opacity-75';
+                                    const isCompleted = booking.status === 'COMPLETED';
+                                    const reviewBtn = isCompleted
+                                        ? `<a class="btn btn-sm btn-outline-primary" href="/tutors/${booking.tutorProfileId}?review=1&bookingId=${booking.bookingId}">리뷰 작성</a>`
+                                        : '';
                                     item.innerHTML = `
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -300,7 +320,7 @@
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="badge bg-light text-dark">${booking.subject}</span>
-                                            <button class="btn btn-sm btn-outline-primary" onclick="location.href='/tutors/' + '${booking.tutorId}'">리뷰 작성</button>
+                                            ${reviewBtn}
                                         </div>
                                     `;
                                     pastContainer.appendChild(item);
@@ -319,7 +339,7 @@
                                     const item = document.createElement('div');
                                     item.className = 'review-item p-3 bg-light rounded';
                                     item.style.cursor = 'pointer';
-                                    item.onclick = () => location.href = `/tutors/${review.tutorId}`;
+                                    item.onclick = () => location.href = `/tutors/${review.tutorProfileId}`;
                                     item.innerHTML = `
                                         <div class="d-flex justify-content-between mb-2">
                                             <div class="fw-semibold">${review.tutorName} 튜터 <small class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>

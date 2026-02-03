@@ -1,6 +1,13 @@
-﻿<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
-
+<head>
+    <title>튜터 상세</title>
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
+    </th:block>
+</head>
+<body>
     <div layout:fragment="content">
         <div class="container py-5">
             <a class="btn btn-link px-0 mb-3" href="/tutors">← 목록으로</a>
@@ -19,8 +26,10 @@
                                             <h1 class="h3 fw-bold mb-1" th:text="${tutor.name}">튜터명</h1>
                                             <div class="text-muted mb-2" th:if="${reviewCount > 0}">
                                                 <span class="me-1">⭐</span>
-                                                <span class="fw-semibold" th:text="${avgRating}"></span>
-                                                <span class="text-muted">([[${reviewCount}]]개의 리뷰)</span>
+                                                <span class="fw-semibold" th:text="${avgRating}">4.9</span>
+                                                <span class="text-muted">(</span><span class="text-muted"
+                                                    th:text="${reviewCount}">127</span><span class="text-muted">개의
+                                                    리뷰)</span>
                                             </div>
                                             <div class="text-muted mb-2" th:if="${reviewCount == 0}">
                                                 <span class="me-1">⭐</span>
@@ -29,11 +38,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex flex-wrap gap-1 mb-3"
-                                        th:if="${tutor.subjects != null and tutor.subjects.length > 0}">
-                                        <span class="badge text-bg-light"
-                                            th:each="s : ${tutor.subjects}"
-                                            th:text="${s}">영어</span>
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <span class="badge text-bg-light" th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                            th:text="${#strings.trim(s)}">영어</span>
                                     </div>
 
                                     <div class="small text-muted">
@@ -59,11 +66,13 @@
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <h3 class="h5 fw-bold mb-4">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
-
+                            <h3 class="h5 fw-bold mb-4">
+                                수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)
+                                <button type="button" class="btn btn-sm btn-primary float-end" onclick="openReviewModal()">리뷰 작성</button>
+                            </h3>
+                            
                             <div th:each="r : ${reviews}" class="mb-3">
-                                <div class="card border review-item"
-                                    th:attr="data-review-id=${r.id}">
+                                <div class="card border review-item" th:attr="data-review-id=${r.id}">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -79,8 +88,7 @@
                                         </div>
                                         <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
                                         <div class="small text-muted">
-                                            <span
-                                                th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
+                                            <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                     </div>
                                 </div>
@@ -95,42 +103,95 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="fw-bold">수업 예약</div>
                                 <div class="text-primary fw-semibold">시간당 <span
-                                        th:text="${tutor.price != null ? #numbers.formatInteger(tutor.price, 0, 'COMMA') : '0'}">35,000</span>원
+                                        th:text="${#numbers.formatInteger(tutor.price, 0, 'COMMA')}">35,000</span>원
                                 </div>
                             </div>
 
                             <h4 class="h6 fw-bold mb-3">수업 가능 시간</h4>
                             <div class="mb-3">
                                 <div class="d-flex align-items-center gap-2 mb-3">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전 주</button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음 주</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전
+                                        주</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음
+                                        주</button>
                                     <span class="fw-semibold ms-2" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
                                 </div>
-                                
+
                                 <div class="weekly_calendar_wrap" id="tutorScheduleCalendar">
                                     <div class="weekly_head">
-                                        <ul class="dayHead flex" id="calendarDayHead">
-                                            <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
-                                            <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
+                                        <ul class="dayHead" id="calendarDayHead">
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">일</p>
+                                                    <p class="dayDate">02.02</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">월</p>
+                                                    <p class="dayDate">02.03</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">화</p>
+                                                    <p class="dayDate">02.04</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">수</p>
+                                                    <p class="dayDate">02.05</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">목</p>
+                                                    <p class="dayDate">02.06</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">금</p>
+                                                    <p class="dayDate">02.07</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div class="head_in">
+                                                    <p class="dayTit">토</p>
+                                                    <p class="dayDate">02.08</p>
+                                                </div>
+                                            </li>
                                         </ul>
                                     </div>
+
                                     <div class="weekly_con">
-                                        <ul class="dayCon flex" id="calendarDayBody">
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
-                                            <li class="flex"><div class="con_in"></div></li>
+                                        <ul class="dayCon" id="calendarDayBody">
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
+                                            <li>
+                                                <div class="con_in"></div>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
+
                                 <small class="text-muted d-block mt-2">
                                     <span class="badge bg-primary">●</span> 수업 가능 
                                     <span class="badge bg-danger ms-2">●</span> 예약됨
@@ -147,12 +208,11 @@
                                     <input type="text" class="form-control bg-white" id="displaySelectedTime"
                                         placeholder="캘린더에서 시간을 선택해주세요" readonly>
                                 </div>
-
                                 <div class="mb-3">
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
                                         <option value="" selected>선택</option>
-                                        <option th:each="s : ${tutor.subjects}" th:value="${s}" th:text="${s}">영어</option>
+                                        <option th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}" th:value="${#strings.trim(s)}" th:text="${#strings.trim(s)}">영어</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -160,174 +220,297 @@
                                     <textarea name="message" class="form-control" rows="3"
                                         placeholder="추가로 전달할 내용을 입력하세요"></textarea>
                                 </div>
-                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100" disabled>예약하기</button>
+                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100"
+                                    disabled>예약하기</button>
                             </form>
 
-                            <link rel="stylesheet" href="/css/tutor-calendar.css">
-                            <script src="/js/tutor-calendar.js"></script>
-                            <script>
-                                const FULL_DAY_RANGES = {
-                                    0: [{ start: '00:00', end: '24:00' }],
-                                    1: [{ start: '00:00', end: '24:00' }],
-                                    2: [{ start: '00:00', end: '24:00' }],
-                                    3: [{ start: '00:00', end: '24:00' }],
-                                    4: [{ start: '00:00', end: '24:00' }],
-                                    5: [{ start: '00:00', end: '24:00' }],
-                                    6: [{ start: '00:00', end: '24:00' }]
-                                };
-
-                                function formatLocalDateTime(date) {
-                                    const y = date.getFullYear();
-                                    const m = String(date.getMonth() + 1).padStart(2, '0');
-                                    const d = String(date.getDate()).padStart(2, '0');
-                                    const hh = String(date.getHours()).padStart(2, '0');
-                                    const mm = String(date.getMinutes()).padStart(2, '0');
-                                    const ss = String(date.getSeconds()).padStart(2, '0');
-                                    return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
-                                }
-
-                                function getDateRangeForMaxWeeks(maxWeeks = 9) {
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    const day = today.getDay();
-                                    const sunday = new Date(today);
-                                    sunday.setDate(today.getDate() - day);
-
-                                    const start = new Date(sunday);
-                                    start.setHours(0, 0, 0, 0);
-
-                                    const maxWeekStart = new Date(sunday);
-                                    maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
-                                    const end = new Date(maxWeekStart);
-                                    end.setDate(end.getDate() + 6);
-                                    end.setHours(23, 59, 59, 0);
-
-                                    return {
-                                        start: formatLocalDateTime(start),
-                                        end: formatLocalDateTime(end)
-                                    };
-                                }
-
-                                async function loadTutorAvailability(tutorId) {
-                                    console.log('[예약 시스템] 튜터 availability 로딩 시작 - tutorId:', tutorId);
-                                    try {
-                                        const { start, end } = getDateRangeForMaxWeeks(9);
-                                        console.log('[예약 시스템] 조회 기간:', { start, end });
-                                        const response = await fetch(`/api/tutors/${tutorId}/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
-                                        console.log('[예약 시스템] API 응답 상태:', response.status);
-                                        if (!response.ok) throw new Error('Failed to load');
-                                        const result = await response.json();
-                                        console.log('[예약 시스템] API 응답 데이터:', result);
-                                        if (!result.success || !result.data) {
-                                            console.warn('[예약 시스템] 응답 데이터 없음');
-                                            return [];
-                                        }
-
-                                        const grouped = new Map();
-                                        result.data.forEach(item => {
-                                            if (!item.startAt) return;
-                                            const [datePart, timePart] = item.startAt.split('T');
-                                            const time = timePart?.substring(0, 5);
-                                            if (!datePart || !time) return;
-                                            if (!grouped.has(datePart)) grouped.set(datePart, []);
-                                            grouped.get(datePart).push(time);
-                                        });
-
-                                        const availableSlots = Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
-                                        console.log('[예약 시스템] 변환된 슬롯 데이터:', availableSlots);
-                                        return availableSlots;
-                                    } catch (e) {
-                                        console.error('[예약 시스템] availability 로딩 실패:', e);
-                                        return [];
-                                    }
-                                }
-
-                                document.addEventListener('DOMContentLoaded', async () => {
-                                    console.log('[예약 시스템] DOMContentLoaded - 초기화 시작');
-                                    const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
-                                    console.log('[예약 시스템] tutorId:', tutorId);
-                                    const availableSlots = tutorId ? await loadTutorAvailability(tutorId) : [];
-                                    console.log('[예약 시스템] 최종 availableSlots:', availableSlots);
-
-                                    const calendar = new TutorCalendar({
-                                        containerId: 'tutorScheduleCalendar',
-                                        mode: 'edit',
-                                        singleSlotPerDay: true,
-                                        baseTimeRanges: FULL_DAY_RANGES,
-                                        renderOnlyInRange: true,
-                                        timeStepMinutes: 30,
-                                        availableSlots: availableSlots,
-                                        availableSlotsOnly: true,
-                                        onSlotClick: (dateKey, time) => {
-                                            console.log('[예약 시스템] 슬롯 클릭:', { dateKey, time });
-                                            document.getElementById('selectedDate').value = dateKey;
-                                            document.getElementById('selectedTime').value = time;
-                                            document.getElementById('displaySelectedTime').value = `${dateKey} ${time}`;
-                                            document.getElementById('bookingSubmit').disabled = false;
-                                            console.log('[예약 시스템] 선택된 시간:', `${dateKey} ${time}`);
-                                        }
-                                    });
-                                    console.log('[예약 시스템] 캘린더 초기화 완료');
-
-                                    // 예약 폼 제출 핸들러
-                                    const bookingForm = document.getElementById('bookingForm');
-                                    if (bookingForm) {
-                                        bookingForm.addEventListener('submit', async (e) => {
-                                            e.preventDefault();
-                                            console.log('[예약 폼 제출] 시작');
-                                            
-                                            const formData = new FormData(bookingForm);
-                                            const tutorId = bookingForm.dataset.tutorId;
-                                            const date = formData.get('date');
-                                            const time = formData.get('time');
-                                            const subject = formData.get('subject');
-                                            const message = formData.get('message');
-                                            
-                                            const requestData = { date, time, subject, message };
-                                            console.log('[예약 폼 제출] tutorId:', tutorId);
-                                            console.log('[예약 폼 제출] 요청 데이터:', requestData);
-                                            
-                                            try {
-                                                const token = localStorage.getItem('accessToken');
-                                                console.log('[예약 폼 제출] 토큰:', token ? '있음' : '없음');
-                                                
-                                                const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                        'Authorization': token ? `Bearer ${token}` : ''
-                                                    },
-                                                    body: JSON.stringify(requestData)
-                                                });
-                                                
-                                                console.log('[예약 폼 제출] 응답 상태:', response.status);
-                                                const result = await response.json();
-                                                console.log('[예약 폼 제출] 응답 데이터:', result);
-                                                
-                                                if (result.success) {
-                                                    console.log('[예약 폼 제출] 성공!');
-                                                    alert('예약이 완료되었습니다!');
-                                                    location.href = '/member/mypage';
-                                                } else {
-                                                    console.error('[예약 폼 제출] 실패:', result.message);
-                                                    alert(result.message || '예약에 실패했습니다.');
-                                                }
-                                            } catch (error) {
-                                                console.error('[예약 폼 제출] 에러:', error);
-                                                alert('예약 중 오류가 발생했습니다.');
-                                            }
-                                        });
-                                        console.log('[예약 시스템] 폼 제출 핸들러 등록 완료');
-                                    } else {
-                                        console.warn('[예약 시스템] bookingForm을 찾을 수 없습니다.');
-                                    }
-                                });
-                            </script>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <th:block layout:fragment="extra-scripts">
+            <script src="/js/tutor-calendar.js"></script>
+            <script>
+                const FULL_DAY_RANGES = {
+                    0: [{ start: '00:00', end: '24:00' }],
+                    1: [{ start: '00:00', end: '24:00' }],
+                    2: [{ start: '00:00', end: '24:00' }],
+                    3: [{ start: '00:00', end: '24:00' }],
+                    4: [{ start: '00:00', end: '24:00' }],
+                    5: [{ start: '00:00', end: '24:00' }],
+                    6: [{ start: '00:00', end: '24:00' }]
+                };
+
+                function formatLocalDateTime(date) {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    const hh = String(date.getHours()).padStart(2, '0');
+                    const mm = String(date.getMinutes()).padStart(2, '0');
+                    const ss = String(date.getSeconds()).padStart(2, '0');
+                    return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
+                }
+
+                function getDateRangeForMaxWeeks(maxWeeks = 9) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const day = today.getDay();
+                    const sunday = new Date(today);
+                    sunday.setDate(today.getDate() - day);
+
+                    const start = new Date(sunday);
+                    start.setHours(0, 0, 0, 0);
+
+                    const maxWeekStart = new Date(sunday);
+                    maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+                    const end = new Date(maxWeekStart);
+                    end.setDate(end.getDate() + 6);
+                    end.setHours(23, 59, 59, 0);
+
+                    return {
+                        start: formatLocalDateTime(start),
+                        end: formatLocalDateTime(end)
+                    };
+                }
+
+                async function loadTutorAvailability(tutorId) {
+                    try {
+                        const { start, end } = getDateRangeForMaxWeeks(9);
+                        const response = await fetch(`/api/tutors/${tutorId}/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+                        if (!response.ok) throw new Error('Failed to load');
+                        const result = await response.json();
+                        if (!result.success || !result.data) return [];
+
+                        const grouped = new Map();
+                        result.data.forEach(item => {
+                            if (!item.startAt) return;
+                            const [datePart, timePart] = item.startAt.split('T');
+                            const time = timePart?.substring(0, 5);
+                            if (!datePart || !time) return;
+                            if (!grouped.has(datePart)) grouped.set(datePart, []);
+                            grouped.get(datePart).push(time);
+                        });
+
+                        return Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
+                    } catch (e) {
+                        console.warn('Failed to load tutor availability', e);
+                        return [];
+                    }
+                }
+
+                async function openReviewModal(preselectBookingId = '') {
+                    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                    document.getElementById('reviewModalTitle').textContent = '리뷰 작성';
+                    document.getElementById('reviewId').value = '';
+                    document.getElementById('bookingId').value = preselectBookingId || '';
+                    document.getElementById('reviewRating').value = '';
+                    document.getElementById('reviewComment').value = '';
+                    document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('active'));
+                    
+                    // 현재 튜터와의 과거 예약 목록 로드
+                    const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
+                    if (tutorId) {
+                        try {
+                            const token = localStorage.getItem('accessToken');
+                            if (!token) {
+                                alert('로그인이 필요합니다.');
+                                location.href = '/auth/login';
+                                return;
+                            }
+
+                            const response = await fetch('/api/users/me', {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const userResult = await response.json();
+                            if (userResult.success && userResult.data) {
+                                const userId = userResult.data.id;
+                                const bookingResponse = await fetch(`/api/bookings/student/${userId}?tutorId=${tutorId}`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                const bookingResult = await bookingResponse.json();
+                                if (bookingResult.success && bookingResult.data) {
+                                    const bookingSelect = document.getElementById('bookingSelect');
+                                    const eligibleBookings = bookingResult.data.filter(booking => booking.status === 'COMPLETED');
+                                    bookingSelect.innerHTML = '<option value="">수업 선택 (필수)</option>';
+                                    if (eligibleBookings.length === 0) {
+                                        bookingSelect.innerHTML = '<option value="">완료된 수업이 없습니다.</option>';
+                                        bookingSelect.disabled = true;
+                                    } else {
+                                        bookingSelect.disabled = false;
+                                        eligibleBookings.forEach(booking => {
+                                            const option = document.createElement('option');
+                                            option.value = booking.bookingId || booking.id;
+                                            option.textContent = `${booking.lessonDate} ${booking.startTime} - ${booking.subject}`;
+                                            bookingSelect.appendChild(option);
+                                        });
+                                        if (preselectBookingId) {
+                                            bookingSelect.value = preselectBookingId;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Failed to load bookings', e);
+                        }
+                    }
+                    
+                    reviewModal.show();
+                }
+
+                document.addEventListener('DOMContentLoaded', async () => {
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('review') === '1') {
+                        const bookingIdParam = params.get('bookingId') || '';
+                        await openReviewModal(bookingIdParam);
+                    }
+                    // 예약 폼 제출 처리
+                    const bookingForm = document.getElementById('bookingForm');
+                    if (bookingForm) {
+                        bookingForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            
+                            const tutorId = bookingForm.dataset.tutorId;
+                            const date = document.getElementById('selectedDate').value;
+                            const time = document.getElementById('selectedTime').value;
+                            const subject = bookingForm.querySelector('select[name="subject"]').value;
+                            const message = bookingForm.querySelector('textarea[name="message"]').value;
+                            
+                            if (!date || !time) {
+                                alert('시간을 선택해주세요.');
+                                return;
+                            }
+                            if (!subject) {
+                                alert('과목을 선택해주세요.');
+                                return;
+                            }
+                            
+                            const token = localStorage.getItem('accessToken');
+                            if (!token) {
+                                alert('로그인이 필요합니다.');
+                                location.href = '/auth/login';
+                                return;
+                            }
+                            
+                            try {
+                                const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${token}`
+                                    },
+                                    body: JSON.stringify({
+                                        date: date,
+                                        time: time,
+                                        subject: subject,
+                                        message: message
+                                    })
+                                });
+                                
+                                const result = await response.json();
+                                
+                                if (result.success) {
+                                    alert('예약이 완료되었습니다.');
+                                    location.reload();
+                                } else {
+                                    alert('예약에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
+                                }
+                            } catch (error) {
+                                console.error('예약 실패:', error);
+                                alert('예약 처리 중 오류가 발생했습니다.');
+                            }
+                        });
+                    }
+
+                    document.querySelectorAll('.rating-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const reviewRating = document.getElementById('reviewRating');
+                            if (!reviewRating) return;
+                            reviewRating.value = btn.dataset.rating;
+                            document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                        });
+                    });
+
+                    const saveReviewBtn = document.getElementById('btnSaveReview');
+                    if (saveReviewBtn) {
+                        saveReviewBtn.addEventListener('click', async () => {
+                            const reviewId = document.getElementById('reviewId')?.value || '';
+                            const bookingId = document.getElementById('bookingId')?.value || document.getElementById('bookingSelect')?.value || '';
+                            const rating = document.getElementById('reviewRating')?.value || '';
+                            const content = document.getElementById('reviewComment')?.value.trim() || '';
+
+                            if (!bookingId) {
+                                alert('수업을 선택해주세요.');
+                                return;
+                            }
+                            if (!rating) {
+                                alert('평점을 선택해주세요.');
+                                return;
+                            }
+                            if (!content) {
+                                alert('후기 내용을 입력해주세요.');
+                                return;
+                            }
+
+                            const url = reviewId ? `/api/reviews/${reviewId}` : `/api/reviews`;
+                            const method = reviewId ? 'PUT' : 'POST';
+
+                            const token = localStorage.getItem('accessToken');
+
+                            if ( !token ) {
+                                alert('로그인이 필요합니다.');
+                                location.href = '/auth/login';
+                                return;
+                            }
+
+                            const body = reviewId 
+                                ? { rating: parseInt(rating), content: content }
+                                : { bookingId: bookingId, rating: parseInt(rating), content: content };
+
+                            const response = await fetch(url, {
+                                method: method,
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(body)
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                alert('리뷰가 저장되었습니다.');
+                                location.reload();
+                            } else {
+                                alert('리뷰 저장에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
+                            }
+                        });
+                    }
+
+                    const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
+                    const availableSlots = tutorId ? await loadTutorAvailability(tutorId) : [];
+
+                    new TutorCalendar({
+                        containerId: 'tutorScheduleCalendar',
+                        mode: 'edit',
+                        singleSlotPerDay: true,
+                        baseTimeRanges: FULL_DAY_RANGES,
+                        renderOnlyInRange: true,
+                        timeStepMinutes: 30,
+                        availableSlots: availableSlots,
+                        availableSlotsOnly: true,
+                        onSlotClick: (dateKey, time) => {
+                            document.getElementById('selectedDate').value = dateKey;
+                            document.getElementById('selectedTime').value = time;
+                            document.getElementById('displaySelectedTime').value = `${dateKey} ${time}`;
+                            document.getElementById('bookingSubmit').disabled = false;
+                        }
+                    });
+                });
+            </script>
+        </th:block>
 
         <!-- Review Write/Edit Modal -->
         <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
@@ -339,26 +522,27 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="reviewId">
+                        <input type="hidden" id="bookingId">
+                        <div class="mb-3">
+                            <label for="bookingSelect" class="form-label fw-semibold">수업 선택 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="bookingSelect" required>
+                                <option value="">수업을 선택해주세요</option>
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-warning rating-btn"
-                                    data-rating="1">★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn"
-                                    data-rating="2">★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn"
-                                    data-rating="3">★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn"
-                                    data-rating="4">★★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn"
-                                    data-rating="5">★★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="4">★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="5">★★★★★</button>
                             </div>
                             <input type="hidden" id="reviewRating" required>
                         </div>
                         <div class="mb-3">
-                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span
-                                    class="text-danger">*</span></label>
-                            <textarea class="form-control" id="reviewComment" rows="5"
+                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reviewComment" rows="5" 
                                 placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
                         </div>
                     </div>
@@ -370,4 +554,5 @@
             </div>
         </div>
     </div>
-</div>  
+</body>
+</html>

@@ -10,18 +10,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.Booking;
 import com.aloha.teamproject.dto.Lesson;
+import com.aloha.teamproject.dto.StudentBooking;
 import com.aloha.teamproject.dto.TutorAvailability;
 import com.aloha.teamproject.service.BookingService;
 import com.aloha.teamproject.service.LessonService;
+import com.aloha.teamproject.service.MemberMyPageService;
 import com.aloha.teamproject.service.TutorAvailabilityService;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final TutorAvailabilityService tutorAvailabilityService;
     private final LessonService lessonService;
+    private final MemberMyPageService memberMyPageService;
 
     @GetMapping
     public ApiResponse<List<Booking>> getAllBookings(Authentication authentication) {
@@ -57,7 +62,7 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<Booking> getBooking(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Booking> getBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -67,6 +72,29 @@ public class BookingController {
             return ApiResponse.ok(booking);
         } catch (Exception e) {
             log.error("예약 조회 실패", e);
+            return ApiResponse.error("예약을 조회하지 못했습니다.");
+        }
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ApiResponse<List<StudentBooking>> getStudentPastBookings(@PathVariable("studentId") String studentId, @RequestParam(name = "tutorId", required = false) String tutorId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            List<StudentBooking> pastBookings = memberMyPageService.selectPastBookings(studentId);
+            
+            // tutorId로 필터링하면 해당 튜터와의 예약만 반환
+            if (tutorId != null && !tutorId.isEmpty()) {
+                pastBookings = pastBookings.stream()
+                    .filter(b -> tutorId.equals(b.getTutorId()))
+                    .collect(Collectors.toList());
+            }
+            
+            return ApiResponse.ok(pastBookings);
+        } catch (Exception e) {
+            log.error("학생 과거 예약 조회 실패", e);
             return ApiResponse.error("예약을 조회하지 못했습니다.");
         }
     }
@@ -101,7 +129,7 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/confirm")
-    public ApiResponse<Void> confirmBooking(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Void> confirmBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -116,7 +144,7 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ApiResponse<Void> cancelBooking(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Void> cancelBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -131,7 +159,7 @@ public class BookingController {
     }
 
     @PutMapping("/{id}/complete")
-    public ApiResponse<Void> completeBooking(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Void> completeBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -146,7 +174,7 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteBooking(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Void> deleteBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -161,8 +189,8 @@ public class BookingController {
     }
 
     @PostMapping("/tutor/{tutorId}")
-    public ApiResponse<Void> createTutorBooking(
-            @PathVariable String tutorId,
+        public ApiResponse<Void> createTutorBooking(
+            @PathVariable("tutorId") String tutorId,
             @RequestBody TutorBookingRequest request,
             Authentication authentication) {
         log.info("[튜터 예약 생성 시작] tutorId: {}", tutorId);
@@ -182,14 +210,18 @@ public class BookingController {
             
             List<TutorAvailability> availabilities = tutorAvailabilityService.selectByUserIdAndDateRange(
                 tutorId, startAt, endAt);
-            log.info("[튜터 예약 생성] availability 조회 결과: {}개", availabilities.size());
+            List<TutorAvailability> availableSlots = availabilities.stream()
+                .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN)
+                .filter(av -> !av.getStartAt().isAfter(startAt) && !av.getEndAt().isBefore(endAt))
+                .toList();
+            log.info("[튜터 예약 생성] availability 조회 결과: {}개", availableSlots.size());
             
-            if (availabilities.isEmpty()) {
+            if (availableSlots.isEmpty()) {
                 log.warn("[튜터 예약 생성] 선택한 시간에 예약 가능한 슬롯 없음");
                 return ApiResponse.error("선택한 시간에 예약 가능한 슬롯이 없습니다.");
             }
             
-            TutorAvailability availability = availabilities.get(0);
+            TutorAvailability availability = availableSlots.get(0);
             log.info("[튜터 예약 생성] 선택된 availability: {}", availability.getId());
             
             // 튜터의 lesson 찾기 (OPEN 상태인 것), 없으면 자동 생성

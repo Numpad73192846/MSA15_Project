@@ -4,14 +4,11 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,9 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
@@ -39,8 +34,6 @@ import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.http.MediaType;
 
 
 @Slf4j
@@ -69,6 +62,7 @@ public class TutorController {
             tutorMyPage.setLanguageFields(tutorMyPageService.selectTutorFieldsByUserId(userId));
             tutorMyPage.setTutorStats(tutorMyPageService.selectTutorStatsByUserId(userId));
             tutorMyPage.setUpcomingLessons(tutorMyPageService.selectUpcomingBookingsByUserId(userId));
+            tutorMyPage.setPastLessons(tutorMyPageService.selectPastBookingsByUserId(userId));
             tutorMyPage.setTutorReviews(tutorMyPageService.selectTutorReviewsByUserId(userId));
             tutorMyPage.setMonthlyEarnings(tutorMyPageService.selectMonthlyEarningsByUserId(userId));
 
@@ -161,35 +155,47 @@ public class TutorController {
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String password,
             @RequestParam(required = false) String passwordConfirm
-    ) throws Exception {
+    ) {
+        try {
+            String userId = userDetails.getUsername();
 
-        String userId = userDetails.getUsername();
+            // 1️⃣ Users 정보 수정 (이름 / 전화 / 비밀번호)
+            Users user = userService.selectById(userId);
+            if (user != null) {
+                if (name != null && !name.isBlank()) {
+                    user.setName(name);
+                }
+                if (phone != null && !phone.isBlank()) {
+                    user.setPhone(phone);
+                }
+                if (password != null && !password.isBlank()) {
+                    if (passwordConfirm == null || !password.equals(passwordConfirm)) {
+                        return ApiResponse.error("비밀번호가 일치하지 않습니다.");
+                    }
+                    user.setPassword(password);
+                }
+                userService.update(user);
+            }
 
-        // 1️⃣ Users 정보 수정 (이름 / 전화 / 비밀번호)
-        userService.updateMyInfo(userId, name, phone, password, passwordConfirm);
+            // 2️⃣ TutorProfile 정보 수정
+            TutorProfile profile = tutorProfileService.selectByUserId(userId);
+            if (profile == null) {
+                profile = new TutorProfile();
+                profile.setUserId(userId);
+            }
 
-        // 2️⃣ TutorProfile 정보 수정
-        TutorProfile profile = tutorProfileService.selectByUserId(userId);
-        if (profile == null) {
-            profile = new TutorProfile();
-            profile.setUserId(userId);
-        }
+            profile.setHeadline(request.getHeadline());
+            profile.setBio(request.getBio());
+            profile.setSelfIntro(request.getSelfIntro());
+            profile.setVideoUrl(request.getVideoUrl());
 
-        profile.setHeadline(request.getHeadline());
-        profile.setBio(request.getBio());
-        profile.setSelfIntro(request.getSelfIntro());
-        profile.setVideoUrl(request.getVideoUrl());
+            // 프로필 이미지
+            if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
+                String imgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
+                profile.setProfileImg(imgPath);
+            }
 
-        // 프로필 이미지
-        if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
-            String imgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
-            profile.setProfileImg(imgPath);
-        }
-
-        tutorProfileService.upsertProfile(profile);
-
-        return ApiResponse.ok();
-    }
+            tutorProfileService.upsertProfile(profile);
 
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {

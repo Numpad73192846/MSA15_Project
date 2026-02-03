@@ -3,6 +3,109 @@
 
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" href="/css/tutor-calendar.css">
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            /* Step4 카드/툴바 정리 */
+            #scheduleToolbar{
+            padding: 10px 12px;
+            border: 1px solid #eef1f6;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+            }
+
+            #weekRangeLabel{
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(47,111,237,0.10);
+            color: #2f6fed !important;
+            }
+
+            #btnApplyWeekTo9Weeks{
+            border-radius: 999px;
+            padding-left: 14px;
+            padding-right: 14px;
+            }
+
+            /* 요일 카드(기본 시간대 박스) */
+            #baseTimeRangeEditor .border.rounded{
+            border:1px solid #e5e7eb !important;
+            border-radius:16px !important;
+            background:#fff;
+            padding:16px !important;
+            margin-bottom:12px !important;
+            }
+
+            /* 요일 헤더 */
+            #baseTimeRangeEditor .fw-semibold{
+            font-weight:800 !important;
+            color:#0f172a;
+            }
+
+            /* 시간대 row 간격 정돈 */
+            #baseTimeRangeEditor .d-flex.align-items-center.gap-2{
+            gap:10px !important;
+            }
+
+            /* time input을 관리자스럽게 */
+            #baseTimeRangeEditor input[type="time"].form-control-sm{
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            height:34px;
+            }
+
+            /* “시간대 추가” 버튼 pill */
+            #baseTimeRangeEditor .btn-outline-primary.btn-sm{
+            border-radius:999px;
+            padding:6px 10px;
+            }
+
+            /* 삭제 버튼: 빨강 외곽은 유지하되 투박함 줄이기 */
+            #baseTimeRangeEditor .btn-outline-danger.btn-sm{
+            border-radius:999px;
+            padding:6px 10px;
+            }
+
+
+            .tc-toolbar{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:10px;
+            padding:10px 12px;
+            border:1px solid #e5e7eb;
+            border-radius:14px;
+            background:#fff;
+            }
+
+            .tc-iconbtn{
+            width:34px; height:34px;
+            display:grid; place-items:center;
+            border:1px solid #e5e7eb;
+            background:#fff;
+            border-radius:999px;
+            color:#0f172a;
+            transition: background-color .12s ease, border-color .12s ease;
+            }
+
+            .tc-iconbtn:hover{
+            background:#f8fafc;
+            border-color:#d8dde6;
+            }
+
+            .tc-range{
+            font-weight:800;
+            font-size:.92rem;
+            color:#2563eb;
+            padding:6px 10px;
+            border-radius:999px;
+            background: rgba(37,99,235,0.10);
+            white-space:nowrap;
+            }
+
+        </style>
+     
     </th:block>
 
     <div layout:fragment="content">
@@ -21,57 +124,88 @@
                     <form id="tutorProfileForm">
                         <div class="mb-4">
                             <h5 class="fw-bold">수업 가능 시간대</h5>
-                            <p class="text-muted mb-3">아래 캘린더에서 가능한 시간대를 선택하세요. 기본 시간대(요일별) 밖은 비활성 표시됩니다.</p>
+                            <p class="text-muted small mb-3">요일별 기본 시간대를 설정하고, 캘린더에서 수업 가능한 시간을 선택하세요.</p>
 
-                            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="scheduleToolbar">
-                                <div class="d-flex align-items-center gap-2">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek" aria-label="이전 주">이전 주</button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek" aria-label="다음 주">다음 주</button>
-                                </div>
-                                <div class="fw-semibold" id="weekRangeLabel">2026.02.03 ~ 2026.02.09</div>
-                                <div class="ms-auto">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnApplyWeekTo9Weeks">
-                                        이번 주 설정을 9주까지 적용
-                                    </button>
+                            <!-- 기본 시간대 설정 -->
+                            <div class="card border-0 bg-light mb-3">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-bold mb-2">기본 수업 가능 시간대</h6>
+                                    <p class="text-muted small mb-3">요일별로 여러 구간을 추가할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</p>
+                                    <div id="baseTimeRangeEditor"></div>
+                                    <div class="text-muted small mt-2">설정된 시간대만 캘린더에 표시됩니다.</div>
                                 </div>
                             </div>
 
-                            <div class="weekly_calendar_wrap" id="tutorScheduleCalendar">
-                                <div class="weekly_head">
-                                    <ul class="dayHead flex" id="calendarDayHead">
-                                        <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
-                                        <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
-                                        <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
-                                        <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
-                                        <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
-                                        <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
-                                        <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
-                                    </ul>
+                            <!-- 주간 캘린더 -->
+                            <div class="mb-3">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="scheduleToolbar">
+                                    <div class="tc-toolbar">
+                                        <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                        <div class="tc-range" id="weekRangeLabel">2026.02.03 ~ 2026.02.09</div>
+                                        <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="fw-semibold text-primary" id="weekRangeLabel">2026.02.03 ~ 2026.02.09</div>
+                                    <div class="ms-auto">
+                                        <button type="button" class="btn btn-primary btn-sm" id="btnApplyWeekTo9Weeks">
+                                            9주 자동 적용
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="weekly_con">
-                                    <ul class="dayCon flex" id="calendarDayBody">
-                                        <li class="flex"><div class="con_in"></div></li>
-                                        <li class="flex"><div class="con_in"></div></li>
-                                        <li class="flex"><div class="con_in"></div></li>
-                                        <li class="flex"><div class="con_in"></div></li>
-                                        <li class="flex"><div class="con_in"></div></li>
-                                        <li class="flex"><div class="con_in"></div></li>
-                                        <li class="flex"><div class="con_in"></div></li>
-                                    </ul>
+
+                                <div class="weekly_calendar_wrap shadow-sm border rounded overflow-hidden" id="tutorScheduleCalendar" style="background: #fff;">
+                                    <div class="weekly_head" style="background: linear-gradient(to bottom, #f8f9fa, #e9ecef);">
+                                        <ul class="dayHead flex" id="calendarDayHead">
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">일</p><p class="dayDate en">02.02</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">월</p><p class="dayDate en">02.03</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">화</p><p class="dayDate en">02.04</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">수</p><p class="dayDate en">02.05</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">목</p><p class="dayDate en">02.06</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">금</p><p class="dayDate en">02.07</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit fw-bold">토</p><p class="dayDate en">02.08</p></div></li>
+                                        </ul>
+                                    </div>
+                                    <div class="weekly_con">
+                                        <ul class="dayCon flex" id="calendarDayBody">
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-hand-index"></i> 클릭하여 시간을 선택/해제하세요
+                                    </small>
                                 </div>
                             </div>
 
                             <input type="hidden" id="availableTime" name="availableTime">
-                            <small class="text-muted">선택된 시간만 저장됩니다. 요일별 기본 시간대 밖은 자동으로 비활성 처리됩니다.</small>
                         </div>
                         
-                        <div class="alert alert-info">
-                            <strong>팁:</strong> 가능한 시간대를 구체적으로 작성하면 학생들의 예약률이 높아집니다!
+                        <div class="alert alert-info border-0 bg-info bg-opacity-10">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-lightbulb text-info" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <div class="fw-semibold text-info mb-1">💡 예약률 향상 팁</div>
+                                    <p class="mb-0 small text-dark">가능한 시간대를 다양하게 설정하면 학생들의 예약률이 높아집니다!</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-secondary" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;" onclick="history.back()">이전</button>
-                            <button type="submit" class="btn btn-success flex-fill" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;">
+                            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                                <i class="bi bi-arrow-left"></i> 이전
+                            </button>
+                            <button type="submit" class="btn btn-success flex-fill">
                                 <i class="bi bi-check-circle"></i> 회원가입 완료
                             </button>
                         </div>
@@ -94,17 +228,41 @@
             }
 
             async function fetchMe(accessToken) {
-                const response = await fetch('/api/users/me', {
+                let response = await fetch('/api/users/me', {
                     headers: { Authorization: `Bearer ${accessToken}` }
                 });
-                if (!response.ok) {
+                if (response.ok) {
+                    const data = await response.json();
+                    return data && data.success ? data.data : null;
+                }
+
+                // 토큰 갱신
+                const refreshToken = localStorage.getItem('refreshToken');
+                const refreshResponse = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken: refreshToken })
+                });
+                if (!refreshResponse.ok) {
                     return null;
                 }
-                const data = await response.json();
-                if (!data || data.success === false) {
-                    return null;
+                const refreshData = await refreshResponse.json();
+                if (refreshData && refreshData.success && refreshData.data && refreshData.data.accessToken) {
+                    const newAccessToken = refreshData.data.accessToken;
+                    localStorage.setItem('accessToken', newAccessToken);
+                    if (refreshData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', refreshData.data.refreshToken);
+                    }
+                    // 갱신된 토큰으로 다시 시도
+                    response = await fetch('/api/users/me', {
+                        headers: { Authorization: `Bearer ${newAccessToken}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data && data.success ? data.data : null;
+                    }
                 }
-                return data.data || null;
+                return null;
             }
 
             function isTutor(authList) {
@@ -119,14 +277,18 @@
                 );
             }
 
+            const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayEnumToIndex = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 };
+            const indexToDayEnum = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
             const DEFAULT_BASE_TIME_RANGES = {
-                0: [{ start: '00:00', end: '24:00' }],
-                1: [{ start: '00:00', end: '24:00' }],
-                2: [{ start: '00:00', end: '24:00' }],
-                3: [{ start: '00:00', end: '24:00' }],
-                4: [{ start: '00:00', end: '24:00' }],
-                5: [{ start: '00:00', end: '24:00' }],
-                6: [{ start: '00:00', end: '24:00' }]
+                0: [],
+                1: [{ start: '09:00', end: '18:00' }],
+                2: [{ start: '09:00', end: '18:00' }],
+                3: [{ start: '09:00', end: '18:00' }],
+                4: [{ start: '09:00', end: '18:00' }],
+                5: [{ start: '09:00', end: '18:00' }],
+                6: []
             };
 
             function formatLocalDateTime(date) {
@@ -161,6 +323,8 @@
                 };
             }
 
+            let baseTimeRanges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+
             async function getBaseTimeRanges() {
                 try {
                     const { accessToken } = getStoredTokens();
@@ -170,10 +334,9 @@
                     if (!response.ok) throw new Error('Failed to load');
                     const result = await response.json();
                     if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-                        const dayMap = { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 };
                         const ranges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
                         result.data.forEach(item => {
-                            const dayIdx = dayMap[item.dayOfWeek];
+                            const dayIdx = dayEnumToIndex[item.dayOfWeek];
                             if (dayIdx !== undefined) {
                                 ranges[dayIdx].push({ start: item.startTime, end: item.endTime });
                             }
@@ -184,6 +347,119 @@
                     console.warn('tutorBaseTimeRanges load failed', e);
                 }
                 return JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+            }
+
+            async function persistBaseTimeRanges() {
+                try {
+                    const { accessToken } = getStoredTokens();
+                    const timeRanges = [];
+
+                    Object.keys(baseTimeRanges).forEach(dayIdx => {
+                        const ranges = baseTimeRanges[dayIdx] || [];
+                        ranges.forEach(range => {
+                            timeRanges.push({
+                                dayOfWeek: indexToDayEnum[dayIdx],
+                                startTime: range.start,
+                                endTime: range.end
+                            });
+                        });
+                    });
+
+                    const response = await fetch('/api/tutors/me/time-ranges', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                        },
+                        body: JSON.stringify(timeRanges)
+                    });
+
+                    if (!response.ok) throw new Error('Failed to save');
+                    return true;
+                } catch (e) {
+                    console.error('Failed to save time ranges to API', e);
+                    alert('기본 시간대 저장에 실패했습니다.');
+                    return false;
+                }
+            }
+
+            function addRange(dayIndex) {
+                if (!baseTimeRanges[dayIndex]) baseTimeRanges[dayIndex] = [];
+                baseTimeRanges[dayIndex].push({ start: '08:00', end: '09:30' });
+                persistBaseTimeRanges().then(() => {
+                    renderBaseTimeEditor();
+                    calendar.render();
+                });
+            }
+
+            function removeRange(dayIndex, rangeIndex) {
+                baseTimeRanges[dayIndex].splice(rangeIndex, 1);
+                persistBaseTimeRanges().then(() => {
+                    renderBaseTimeEditor();
+                    calendar.render();
+                });
+            }
+
+            function updateRange(dayIndex, rangeIndex, key, value) {
+                const range = baseTimeRanges[dayIndex][rangeIndex];
+                range[key] = value;
+                persistBaseTimeRanges().then(() => {
+                    calendar.render();
+                });
+            }
+
+            function renderBaseTimeEditor() {
+                const container = document.getElementById('baseTimeRangeEditor');
+                if (!container) return;
+                container.innerHTML = '';
+
+                dayLabels.forEach((label, dayIndex) => {
+                    const dayRow = document.createElement('div');
+                    dayRow.className = 'border rounded p-3 mb-2';
+
+                    const header = document.createElement('div');
+                    header.className = 'd-flex justify-content-between align-items-center mb-2';
+                    header.innerHTML = `
+                        <div class="fw-semibold">${label}요일</div>
+                        <button type="button" class="btn btn-sm btn-outline-primary">시간대 추가</button>
+                    `;
+
+                    header.querySelector('button').addEventListener('click', () => addRange(dayIndex));
+                    dayRow.appendChild(header);
+
+                    const ranges = baseTimeRanges[dayIndex] || [];
+                    if (ranges.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'text-muted small';
+                        empty.textContent = '설정된 시간대 없음';
+                        dayRow.appendChild(empty);
+                    } else {
+                        ranges.forEach((range, rangeIndex) => {
+                            const row = document.createElement('div');
+                            row.className = 'd-flex align-items-center gap-2 mb-2';
+                            row.innerHTML = `
+                                <input type="time" class="form-control form-control-sm" value="${range.start}">
+                                <span>~</span>
+                                <input type="time" class="form-control form-control-sm" value="${range.end}">
+                                <button type="button" class="tc-iconbtn danger" aria-label="삭제">
+                                    <i class="bi bi-x"></i>
+                                </button>
+
+                            `;
+
+                            const [startInput, endInput] = row.querySelectorAll('input');
+                            const removeBtn = row.querySelector('button');
+
+                            startInput.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'start', e.target.value));
+                            endInput.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'end', e.target.value));
+                            removeBtn.addEventListener('click', () => removeRange(dayIndex, rangeIndex));
+
+                            dayRow.appendChild(row);
+                        });
+                    }
+
+                    container.appendChild(dayRow);
+                });
             }
 
             async function loadAvailability() {
@@ -216,7 +492,7 @@
             document.addEventListener('DOMContentLoaded', async () => {
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep4') || '{}');
                 let initialData = [];
-                const baseTimeRanges = await getBaseTimeRanges();
+                baseTimeRanges = await getBaseTimeRanges();
                 const apiInitialData = await loadAvailability();
 
                 if (apiInitialData.length > 0) {
@@ -246,6 +522,8 @@
                         document.getElementById('availableTime').value = JSON.stringify(calendar.getSelectedData());
                     }
                 });
+
+                renderBaseTimeEditor();
 
                 document.getElementById('btnApplyWeekTo9Weeks').addEventListener('click', () => {
                     if (!confirm('이번 주 설정을 앞으로 9주까지 적용하시겠습니까?\n(기존 설정은 덮어씌워집니다)')) {

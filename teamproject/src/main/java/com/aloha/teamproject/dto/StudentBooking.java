@@ -11,6 +11,7 @@ public class StudentBooking {
 	private String bookingId;
 	private String lessonId;
 	private String tutorId;
+	private String tutorProfileId;
 	private String tutorName;
 	private String subject;
 	private LocalDateTime startAt;
