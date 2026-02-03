@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
+
 <head>
     <title>튜터 상세</title>
 </head>
+
 <body>
     <div layout:fragment="content">
         <div class="container py-5">
@@ -31,8 +33,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex flex-wrap gap-1 mb-3" th:if="${tutor.subjects != null and tutor.subjects.length() > 0}">
-                                        <span class="badge text-bg-light" th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                    <div class="d-flex flex-wrap gap-1 mb-3"
+                                        th:if="${tutor.subjects != null and tutor.subjects.length() > 0}">
+                                        <span class="badge text-bg-light"
+                                            th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
                                             th:text="${s}">영어</span>
                                     </div>
 
@@ -60,9 +64,10 @@
                     <div class="card shadow-sm">
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-4">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
-                            
+
                             <div th:each="r : ${reviews}" class="mb-3">
-                                <div class="card border review-item" th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
+                                <div class="card border review-item"
+                                    th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -78,7 +83,8 @@
                                         </div>
                                         <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
                                         <div class="small text-muted">
-                                            <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
+                                            <span
+                                                th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                     </div>
                                 </div>
@@ -199,19 +205,13 @@
                                         placeholder="캘린더에서 시간을 선택해주세요" readonly>
                                 </div>
 
-                                <!-- <div class="mb-3">
-                                    <label class="form-label">기간(시간)</label>
-                                    <select name="duration" class="form-select">
-                                        <option value="1" selected>1시간</option>
-                                        <option value="2">2시간</option>
-                                        <option value="3">3시간</option>
-                                    </select>
-                                </div> -->
                                 <div class="mb-3">
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
                                         <option value="" selected>선택</option>
-                                        <option th:if="${tutor.subjects != null}" th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}" th:value="${s}" th:text="${s}">영어
+                                        <option th:if="${tutor.subjects != null}"
+                                            th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}" th:value="${s}"
+                                            th:text="${s}">영어
                                         </option>
                                     </select>
                                 </div>
@@ -335,17 +335,23 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="4">★★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="5">★★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="1">★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="2">★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="3">★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="4">★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="5">★★★★★</button>
                             </div>
                             <input type="hidden" id="reviewRating" required>
                         </div>
                         <div class="mb-3">
-                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="reviewComment" rows="5" 
+                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reviewComment" rows="5"
                                 placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
                         </div>
                     </div>
@@ -358,4 +364,5 @@
         </div>
     </div>
 </body>
+
 </html>
