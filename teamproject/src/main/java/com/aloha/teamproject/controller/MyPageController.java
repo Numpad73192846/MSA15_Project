@@ -5,8 +5,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.dto.Users;
+import com.aloha.teamproject.service.TutorProfileService;
 import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MyPageController {
 
     private final UserService userService;
+    private final TutorProfileService tutorProfileService;
 
     @GetMapping("/tutor/mypage")
     public String tutorMyPage() {
@@ -34,7 +38,9 @@ public class MyPageController {
     }
 
     @PostMapping("/member/mypage/update")
-    public String updateMember(Users user) throws Exception {
+    public String updateMember(Users user, 
+                               @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
+                               Authentication authentication) throws Exception {
         log.info("[POST] - /member/mypage/update");
         log.info("user : {}", user);
         // userService.update(user);
@@ -42,9 +48,10 @@ public class MyPageController {
     }
 
     @PostMapping("/tutor/mypage/update")
-    public String updateTutor(Users user) {
+    public String updateTutor(@RequestParam(value = "name", required = false) String name,
+                              @RequestParam(value = "bio", required = false) String bio,
+                              Authentication authentication) {
         log.info("[POST] - /tutor/mypage/update");
-        log.info("user (Tutor) : {}", user);
         return "redirect:/tutor/mypage";
     }
 

@@ -59,6 +59,9 @@ public class TutorMyPageServiceImpl extends BaseServiceImpl implements TutorMyPa
 	public TutorStats selectTutorStatsByUserId(String userId) throws Exception {
 		log.debug("[TutorMyPage] 튜터 통계 조회 - userId: {}", userId);
 		TutorStats stats = tutorMyPageMapper.selectTutorStatsByUserId(userId);
+		if (stats == null) {
+			stats = new TutorStats();
+		}
 		log.debug("[TutorMyPage] 튜터 통계 조회 완료 - 총 수업: {}, 총 수익: {}", 
 			stats.getTotalLessons(), stats.getTotalEarnings());
 		return stats;

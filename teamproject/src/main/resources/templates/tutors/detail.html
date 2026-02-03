@@ -31,14 +31,15 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex flex-wrap gap-1 mb-3">
-                                        <span class="badge text-bg-light" th:each="s : ${tutor.subjects}"
+                                    <div class="d-flex flex-wrap gap-1 mb-3"
+                                        th:if="${tutor.subjects != null and tutor.subjects.length() > 0}">
+                                        <span class="badge text-bg-light"
+                                            th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
                                             th:text="${s}">영어</span>
                                     </div>
 
                                     <div class="small text-muted">
                                         <span class="me-3">⏱️ 경력 <span th:text="${tutor.experience}">5년</span></span>
-                                        <span>📅 <span th:text="${tutor.availability}">평일 오후, 주말</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -60,13 +61,28 @@
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <h3 class="h5 fw-bold">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
-                            <div class="py-3 border-bottom" th:each="r : ${reviews}">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <div class="fw-semibold" th:text="${r.studentName}">학생A</div>
+                            <h3 class="h5 fw-bold mb-4">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
+
+                            <div th:each="r : ${reviews}" class="mb-3">
+                                <div class="card border review-item"
+                                    th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-bold mb-1">
+                                                    <span th:text="${r.studentName}">학생A</span>
+                                                    <span class="text-primary ms-1">님의 후기</span>
+                                                </div>
+                                            </div>
+                                            <div class="text-warning">
+                                                <span th:each="i : ${#numbers.sequence(1,5)}"
+                                                    th:text="${i <= r.rating ? '★' : '☆'}">★</span>
+                                            </div>
+                                        </div>
+                                        <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
                                         <div class="small text-muted">
-                                            <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
+                                            <span
+                                                th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                     </div>
                                     <div class="small">
@@ -86,7 +102,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="fw-bold">수업 예약</div>
                                 <div class="text-primary fw-semibold">시간당 <span
-                                        th:text="${#numbers.formatInteger(tutor.hourlyRate, 0, 'COMMA')}">35,000</span>원
+                                        th:text="${tutor.price != null ? #numbers.formatInteger(tutor.price, 0, 'COMMA') : '0'}">35,000</span>원
                                 </div>
                             </div>
 
@@ -129,7 +145,7 @@
                             </div>
 
                             <form id="bookingForm"
-                                th:attr="data-tutor-id=${tutor.userId},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.hourlyRate}">
+                                th:attr="data-tutor-id=${tutor.userId},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.price}">
                                 <input type="hidden" name="date" id="selectedDate" required>
                                 <input type="hidden" name="time" id="selectedTime" required>
 
@@ -139,14 +155,6 @@
                                         placeholder="캘린더에서 시간을 선택해주세요" readonly>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">기간(시간)</label>
-                                    <select name="duration" class="form-select">
-                                        <option value="1" selected>1시간</option>
-                                        <option value="2">2시간</option>
-                                        <option value="3">3시간</option>
-                                    </select>
-                                </div>
                                 <div class="mb-3">
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
@@ -259,5 +267,46 @@
                 </div>
             </div>
         </div>
+
+        <!-- Review Write/Edit Modal -->
+        <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold" id="reviewModalTitle">리뷰 작성</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="reviewId">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="1">★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="2">★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="3">★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="4">★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="5">★★★★★</button>
+                            </div>
+                            <input type="hidden" id="reviewRating" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reviewComment" rows="5"
+                                placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveReview">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</div>  

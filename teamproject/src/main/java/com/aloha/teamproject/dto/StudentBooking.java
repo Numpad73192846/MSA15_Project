@@ -29,9 +29,10 @@ public class StudentBooking {
 		return String.format("%02d:%02d", startAt.getHour(), startAt.getMinute());
 	}
 	
-	public Long getDurationHours() {
-		if (startAt == null || endAt == null) return 0L;
-		return java.time.temporal.ChronoUnit.HOURS.between(startAt, endAt);
+	public double getDurationHours() {
+		if (startAt == null || endAt == null) return 0;
+		long minutes = java.time.temporal.ChronoUnit.MINUTES.between(startAt, endAt);
+		return minutes / 60.0;
 	}
 
 }

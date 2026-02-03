@@ -35,4 +35,45 @@
 		LIMIT 1
 	</select>
 
+    <select id="selectAll" resultMap="ReviewMap">
+        SELECT * FROM review
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectById" resultMap="ReviewMap">
+        SELECT * FROM review
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByBookingId" resultMap="ReviewMap">
+        SELECT * FROM review
+        WHERE booking_id = #{bookingId}
+    </select>
+
+    <select id="selectByTutorId" resultMap="ReviewMap">
+        SELECT r.* FROM review r
+        JOIN booking b ON r.booking_id = b.id
+        JOIN lesson l ON b.lesson_id = l.id
+        WHERE l.user_id = #{tutorId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO review (
+            id, booking_id, rating, content
+        ) VALUES (
+            UUID(), #{bookingId}, #{rating}, #{content}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE review
+        SET rating = #{rating}, content = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM review WHERE id = #{id}
+    </delete>
+
 </mapper>
