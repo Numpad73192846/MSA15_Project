@@ -60,10 +60,10 @@ public class SecurityConfig {
                 .requestMatchers("/tutor/mypage", "/mypages", "/mypage", "/member/mypage").permitAll()
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
-                // ============================== 수정 (이용안내 페이지 경로 추가) ==============================
-                // 작성일: 2026-02-02
-                // 수정 내용: /guide 경로 permitAll 추가 - 인증 없이 접근 가능
-                .requestMatchers("/guide", "/guide/**").permitAll()
+                // ============================== 수정 (이용안내 및 기타 안내 페이지 경로 추가) ==============================
+                // 작성일: 2026-02-02 (업데이트: 2026-02-03)
+                // 수정 내용: /guide 및 하위 경로, /faq, /contact, /about, /partnership 경로 permitAll 추가
+                .requestMatchers("/guide", "/guide/**", "/faq", "/contact", "/about", "/partnership").permitAll()
                 // ============================== 수정 종료 ==============================
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
