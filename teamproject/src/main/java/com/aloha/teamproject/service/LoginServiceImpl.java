@@ -66,6 +66,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 		refreshTokenService.insert(refreshTokenEntity);
 
 		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
+		authTokenResponse.setAccessToken(accessToken);
 		authTokenResponse.setRefreshToken(refreshToken);
 		authTokenResponse.setExpiresIn(accessExpMs);
 		authTokenResponse.setUserId(existing.getId());
@@ -109,8 +110,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 
 		refreshTokenService.insert(refreshTokenEntity);
 
-		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
-		authTokenResponse.setRefreshToken(newRefreshToken);
+		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();		authTokenResponse.setAccessToken(newAccessToken);		authTokenResponse.setRefreshToken(newRefreshToken);
 		authTokenResponse.setExpiresIn(accessExpMs);
 		authTokenResponse.setUserId(existing.getId());
 		authTokenResponse.setAuthList(authList);

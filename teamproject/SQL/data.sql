@@ -115,10 +115,10 @@ VALUES
 ('sg-eng', '영어', 2),
 ('sg-chn', '중국어', 3),
 ('sg-jpn', '일본어', 4),
-('sg-5', '스페인어', 5),
-('sg-6', '불어', 6),
-('sg-6', '독일어', 7),
-('sg-7', '러시아어', 8);
+('sg-spa', '스페인어', 5),
+('sg-fre', '불어', 6),
+('sg-ger', '독일어', 7),
+('sg-rus', '러시아어', 8);
 
 -- 테스트 언어 분야 데이터 삽입
 INSERT INTO language_field (id, name, category, seq)
@@ -201,29 +201,29 @@ VALUES
 ('u-tutor-20', 'lf-general-1', 'tf-20-1', 1);
 
 -- 테스트 레슨 데이터 삽입 (20명 튜터 각각 1~2개 레슨)
-INSERT INTO lesson (user_id, subject_id, id, title, description, price, status)
+INSERT INTO lesson (user_id, subject_id, field_id, id, title, description, price, status)
 VALUES
-('u-tutor-1', 'sub-kor-1', 'lesson-1', '중등 한국어 기초', '개념부터 탄탄히, 실력있는 강사와 함께', 30000, 'OPEN'),
-('u-tutor-1', 'sub-kor-2', 'lesson-1-2', '고등 한국어 심화', '수능 만점을 위한 집중 강좌', 35000, 'OPEN'),
-('u-tutor-2', 'sub-eng-1', 'lesson-2', '영어 회화 입문', '실전 회화 중심, 원어민 발음', 40000, 'OPEN'),
-('u-tutor-3', 'sub-eng-1', 'lesson-3', '일상 회화 완성', '일상에서 바로 쓸 수 있는 표현', 38000, 'OPEN'),
-('u-tutor-4', 'sub-eng-1', 'lesson-4', '발음 완벽 마스터', '미국 발음, 영국 발음 완벽 구분', 42000, 'OPEN'),
-('u-tutor-5', 'sub-eng-2', 'lesson-5', '문법의 정석', '기초부터 고급까지 문법 완정복', 35000, 'OPEN'),
-('u-tutor-6', 'sub-eng-3', 'lesson-6', 'TOEIC 집중반', '950점 이상 목표, 문제풀이 중심', 45000, 'OPEN'),
-('u-tutor-7', 'sub-chn-1', 'lesson-7', '중국어 기초', 'HSK 3급까지 완전 정복', 32000, 'OPEN'),
-('u-tutor-8', 'sub-jpn-2', 'lesson-8', '일본어 초급', 'JLPT N4까지 목표', 33000, 'OPEN'),
-('u-tutor-9', 'sub-chn-3', 'lesson-9', '비즈니스 중국어', '비즈니스 회의와 협상용', 34000, 'OPEN'),
-('u-tutor-10', 'sub-eng-1', 'lesson-10', '비즈니스 영어', '국제회의, 이메일 작성 완벽 가이드', 50000, 'OPEN'),
-('u-tutor-11', 'sub-eng-1', 'lesson-11', '드라마로 배우는 영어', '넷플릭스 드라마로 재미있게', 36000, 'OPEN'),
-('u-tutor-12', 'sub-eng-1', 'lesson-12', '노래로 배우는 영어', '팝송과 뮤지컬로 자연스럽게', 37000, 'OPEN'),
-('u-tutor-13', 'sub-eng-1', 'lesson-13', '영어 문화', '영미권 문화와 함께 배우는 영어', 38000, 'OPEN'),
-('u-tutor-14', 'sub-eng-1', 'lesson-14', '여행 영어', '세계 여행을 위한 실용 영어', 39000, 'OPEN'),
-('u-tutor-15', 'sub-eng-1', 'lesson-15', '어린이 영어', '아이들을 위한 재미있는 영어 수업', 25000, 'OPEN'),
-('u-tutor-16', 'sub-kor-2', 'lesson-16', '수능 한국어 만점반', '년 20명 수능 만점자 배출', 40000, 'OPEN'),
-('u-tutor-17', 'sub-kor-1', 'lesson-17', '한국어를 쉽게', '개념 설명 최고 강사', 28000, 'OPEN'),
-('u-tutor-18', 'sub-kor-3', 'lesson-18', '한국어 입시 완성', '한국어 문제풀이 전문', 41000, 'OPEN'),
-('u-tutor-19', 'sub-kor-2', 'lesson-19', '한국어 반응 마스터', '한국어 반응식 완벽 정리', 39000, 'OPEN'),
-('u-tutor-20', 'sub-kor-3', 'lesson-20', '한국어 수능 만점', '의학계 입시 전문가', 42000, 'OPEN');
+('u-tutor-1', 'sub-kor-1', 'lf-general-1', 'lesson-1', '중등 한국어 기초', '개념부터 탄탄히, 실력있는 강사와 함께', 30000, 'OPEN'),
+('u-tutor-1', 'sub-kor-2', 'lf-general-2', 'lesson-1-2', '고등 한국어 심화', '수능 만점을 위한 집중 강좌', 35000, 'OPEN'),
+('u-tutor-2', 'sub-eng-1', 'lf-general-1', 'lesson-2', '영어 회화 입문', '실전 회화 중심, 원어민 발음', 40000, 'OPEN'),
+('u-tutor-3', 'sub-eng-1', 'lf-general-1', 'lesson-3', '일상 회화 완성', '일상에서 바로 쓸 수 있는 표현', 38000, 'OPEN'),
+('u-tutor-4', 'sub-eng-1', 'lf-general-5', 'lesson-4', '발음 완벽 마스터', '미국 발음, 영국 발음 완벽 구분', 42000, 'OPEN'),
+('u-tutor-5', 'sub-eng-2', 'lf-general-2', 'lesson-5', '문법의 정석', '기초부터 고급까지 문법 완정복', 35000, 'OPEN'),
+('u-tutor-6', 'sub-eng-3', 'lf-general-1', 'lesson-6', 'TOEIC 집중반', '950점 이상 목표, 문제풀이 중심', 45000, 'OPEN'),
+('u-tutor-7', 'sub-chn-1', 'lf-general-1', 'lesson-7', '중국어 기초', 'HSK 3급까지 완전 정복', 32000, 'OPEN'),
+('u-tutor-8', 'sub-jpn-2', 'lf-general-1', 'lesson-8', '일본어 초급', 'JLPT N4까지 목표', 33000, 'OPEN'),
+('u-tutor-9', 'sub-chn-3', 'lf-domain-2', 'lesson-9', '비즈니스 중국어', '비즈니스 회의와 협상용', 34000, 'OPEN'),
+('u-tutor-10', 'sub-eng-1', 'lf-domain-2', 'lesson-10', '비즈니스 영어', '국제회의, 이메일 작성 완벽 가이드', 50000, 'OPEN'),
+('u-tutor-11', 'sub-eng-1', 'lf-domain-5', 'lesson-11', '드라마로 배우는 영어', '넷플릭스 드라마로 재미있게', 36000, 'OPEN'),
+('u-tutor-12', 'sub-eng-1', 'lf-domain-6', 'lesson-12', '노래로 배우는 영어', '팝송과 뮤지컬로 자연스럽게', 37000, 'OPEN'),
+('u-tutor-13', 'sub-eng-1', 'lf-domain-7', 'lesson-13', '영어 문화', '영미권 문화와 함께 배우는 영어', 38000, 'OPEN'),
+('u-tutor-14', 'sub-eng-1', 'lf-domain-3', 'lesson-14', '여행 영어', '세계 여행을 위한 실용 영어', 39000, 'OPEN'),
+('u-tutor-15', 'sub-eng-1', 'lf-general-1', 'lesson-15', '어린이 영어', '아이들을 위한 재미있는 영어 수업', 25000, 'OPEN'),
+('u-tutor-16', 'sub-kor-2', 'lf-general-2', 'lesson-16', '수능 한국어 만점반', '년 20명 수능 만점자 배출', 40000, 'OPEN'),
+('u-tutor-17', 'sub-kor-1', 'lf-general-1', 'lesson-17', '한국어를 쉽게', '개념 설명 최고 강사', 28000, 'OPEN'),
+('u-tutor-18', 'sub-kor-3', 'lf-domain-2', 'lesson-18', '한국어 입시 완성', '한국어 문제풀이 전문', 41000, 'OPEN'),
+('u-tutor-19', 'sub-kor-2', 'lf-general-2', 'lesson-19', '한국어 반응 마스터', '한국어 반응식 완벽 정리', 39000, 'OPEN'),
+('u-tutor-20', 'sub-kor-3', 'lf-domain-2', 'lesson-20', '한국어 수능 만점', '의학계 입시 전문가', 42000, 'OPEN');
 
 -- 테스트 튜터 가능 시간 데이터 삽입 (모든 튜터)
 INSERT INTO tutor_availability (user_id, id, start_at, end_at, status)
@@ -264,11 +264,7 @@ VALUES
 ('u-student-8', 'lesson-11', 'avail-11', 'book-8', '드라마 영어 예약', NOW(), NOW()),
 ('u-student-9', 'lesson-14', 'avail-14', 'book-9', '여행 영어 예약', NOW(), NOW()),
 ('u-student-10', 'lesson-16', 'avail-16', 'book-10', '수능 수학 예약', NOW(), NOW()),
-('u-student-1', 'lesson-2', 'avail-2-2', 'book-11', '영어 회화 추가 예약', DATE_ADD(NOW(), INTERVAL 1 DAY), NULL),
-('u-student-2', 'lesson-3', 'avail-3', 'book-12', '일상 회화 추가', DATE_ADD(NOW(), INTERVAL 2 DAY), NULL),
-('u-student-3', 'lesson-7', 'avail-7', 'book-13', '중국어 시작', NOW(), NOW()),
-('u-student-4', 'lesson-8', 'avail-8', 'book-14', '일본어 시작', NOW(), NOW()),
-('u-student-5', 'lesson-18', 'avail-18', 'book-15', '물리 예약', NOW(), NOW());
+('u-student-1', 'lesson-2', 'avail-2-2', 'book-11', '영어 회화 추가 예약', DATE_ADD(NOW(), INTERVAL 1 DAY), NULL);
 
 -- 테스트 결제 데이터 삽입
 INSERT INTO payment (user_id, booking_id, id, amount, provider, status, paid_at)
@@ -283,11 +279,7 @@ VALUES
 ('u-student-8', 'book-8', 'pay-8', 36000, 'CARD', 'PAID', NOW()),
 ('u-student-9', 'book-9', 'pay-9', 39000, 'CARD', 'PAID', NOW()),
 ('u-student-10', 'book-10', 'pay-10', 40000, 'CARD', 'PAID', NOW()),
-('u-student-1', 'book-11', 'pay-11', 40000, 'CARD', 'PENDING', NULL),
-('u-student-2', 'book-12', 'pay-12', 38000, 'TRANSFER', 'PENDING', NULL),
-('u-student-3', 'book-13', 'pay-13', 32000, 'CARD', 'PAID', NOW()),
-('u-student-4', 'book-14', 'pay-14', 33000, 'CARD', 'PAID', NOW()),
-('u-student-5', 'book-15', 'pay-15', 41000, 'CARD', 'PAID', NOW());
+('u-student-1', 'book-11', 'pay-11', 40000, 'CARD', 'PENDING', NULL);
 
 -- 테스트 리뷰 데이터 삽입
 INSERT INTO review (booking_id, id, rating, content)
@@ -337,4 +329,3 @@ VALUES
 ('u-tutor-8', 'te-8', '東京大学', '일본어 석사', '2016-04-01', '2018-03-31'),
 ('u-tutor-16', 'te-16', '서울대학교', '수학 박사', '2012-03-01', '2018-02-28'),
 ('u-tutor-20', 'te-20', '서울의대', '의학 학사', '2010-03-01', '2016-02-28');
-('u-tutor-2', 'ft-2', 2, TRUE);

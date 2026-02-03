@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+﻿<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
-<head>
-    <title>튜터 상세</title>
-</head>
-<body>
+
     <div layout:fragment="content">
         <div class="container py-5">
             <a class="btn btn-link px-0 mb-3" href="/tutors">← 목록으로</a>
@@ -36,12 +32,13 @@
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-1 mb-3">
-                                        <span class="badge text-bg-light" th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
-                                            th:text="${#strings.trim(s)}">영어</span>
+                                        <span class="badge text-bg-light" th:each="s : ${tutor.subjects}"
+                                            th:text="${s}">영어</span>
                                     </div>
 
                                     <div class="small text-muted">
                                         <span class="me-3">⏱️ 경력 <span th:text="${tutor.experience}">5년</span></span>
+                                        <span>📅 <span th:text="${tutor.availability}">평일 오후, 주말</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -63,29 +60,21 @@
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <h3 class="h5 fw-bold mb-4">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
-                            
-                            <div th:each="r : ${reviews}" class="mb-3">
-                                <div class="card border review-item" th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                <div class="fw-bold mb-1">
-                                                    <span th:text="${r.studentName}">학생A</span>
-                                                    <span class="text-primary ms-1">님의 후기</span>
-                                                </div>
-                                            </div>
-                                            <div class="text-warning">
-                                                <span th:each="i : ${#numbers.sequence(1,5)}"
-                                                    th:text="${i <= r.rating ? '★' : '☆'}">★</span>
-                                            </div>
-                                        </div>
-                                        <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
+                            <h3 class="h5 fw-bold">수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)</h3>
+                            <div class="py-3 border-bottom" th:each="r : ${reviews}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <div class="fw-semibold" th:text="${r.studentName}">학생A</div>
                                         <div class="small text-muted">
                                             <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                     </div>
+                                    <div class="small">
+                                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                                            th:text="${i <= r.rating ? '★' : '☆'}">★</span>
+                                    </div>
                                 </div>
+                                <div class="text-muted mt-2" th:text="${r.content}">후기</div>
                             </div>
                         </div>
                     </div>
@@ -97,95 +86,42 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="fw-bold">수업 예약</div>
                                 <div class="text-primary fw-semibold">시간당 <span
-                                        th:text="${#numbers.formatInteger(tutor.price, 0, 'COMMA')}">35,000</span>원
+                                        th:text="${#numbers.formatInteger(tutor.hourlyRate, 0, 'COMMA')}">35,000</span>원
                                 </div>
                             </div>
 
                             <h4 class="h6 fw-bold mb-3">수업 가능 시간</h4>
                             <div class="mb-3">
                                 <div class="d-flex align-items-center gap-2 mb-3">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전
-                                        주</button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음
-                                        주</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전 주</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음 주</button>
                                     <span class="fw-semibold ms-2" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
                                 </div>
-
+                                
                                 <div class="weekly_calendar_wrap" id="tutorScheduleCalendar">
                                     <div class="weekly_head">
-                                        <ul class="dayHead" id="calendarDayHead">
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">일</p>
-                                                    <p class="dayDate">02.02</p>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">월</p>
-                                                    <p class="dayDate">02.03</p>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">화</p>
-                                                    <p class="dayDate">02.04</p>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">수</p>
-                                                    <p class="dayDate">02.05</p>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">목</p>
-                                                    <p class="dayDate">02.06</p>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">금</p>
-                                                    <p class="dayDate">02.07</p>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="head_in">
-                                                    <p class="dayTit">토</p>
-                                                    <p class="dayDate">02.08</p>
-                                                </div>
-                                            </li>
+                                        <ul class="dayHead flex" id="calendarDayHead">
+                                            <li class="flex"><div class="head_in"><p class="dayTit">일</p><p class="dayDate en">02.02</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit">월</p><p class="dayDate en">02.03</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit">화</p><p class="dayDate en">02.04</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit">수</p><p class="dayDate en">02.05</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit">목</p><p class="dayDate en">02.06</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit">금</p><p class="dayDate en">02.07</p></div></li>
+                                            <li class="flex"><div class="head_in"><p class="dayTit">토</p><p class="dayDate en">02.08</p></div></li>
                                         </ul>
                                     </div>
-
                                     <div class="weekly_con">
-                                        <ul class="dayCon" id="calendarDayBody">
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
-                                            <li>
-                                                <div class="con_in"></div>
-                                            </li>
+                                        <ul class="dayCon flex" id="calendarDayBody">
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
+                                            <li class="flex"><div class="con_in"></div></li>
                                         </ul>
                                     </div>
                                 </div>
-
                                 <small class="text-muted d-block mt-2">
                                     <span class="badge bg-primary">●</span> 수업 가능 
                                     <span class="badge bg-danger ms-2">●</span> 예약됨
@@ -193,7 +129,7 @@
                             </div>
 
                             <form id="bookingForm"
-                                th:attr="data-tutor-id=${tutor.id},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.price}">
+                                th:attr="data-tutor-id=${tutor.userId},data-tutor-name=${tutor.name},data-hourly-rate=${tutor.hourlyRate}">
                                 <input type="hidden" name="date" id="selectedDate" required>
                                 <input type="hidden" name="time" id="selectedTime" required>
 
@@ -203,19 +139,19 @@
                                         placeholder="캘린더에서 시간을 선택해주세요" readonly>
                                 </div>
 
-                                <!-- <div class="mb-3">
+                                <div class="mb-3">
                                     <label class="form-label">기간(시간)</label>
                                     <select name="duration" class="form-select">
                                         <option value="1" selected>1시간</option>
                                         <option value="2">2시간</option>
                                         <option value="3">3시간</option>
                                     </select>
-                                </div> -->
+                                </div>
                                 <div class="mb-3">
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
                                         <option value="" selected>선택</option>
-                                        <option th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}" th:value="${#strings.trim(s)}" th:text="${#strings.trim(s)}">영어</option>
+                                        <option th:each="s : ${tutor.subjects}" th:value="${s}" th:text="${s}">영어</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -223,8 +159,7 @@
                                     <textarea name="message" class="form-control" rows="3"
                                         placeholder="추가로 전달할 내용을 입력하세요"></textarea>
                                 </div>
-                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100"
-                                    disabled>예약하기</button>
+                                <button id="bookingSubmit" type="submit" class="btn btn-primary w-100" disabled>예약하기</button>
                             </form>
 
                             <link rel="stylesheet" href="/css/tutor-calendar.css">
@@ -324,41 +259,5 @@
                 </div>
             </div>
         </div>
-
-        <!-- Review Write/Edit Modal -->
-        <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title fw-bold" id="reviewModalTitle">리뷰 작성</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" id="reviewId">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="4">★★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="5">★★★★★</button>
-                            </div>
-                            <input type="hidden" id="reviewRating" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="reviewComment" rows="5" 
-                                placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-primary" id="btnSaveReview">저장</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-</body>
-</html>
+</div>

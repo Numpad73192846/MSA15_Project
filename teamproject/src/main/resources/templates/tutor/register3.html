@@ -61,7 +61,6 @@
                                 </div>
                             </div>
 
-                            <input type="hidden" id="availableTime" name="availableTime" required>
                             <input type="hidden" id="availableTime" name="availableTime">
                             <small class="text-muted">선택된 시간만 저장됩니다. 요일별 기본 시간대 밖은 자동으로 비활성 처리됩니다.</small>
                         </div>
@@ -280,17 +279,12 @@
 
                 // 최종 제출 데이터
                 const payload = {
-                    // Step 1
                     // Step 1: 기본 정보
                     basicName: step1Data.basicName,
                     basicPhone: step1Data.basicPhone,
                     headline: step1Data.headline,
                     bio: step1Data.bio,
                     videoUrl: step1Data.videoUrl,
-                    
-                    // Step 2
-                    career: step2Data.career,
-                    selfIntro: step2Data.selfIntro,
                     profileImage: step1Data.profileImage,
                     introVideo: step1Data.introVideo,
                     introVideoFileName: step1Data.introVideoFileName,
@@ -302,11 +296,10 @@
                     academicCertificates: step2Data.academicCertificates || [],
                     educationCertificates: step2Data.educationCertificates || [],
                     
-                    // Step 3
+                    // Step 3: 과목 및 분야
                     lessonSubjects: step3Data.lessonSubjects,
                     fieldIds: step3Data.fieldIds || [],
                     
-                    // Step 4
                     // Step 4: 수업 가능 시간대
                     availableTime: step4Data.availableTime
                 };
@@ -359,7 +352,6 @@
                     sessionStorage.removeItem('tutorRegisterStep4');
 
                     alert('튜터 회원가입이 완료되었습니다!');
-                    location.href = '/';
                     location.href = '/tutor/mypage';
                 } catch (error) {
                     console.error('Error:', error);

@@ -203,12 +203,8 @@ public class TutorController {
                                         if (tutor.getSubjects() == null) {
                                             return false;
                                         }
-                                        String[] tutorSubjects = tutor.getSubjects().split(",");
                                         return subjectList.stream()
-                                                          .anyMatch(subject -> Arrays.stream(tutorSubjects)
-                                                                                     .map(String::trim)
-                                                                                     .anyMatch(tutorSubject -> tutorSubject.equals(subject))
-                                    );
+                                                          .anyMatch(subject -> tutor.getSubjects().contains(subject));
                                     })
                                    .collect(Collectors.toList());
                 }

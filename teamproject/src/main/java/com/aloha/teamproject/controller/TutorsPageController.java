@@ -1,56 +1,96 @@
 package com.aloha.teamproject.controller;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.aloha.teamproject.dto.Review;
 import com.aloha.teamproject.dto.TutorList;
-import com.aloha.teamproject.dto.TutorReview;
+import com.aloha.teamproject.service.ReviewService;
 import com.aloha.teamproject.service.TutorListService;
-import com.aloha.teamproject.service.TutorMyPageService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor
 public class TutorsPageController {
-    
-    @Autowired
-    private TutorListService tutorListService;
-    
-    @Autowired
-    private TutorMyPageService tutorMyPageService;
+
+    private final TutorListService tutorListService;
+    private final ReviewService reviewService;
 
     @GetMapping("/tutors")
-    public String tutors(Model model) {
+    public String tutors(Authentication authentication, Model model) {
+        try {
+            List<TutorList> tutors = tutorListService.selectAllTutors();
+            
+            // 각 튜터의 리뷰 평점 계산
+            for (TutorList tutor : tutors) {
+                List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
+                
+                double avgRating = 0.0;
+                if (!reviews.isEmpty()) {
+                    avgRating = reviews.stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
+                }
+                
+                tutor.setRatingAvg(BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
+                tutor.setReviewCount(reviews.size());
+            }
+            
+            model.addAttribute("tutors", tutors);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "tutors/list";
     }
 
     @GetMapping("/tutors/{id}")
     public String tutorDetail(@PathVariable("id") String id, Model model) {
+
         try {
-            // 튜터 정보 조회
+
             TutorList tutor = tutorListService.selectTutorById(id);
-            
-            // 리뷰 목록 조회
-            List<TutorReview> reviews = tutorMyPageService.selectTutorReviewsByUserId(id);
-            
-            if (tutor != null) {
-                model.addAttribute("tutor", tutor);
-                model.addAttribute("reviews", reviews);
-                model.addAttribute("reviewCount", reviews != null ? reviews.size() : 0);
-                if (reviews != null && !reviews.isEmpty()) {
-                    double avgRating = reviews.stream()
-                        .mapToInt(TutorReview::getRating)
-                        .average()
-                        .orElse(0.0);
-                    model.addAttribute("avgRating", avgRating);
-                } else {
-                    model.addAttribute("avgRating", 0.0);
-                }
+
+            if ( tutor == null ) {
+                return "redirect:/tutors";
             }
+
+            Map<String, Object> tutorMap = new HashMap<>();
+            tutorMap.put("userId", tutor.getUserId());
+            tutorMap.put("name", tutor.getName() != null ? tutor.getName() : "");
+            tutorMap.put("ratingAvg", tutor.getRatingAvg() != null ? tutor.getRatingAvg() : 0.0);
+            tutorMap.put("reviewCount", tutor.getReviewCount() != null ? tutor.getReviewCount() : 0);
+            tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects().split(",") : new String[]{});
+            tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
+            tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
+            tutorMap.put("hourlyRate", tutor.getPrice() != null ? tutor.getPrice() : 0);
+            tutorMap.put("availability", "평일 저녁, 주말");
+
+            List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
+            
+            // 리뷰 평점 계산
+            double avgRating = 0.0;
+            if (!reviews.isEmpty()) {
+                avgRating = reviews.stream()
+                    .mapToInt(Review::getRating)
+                    .average()
+                    .orElse(0.0);
+            }
+            
+            model.addAttribute("tutor", tutorMap);
+            model.addAttribute("reviews", reviews);
+            model.addAttribute("avgRating", BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
+            model.addAttribute("reviewCount", reviews.size());
+
         } catch (Exception e) {
             e.printStackTrace();
         }
