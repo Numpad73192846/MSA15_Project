@@ -1,140 +1,125 @@
 package com.aloha.teamproject.controller;
 
 import java.util.List;
-import java.util.Map;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.dto.UpcomingLesson;
+import com.aloha.teamproject.service.TutorListService;
+import com.aloha.teamproject.service.TutorMyPageService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Controller
+@RequiredArgsConstructor
 public class TutorsPageController {
+
+    private final TutorListService tutorListService;
+    private final TutorMyPageService tutorMyPageService;
 
     @GetMapping("/tutors")
     public String tutors(Model model) {
-        List<Map<String, Object>> tutors = List.of(
-            Map.of(
-                "id", "u-tutor-1",
-                "name", "김튜터",
-                "rating", 4.9,
-                "reviews", 127,
-                "subjects", List.of("영어 회화", "문법"),
-                "bio", "회화/문법 집중 코칭",
-                "experience", "5년",
-                "hourlyRate", 35000
-            ),
-            Map.of(
-                "id", "u-tutor-2",
-                "name", "이튜터",
-                "rating", 4.7,
-                "reviews", 89,
-                "subjects", List.of("비즈니스 영어", "발음"),
-                "bio", "실무 중심 회화",
-                "experience", "4년",
-                "hourlyRate", 40000
-            )
-        );
-
-        model.addAttribute("tutors", tutors);
+        try {
+            List<TutorList> tutors = tutorListService.selectAllTutors();
+            model.addAttribute("tutors", tutors);
+        } catch (Exception e) {
+            log.error("튜터 목록 조회 실패", e);
+            model.addAttribute("tutors", List.of());
+        }
         return "tutors/list";
     }
 
     @GetMapping("/tutors/{id}")
     public String tutorDetail(@PathVariable("id") String id, Model model) {
-        Map<String, Object> tutor = Map.of(
-            "id", id,
-            "name", "김튜터",
-            "rating", 4.9,
-            "reviews", 127,
-            "subjects", List.of("영어 회화", "문법", "발음"),
-            "bio", "중고급 회화/발음 집중",
-            "experience", "5년",
-            "hourlyRate", 35000,
-            "availability", "평일 저녁, 주말"
-        );
-
-        Map<String, Object> review1 = new java.util.HashMap<>();
-        review1.put("studentName", "학생A");
-        review1.put("createdAt", java.time.LocalDateTime.of(2026, 1, 20, 0, 0));
-        review1.put("rating", 5);
-        review1.put("content", "설명이 정말 이해 잘 됐어요!");
-        review1.put("reviewId", 1);
-        review1.put("studentId", "s1");
-
-        Map<String, Object> review2 = new java.util.HashMap<>();
-        review2.put("studentName", "학생B");
-        review2.put("createdAt", java.time.LocalDateTime.of(2026, 1, 12, 0, 0));
-        review2.put("rating", 4);
-        review2.put("content", "친절하고 꼼꼼해요.");
-        review2.put("reviewId", 2);
-        review2.put("studentId", "s2");
-
-        Map<String, Object> review3 = new java.util.HashMap<>();
-        review3.put("studentName", "학생C");
-        review3.put("createdAt", java.time.LocalDateTime.of(2026, 1, 5, 0, 0));
-        review3.put("rating", 5);
-        review3.put("content", "발음 교정이 좋았습니다.");
-        review3.put("reviewId", 3);
-        review3.put("studentId", "s3");
-
-        List<Map<String, Object>> reviews = List.of(review1, review2, review3);
-
-        model.addAttribute("tutor", tutor);
-        model.addAttribute("reviews", reviews);
+        try {
+            List<TutorList> tutors = tutorListService.selectAllTutors();
+            TutorList tutor = tutors.stream()
+                .filter(t -> t.getUserId().equals(id) || t.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+            
+            if (tutor == null) {
+                log.warn("튜터를 찾을 수 없습니다: {}", id);
+                return "redirect:/tutors";
+            }
+            
+            model.addAttribute("tutor", tutor);
+            model.addAttribute("reviews", List.of());
+        } catch (Exception e) {
+            log.error("튜터 상세 조회 실패", e);
+            return "redirect:/tutors";
+        }
         return "tutors/detail";
     }
 
     @GetMapping("/tutor/dashboard")
-    public String tutorDashboard(Model model) {
-        List<Map<String, Object>> bookings = List.of(
-            Map.of(
-                "id", "b-1",
-                "studentName", "김학생",
-                "subject", "영어 회화",
-                "status", "대기중",
-                "date", "2026-01-30",
-                "time", "14:00",
-                "duration", 2,
-                "totalPrice", 70000
-            ),
-            Map.of(
-                "id", "b-2",
-                "studentName", "박학생",
-                "subject", "문법",
-                "status", "확정",
-                "date", "2026-02-01",
-                "time", "19:00",
-                "duration", 1,
-                "totalPrice", 35000
-            )
-        );
+    public String tutorDashboard(Model model, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
 
-        List<Map<String, Object>> students = List.of(
-            Map.of(
-                "name", "김학생",
-                "email", "student1@email.com",
-                "phone", "010-1234-5678",
-                "subjects", List.of("영어 회화", "발음"),
-                "totalSessions", 12,
-                "lastSession", "2026-01-20",
-                "progress", "기초 회화 완료",
-                "notes", "발음 집중 요청"
-            ),
-            Map.of(
-                "name", "박학생",
-                "email", "student2@email.com",
-                "phone", "010-2222-3333",
-                "subjects", List.of("문법"),
-                "totalSessions", 6,
-                "lastSession", "2026-01-18",
-                "progress", "문법 2단원 진행 중",
-                "notes", "시험 대비"
-            )
-        );
-
-        model.addAttribute("bookings", bookings);
-        model.addAttribute("students", students);
+        try {
+            String userId = authentication.getName();
+            
+            // 예약 목록 조회 (대기중 + 확정 상태)
+            List<UpcomingLesson> upcomingLessons = tutorMyPageService.selectUpcomingBookingsByUserId(userId);
+            
+            // 대시보드용 예약 데이터 변환
+            List<java.util.Map<String, Object>> bookings = upcomingLessons.stream().map(lesson -> {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", lesson.getBookingId());
+                map.put("studentName", lesson.getStudentName());
+                map.put("subject", lesson.getSubject());
+                String status = "PENDING".equals(lesson.getStatus()) ? "대기중" : 
+                               "CONFIRMED".equals(lesson.getStatus()) ? "확정" : "취소";
+                map.put("status", status);
+                map.put("date", lesson.getLessonDate());
+                map.put("time", lesson.getStartTime());
+                map.put("duration", lesson.getDurationHours());
+                map.put("totalPrice", lesson.getPrice() != null ? lesson.getPrice().intValue() : 0);
+                return map;
+            }).toList();
+            
+            // 학생 목록은 예약에서 추출 (중복 제거)
+            java.util.Map<String, java.util.Map<String, Object>> studentMap = new java.util.LinkedHashMap<>();
+            for (UpcomingLesson lesson : upcomingLessons) {
+                String studentId = lesson.getStudentId();
+                if (!studentMap.containsKey(studentId)) {
+                    java.util.Map<String, Object> student = new java.util.HashMap<>();
+                    student.put("name", lesson.getStudentName());
+                    student.put("email", "");
+                    student.put("phone", "");
+                    student.put("subjects", new java.util.ArrayList<String>());
+                    student.put("totalSessions", 0);
+                    student.put("lastSession", lesson.getLessonDate());
+                    student.put("progress", "");
+                    student.put("notes", "");
+                    studentMap.put(studentId, student);
+                }
+                @SuppressWarnings("unchecked")
+                java.util.List<String> subjects = (java.util.List<String>) studentMap.get(studentId).get("subjects");
+                if (!subjects.contains(lesson.getSubject())) {
+                    subjects.add(lesson.getSubject());
+                }
+                studentMap.get(studentId).put("totalSessions", 
+                    (Integer) studentMap.get(studentId).get("totalSessions") + 1);
+            }
+            
+            model.addAttribute("bookings", bookings);
+            model.addAttribute("students", new java.util.ArrayList<>(studentMap.values()));
+        } catch (Exception e) {
+            log.error("튜터 대시보드 데이터 조회 실패", e);
+            model.addAttribute("bookings", List.of());
+            model.addAttribute("students", List.of());
+        }
+        
         return "tutor/dashboard";
     }
 

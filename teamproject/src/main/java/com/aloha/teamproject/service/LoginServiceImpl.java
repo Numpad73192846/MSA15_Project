@@ -48,11 +48,20 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 		requireNotNull(existing, ErrorCode.USER_NOT_FOUND);
 		require(passwordEncoder.matches(password, existing.getPassword()), ErrorCode.INVALID_CREDENTIALS);
 
+		// 디버깅: authList 확인
+		System.out.println("=== LOGIN DEBUG ===");
+		System.out.println("User ID: " + existing.getId());
+		System.out.println("Username: " + existing.getUsername());
+		System.out.println("AuthList from DB: " + existing.getAuthList());
+
 		List<String> authList = (existing.getAuthList() == null)
 				? List.of()
 				: existing.getAuthList().stream()
-									 .map(UserAuth::getAuth)
-									 .toList();
+								 .map(UserAuth::getAuth)
+								 .toList();
+		
+		System.out.println("AuthList for JWT: " + authList);
+		System.out.println("===================");
 
 		String accessToken = jwtTokenProvider.createAccessToken(existing.getId(), authList);
 		String refreshToken = jwtTokenProvider.createRefreshToken(existing.getId());

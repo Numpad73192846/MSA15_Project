@@ -86,16 +86,9 @@
         <script>
             let calendar = null;
 
-            function getStoredTokens() {
-                return {
-                    accessToken: localStorage.getItem('accessToken'),
-                    refreshToken: localStorage.getItem('refreshToken')
-                };
-            }
-
-            async function fetchMe(accessToken) {
+            async function fetchMe() {
                 const response = await fetch('/api/users/me', {
-                    headers: { Authorization: `Bearer ${accessToken}` }
+                    credentials: 'same-origin'
                 });
                 if (!response.ok) {
                     return null;
@@ -163,9 +156,8 @@
 
             async function getBaseTimeRanges() {
                 try {
-                    const { accessToken } = getStoredTokens();
                     const response = await fetch('/api/tutors/me/time-ranges', {
-                        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+                        credentials: 'same-origin'
                     });
                     if (!response.ok) throw new Error('Failed to load');
                     const result = await response.json();
@@ -188,10 +180,9 @@
 
             async function loadAvailability() {
                 try {
-                    const { accessToken } = getStoredTokens();
                     const { start, end } = getDateRangeForMaxWeeks(9);
                     const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
-                        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+                        credentials: 'same-origin'
                     });
                     if (!response.ok) throw new Error('Failed to load');
                     const result = await response.json();
@@ -260,8 +251,10 @@
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
-                const { accessToken } = getStoredTokens();
-                if (!accessToken) {
+                // 쿠키 기반 인증 확인
+                const me = await fetchMe();
+                if (!me) {
+                    alert('로그인이 필요합니다.');
                     location.href = '/login';
                     return;
                 }
@@ -299,12 +292,13 @@
                 };
 
                 try {
+                    // 쿠키 기반 인증 사용 (httpOnly 쿠키는 자동 전송됨)
                     const response = await fetch('/api/tutors/profile', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${accessToken}`
+                            'Content-Type': 'application/json'
                         },
+                        credentials: 'same-origin',
                         body: JSON.stringify(payload)
                     });
 
@@ -332,9 +326,9 @@
                         await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
-                                Authorization: `Bearer ${accessToken}`
+                                'Content-Type': 'application/json'
                             },
+                            credentials: 'same-origin',
                             body: JSON.stringify(availabilityPayload)
                         });
                     }
@@ -344,6 +338,24 @@
                     sessionStorage.removeItem('tutorRegisterStep2');
                     sessionStorage.removeItem('tutorRegisterStep3');
                     sessionStorage.removeItem('tutorRegisterStep4');
+
+                    // 토큰 갱신 (ROLE_TUTOR 권한 반영) - 쿠키에서 refreshToken 사용
+                    try {
+                        const refreshResponse = await fetch('/api/auth/refresh', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({})
+                        });
+                        const refreshData = await refreshResponse.json();
+                        if (refreshData.success && refreshData.data) {
+                            localStorage.setItem('accessToken', refreshData.data.accessToken);
+                            if (refreshData.data.refreshToken) {
+                                localStorage.setItem('refreshToken', refreshData.data.refreshToken);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('토큰 갱신 실패', e);
+                    }
 
                     alert('튜터 회원가입이 완료되었습니다!');
                     location.href = '/';

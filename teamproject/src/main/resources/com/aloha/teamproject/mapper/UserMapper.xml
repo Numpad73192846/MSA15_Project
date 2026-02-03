@@ -17,7 +17,7 @@
 		<collection property="authList"
 					ofType="UserAuth"
 					select="selectAuth"
-					column="username">
+					column="id">
 		</collection>
 	</resultMap>
 
@@ -73,7 +73,7 @@
 	<select id="selectAuth" resultMap="authMap">
 		SELECT *
 		FROM user_auth
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{id}
 	</select>
 
 	<update id="update" parameterType="Users">

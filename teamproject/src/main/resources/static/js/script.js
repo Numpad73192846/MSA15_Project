@@ -66,14 +66,18 @@ function setNavState(isAuth, authList) {
         if ( isTutor || isTutorPending ) {
             navUserMyPageBtn.style.display = "none";
 
-            if (isTutorPending) {
+            if (isTutorPending && !isTutor) {
+                // 튜터 등록 미완료 상태
                 navTutorDashboardBtn.style.display = "none";
                 navTutorMyPageBtn.style.display = "inline-block";
                 navTutorMyPageBtn.textContent = "추가 정보 작성";
                 navTutorMyPageBtn.onclick = () => { location.href = "/tutor/register"; };
             } else {
+                // 정상 튜터 상태
                 navTutorDashboardBtn.style.display = "inline-block";
                 navTutorMyPageBtn.style.display = "inline-block";
+                navTutorMyPageBtn.textContent = "마이페이지";
+                navTutorMyPageBtn.onclick = () => { location.href = "/tutor/mypage"; };
             }
         }
         
@@ -128,9 +132,13 @@ function fetchUserInfo() {
             const authList = data.data.authList || [];
             setNavState(true, authList);
 
+            const isTutor = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR" || a === "ROLE_TUTOR");
             const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
             const isRegisterPage = location.pathname.startsWith("/tutor/register");
-            if (isTutorPending && !isRegisterPage) {
+            
+            // ROLE_TUTOR가 있으면 리다이렉트하지 않음 (정상 튜터)
+            // ROLE_TUTOR_PENDING만 있으면 튜터 등록 페이지로 리다이렉트
+            if (!isTutor && isTutorPending && !isRegisterPage) {
                 location.href = "/tutor/register";
             }
         } else {

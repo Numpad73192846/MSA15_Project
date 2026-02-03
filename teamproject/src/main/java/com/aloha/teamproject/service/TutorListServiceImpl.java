@@ -19,26 +19,22 @@ public class TutorListServiceImpl extends BaseServiceImpl implements TutorListSe
 
     @Override
     public List<TutorList> selectAllTutors() throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'selectAllTutors'");
+        return tutorListMapper.selectAllTutors();
     }
 
     @Override
     public List<TutorList> selectTutorsBySubject(String subject) throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'selectTutorsBySubject'");
+        return tutorListMapper.selectTutorsBySubject(subject);
     }
 
     @Override
     public List<TutorList> selectTutorsByPrice(BigDecimal minPrice, BigDecimal maxPrice) throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'selectTutorsByPrice'");
+        return tutorListMapper.selectTutorsByPrice(minPrice, maxPrice);
     }
 
     @Override
     public List<TutorList> selectTutorsBySearchTerm(String searchTerm) throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'selectTutorsBySearchTerm'");
+        return tutorListMapper.selectTutorsBySearchTerm(searchTerm);
     }
 
 }

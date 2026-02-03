@@ -14,10 +14,18 @@ import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
+import com.aloha.teamproject.dto.TutorCareer;
+import com.aloha.teamproject.dto.TutorEducation;
+import com.aloha.teamproject.dto.TutorSubject;
+import com.aloha.teamproject.service.TutorCareerService;
+import com.aloha.teamproject.service.TutorDocumentService;
+import com.aloha.teamproject.service.TutorEducationService;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
+import com.aloha.teamproject.service.TutorSubjectService;
 import com.aloha.teamproject.service.UserService;
+import com.aloha.teamproject.dto.TutorDocument;
 
 
 @Slf4j
@@ -30,6 +38,10 @@ public class TutorController {
     private final TutorFieldService tutorFieldService;
     private final TutorMyPageService tutorMyPageService;
     private final UserService userService;
+    private final TutorSubjectService tutorSubjectService;
+    private final TutorCareerService tutorCareerService;
+    private final TutorEducationService tutorEducationService;
+    private final TutorDocumentService tutorDocumentService;
 
     @GetMapping("/me")
     public ApiResponse<TutorMyPage> me(Authentication authentication) {
@@ -56,33 +68,82 @@ public class TutorController {
     }
 
     @PostMapping("/subjects")
-    public ApiResponse<Void> subjects(@RequestBody String entity) {
-        // TODO: 튜터 과목 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
+    public ApiResponse<Void> subjects(@RequestBody TutorSubject.Request request, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            tutorSubjectService.replaceSubjects(userId, request.getSubjectIds());
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/subjects 저장 실패", e);
+            return ApiResponse.error("과목 정보를 저장하지 못했습니다.");
+        }
     }
 
     @PostMapping("/careers")
-    public ApiResponse<Void> careers(@RequestBody String entity) {
-        // TODO: 튜터 경력 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
+    public ApiResponse<Void> careers(@RequestBody TutorCareer.Request request, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            tutorCareerService.replaceCareers(userId, request.getCareers());
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/careers 저장 실패", e);
+            return ApiResponse.error("경력 정보를 저장하지 못했습니다.");
+        }
     }
 
     @PostMapping("/educations")
-    public ApiResponse<Void> educations(@RequestBody String entity) {
-        // TODO: 튜터 학력 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
-    }
+    public ApiResponse<Void> educations(@RequestBody TutorEducation.Request request, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
 
-    @PostMapping("/time-ranges")
-    public ApiResponse<Void> time_ranges(@RequestBody String entity) {
-        // TODO: 시간대 관리는 /api/tutors/me/time-ranges에서 처리
-        return ApiResponse.error("시간대 관리는 /api/tutors/me/time-ranges를 사용해주세요.");
+        try {
+            String userId = authentication.getName();
+            tutorEducationService.replaceEducations(userId, request.getEducations());
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/educations 저장 실패", e);
+            return ApiResponse.error("학력 정보를 저장하지 못했습니다.");
+        }
     }
 
     @PostMapping("/documents")
-    public ApiResponse<Void> documents(@RequestBody String entity) {
-        // TODO: 튜터 문서 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
+    public ApiResponse<Void> documents(@RequestBody TutorDocument document, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            document.setUserId(authentication.getName());
+            tutorDocumentService.insert(document);
+            return ApiResponse.ok(SuccessCode.CREATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/documents 저장 실패", e);
+            return ApiResponse.error("문서를 저장하지 못했습니다.");
+        }
+    }
+
+    @GetMapping("/documents")
+    public ApiResponse<java.util.List<TutorDocument>> getDocuments(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            java.util.List<TutorDocument> documents = tutorDocumentService.selectByUserId(authentication.getName());
+            return ApiResponse.ok(documents);
+        } catch (Exception e) {
+            log.error("/api/tutors/documents 조회 실패", e);
+            return ApiResponse.error("문서를 조회하지 못했습니다.");
+        }
     }
 
     @PostMapping("/profile")
