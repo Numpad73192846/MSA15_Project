@@ -40,6 +40,9 @@ CREATE TABLE `users` (
     PRIMARY KEY (`no`)
 );
 
+ALTER TABLE users
+ADD COLUMN phone VARCHAR(20) NULL AFTER nickname;
+
 CREATE TABLE `user_auth` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL,
@@ -58,7 +61,7 @@ CREATE TABLE `tutor_profile` (
     `id` VARCHAR(64) NOT NULL UNIQUE,
     `profile_img` VARCHAR(255) NULL,
     `headline` VARCHAR(100) NULL,
-    `bio` TEXT NULL,
+    `bio` TEXT NULL,   
     `video_url` VARCHAR(255) NULL,
     `is_verified` BOOLEAN NOT NULL DEFAULT FALSE,
     `rating_avg` DECIMAL(3, 2) NOT NULL DEFAULT 0.0,
@@ -68,6 +71,9 @@ CREATE TABLE `tutor_profile` (
     PRIMARY KEY (`no`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
+
+ALTER TABLE tutor_profile
+ADD COLUMN self_intro TEXT NULL AFTER bio; 
 
 CREATE TABLE `persistent_logins` (
     `series` VARCHAR(64) NOT NULL,

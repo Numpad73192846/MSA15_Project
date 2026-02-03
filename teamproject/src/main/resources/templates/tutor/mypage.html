@@ -15,11 +15,8 @@
                     <div class="card shadow-sm">
                         <div class="card-body text-center">
                             <div class="profile-avatar mb-3">
-                                <div
-                                    class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto">
-                                    <!-- <span class="fs-1">👨‍🏫</span> -->
-                                    <div id="profileImg"></div>
-                                </div>
+                                <!-- 프로필 이미지 -->
+                                <div id="profileImg" class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto"></div>
                             </div>
                             <h3 class="h5 fw-bold mb-1" id="tutorName">김민지 튜터</h3>
                             <p class="text-muted small mb-3" id="tutorEmail">minji.kim@example.com</p>
@@ -40,16 +37,33 @@
                                 data-bs-target="#tutorProfileEditModal">
                                 프로필 수정
                             </button>
+                            <button class="btn btn-outline-success w-100 mt-2" id="btnEditInfo" data-bs-toggle="modal"
+                                data-bs-target="#tutorInfoEditModal">
+                                튜터정보 수정
+                            </button>
                         </div>
                     </div>
 
                     <!-- Bio Section -->
                     <div class="card shadow-sm mt-3">
-                        <div class="card-body">
-                            <h4 class="h6 fw-bold mb-2">소개</h4>
-                            <p class="small text-muted mb-0" id="tutorBio">
-                                10년 경력의 영어 전문 튜터입니다. 학생 개개인의 수준에 맞춘 맞춤형 수업을 제공합니다.
-                            </p>
+                        <div class="tutorVideo-wrap" id="videoWrap" style="display: none;">
+                            <div class="resize">
+                                <iframe id="tutorVideo" class="re" width="100%" height="100%" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>                     
+                        <div class="card-body gap-4">
+                            <div>
+                                <h4 class="h6 fw-bold mb-2">한 줄 소개</h4>
+                                <p class="small text-muted mb-0" id="tutorHeadline">
+                                    튜터의 한 줄 소개입니다. 
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="h6 fw-bold mb-2">소개</h4>
+                                <p class="small text-muted mb-0" id="tutorBio">
+                                    10년 경력의 영어 전문 튜터입니다. 학생 개개인의 수준에 맞춘 맞춤형 수업을 제공합니다.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -342,25 +356,67 @@
         <div class="modal fade" id="tutorProfileEditModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form action="/tutor/mypage/update" method="POST">
+                    <form id="tutorProfileEditForm">
                         <div class="modal-header">
                             <h5 class="modal-title fw-bold">프로필 수정</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
+                        <div class="modal-body">                            
+                            <div class="alert alert-light border mb-3"><span id="editTutorEmail" class="fw-bold"> </span> [ <span id="editTutorNickName"> </span> ]</div>
+                            <div class="mb-3 row g-3">
+                                <div class="col-md-6">
+                                    <label for="editTutorPassword" class="form-label">비밀번호 변경</label>
+                                    <input type="password" class="form-control" id="editTutorPassword" name="password">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="editTutorPasswordConfirm" class="form-label">비밀번호 확인</label>
+                                    <input type="password" class="form-control" id="editTutorPasswordConfirm" name="passwordConfirm">
+                                </div>
+                            </div>
+                            <div class="mb-3 row g-3">
+                                <div class="col-md-6">
+                                    <label for="editTutorName" class="form-label">이름</label>
+                                    <input type="text" class="form-control" id="editTutorName" name="name" value="김민지 튜터" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="editTutorPhone" class="form-label">연락처</label>
+                                    <input type="text" class="form-control" id="editTutorPhone" name="phone" placeholder="010-0000-0000" required>
+                                </div>
+                            </div>
                             <div class="mb-3">
-                                <label for="editTutorName" class="form-label">이름</label>
-                                <input type="text" class="form-control" id="editTutorName" name="name" value="김민지 튜터">
+                                <label for="editTutorProfileImg" class="form-label">프로필 이미지</label>
+                                <input type="file" class="form-control" id="profileImg" name="profileImg" accept="image/*">
+                                <div id="profileImgCard" class="card my-2" style="display:none;">
+                                    <div class="row g-0 align-items-center">
+                                        <div class="col-md-4 text-center">
+                                            <img id="profileImgPreview" class="rounded-start mw-100 mx-auto" alt="프로필 미리보기" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card-body">
+                                                <div id="profileImgActions" class="d-flex gap-1">
+                                                    <button type="button" id="profileImgEditBtn" class="btn btn-sm btn-outline-secondary">수정</button>
+                                                    <button type="button" id="profileImgDeleteBtn" class="btn btn-sm btn-outline-danger">삭제</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTutorHeadline" class="form-label">한 줄 소개</label>
+                                <input type="text" class="form-control" id="editTutorHeadline" name="headline" value="안녕하세요.">
                             </div>
                             <div class="mb-3">
                                 <label for="editTutorBio" class="form-label">소개</label>
-                                <textarea class="form-control" id="editTutorBio" name="bio"
-                                    rows="4">10년 경력의 영어 전문 튜터입니다. 학생 개개인의 수준에 맞춘 맞춤형 수업을 제공합니다.</textarea>
+                                <textarea class="form-control" id="editTutorBio" name="bio" rows="4"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="editTutorEmail" class="form-label">이메일</label>
-                                <input type="email" class="form-control" id="editTutorEmail" name="username"
-                                    value="minji.kim@example.com" readonly>
+                                <label for="editTutorSelfIntro" class="form-label">강의 스타일</label>
+                                <textarea class="form-control" id="editTutorSelfIntro" name="selfIntro" rows="4"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTutorVideoUrl" class="form-label">소개 영상 유튜브 URL</label>
+                                <input type="url" class="form-control" id="editTutorVideoUrl" name="videoUrl">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -390,29 +446,47 @@
                         if (mypage.tutorProfile) {
                             const profile = mypage.tutorProfile;
 
-                            const profileImageContainer = document.getElementById('profileImg');
+                            // 프로필 이미지
+                            const profileImgContainer = document.getElementById('profileImg');
                             if (profile.profileImg) {
-                                profileImageContainer.innerHTML = `
+                                profileImgContainer.classList.remove('bg-primary');
+                                profileImgContainer.innerHTML = `
                                     <img src="${profile.profileImg}"
                                         alt="프로필 이미지"
-                                        class="rounded-circle"
-                                        style="width:120px; height:120px; object-fit:cover;">
+                                        class="rounded-circle w-100 h-100 object-fit-cover">
                                 `;
                             } else {
-                                profileImageContainer.innerHTML = `
+                                profileImgContainer.classList.add('bg-primary');
+                                profileImgContainer.innerHTML = `
                                     <span class="fs-1">👨‍🏫</span>
                                 `;
-                            }
+                            }                           
 
+                            // 유튜브 URL
+                            const videoWrap = document.getElementById('videoWrap');
+                            const iframe = document.getElementById('tutorVideo');
+
+                            if (profile.videoUrl) {
+                                iframe.src = profile.videoUrl;
+                                videoWrap.style.display = 'block';
+                            } else {
+                                videoWrap.style.display = 'none';
+                            }                            
 
                             document.getElementById('tutorName').textContent = (profile.name || '튜터') + ' 튜터';
                             document.getElementById('tutorEmail').textContent = profile.email || '';
+                            document.getElementById('tutorHeadline').textContent = profile.headline || '소개가 없습니다.';
                             document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
                             
                             // 모달 폼에도 바인딩
+                            document.getElementById('editTutorEmail').textContent = profile.email || '';
+                            document.getElementById('editTutorNickName').textContent = profile.nickname || '';
                             document.getElementById('editTutorName').value = profile.name || '';
+                            document.getElementById('editTutorPhone').value = profile.phone || '';
+                            document.getElementById('editTutorHeadline').value = profile.headline || '';
                             document.getElementById('editTutorBio').value = profile.bio || '';
-                            document.getElementById('editTutorEmail').value = profile.email || '';
+                            document.getElementById('editTutorSelfIntro').value = profile.selfIntro || '';
+                            document.getElementById('editTutorVideoUrl').value = profile.videoUrl || '';
                         }
                         
                         // Stats 바인딩
@@ -522,6 +596,23 @@
                     }
                 } catch (e) {
                     console.warn('마이페이지 데이터 로드 실패', e);
+                }
+            });
+
+            // 프로필 수정 폼 제출 처리
+            document.getElementById('tutorProfileEditForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+
+                const response = await fetch('/api/tutors', {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('프로필 수정 완료');
+                    location.reload();
                 }
             });
             

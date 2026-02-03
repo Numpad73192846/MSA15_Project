@@ -263,6 +263,20 @@
                 });
             });
 
+            function base64ToFile(base64, filename) {
+                const arr = base64.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+
+                return new File([u8arr], filename, { type: mime });
+            }
+
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
@@ -284,46 +298,61 @@
                 const step3Data = JSON.parse(sessionStorage.getItem('tutorRegisterStep3') || '{}');
 
                 // 최종 제출 데이터
-                const payload = {
-                    // Step 1: 기본 정보
-                    basicName: step1Data.basicName,
-                    basicPhone: step1Data.basicPhone,
-                    headline: step1Data.headline,
-                    bio: step1Data.bio,
-                    videoUrl: step1Data.videoUrl,
-                    profileImage: step1Data.profileImage,
-                    introVideo: step1Data.introVideo,
-                    introVideoFileName: step1Data.introVideoFileName,
-                    introVideoFileSize: step1Data.introVideoFileSize,
-                    
-                    // Step 2: 학력 및 경력
-                    career: step2Data.career,
-                    selfIntro: step2Data.selfIntro,
-                    academicCertificates: step2Data.academicCertificates || [],
-                    educationCertificates: step2Data.educationCertificates || [],
-                    
-                    // Step 3
-                    lessonSubjects: step3Data.lessonSubjects,
-                    fieldIds: step3Data.fieldIds || [],
-                    
-                    // Step 4: 수업 가능 시간대
-                    availableTime: step4Data.availableTime
-                };
+                const formData = new FormData();
+
+                // Step 1: 기본 정보
+                formData.append('basicName', step1Data.basicName);
+                formData.append('basicPhone', step1Data.basicPhone);
+                formData.append('headline', step1Data.headline);
+                formData.append('bio', step1Data.bio);
+                formData.append('selfIntro', step1Data.selfIntro);
+                formData.append('videoUrl', step1Data.videoUrl);
+                if (step1Data.profileImg) {
+                    const profileImgFile = base64ToFile(
+                        step1Data.profileImg,
+                        step1Data.profileImgOriginalName || 'profile.png'
+                    );
+                    formData.append('profileImg', profileImgFile);
+                }
+
+                // Step 2: 학력 및 경력
+                formData.append('career', step2Data.career || '');                
+
+                (step2Data.academicCertificates || []).forEach(id =>
+                    formData.append('academicCertificates', id)
+                );
+                (step2Data.educationCertificates || []).forEach(id =>
+                    formData.append('educationCertificates', id)
+                );
+
+                // Step 3
+                formData.append('lessonSubjects', step3Data.lessonSubjects || '');
+                (step3Data.fieldIds || []).forEach(id =>
+                    formData.append('fieldIds', id)
+                );
+
+                // Step 4: 수업 가능 시간대
+                formData.append('availableTime', step4Data.availableTime);
 
                 try {
                     const response = await fetch('/api/tutors/profile', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
+                            // 'Content-Type': 'application/json',
                             Authorization: `Bearer ${accessToken}`
                         },
-                        body: JSON.stringify(payload)
+                        body: formData
                     });
 
-                    const data = await response.json();
+                    // const data = await response.json();
                     
-                    if (!data.success) {
-                        alert(data.message || '튜터 정보를 저장하지 못했습니다.');
+                    if (!response.ok) {
+                        throw new Error('튜터 등록 실패');
+                    }
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        alert(result.message || '튜터 등록 실패');
                         return;
                     }
 
