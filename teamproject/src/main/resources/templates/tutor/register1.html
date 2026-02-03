@@ -68,11 +68,7 @@
                         <div class="mb-4">
                             <h5 class="fw-bold">3. 근무 경력</h5>
                             <textarea class="form-control" id="career" rows="4" placeholder="근무 경력을 입력하세요&#10;예) 2020-2023 ABC학원 영어강사&#10;2018-2020 XYZ회사 영업팀"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <h5 class="fw-bold">4. 자기소개서</h5>
-                            <textarea class="form-control" id="selfIntro" rows="5" placeholder="자기소개서를 입력하세요&#10;&#10;- 교육 철학&#10;- 강점&#10;- 학생들에게 제공할 수 있는 가치"></textarea>
-                        </div>
+                        </div>                       
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-secondary" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;" onclick="history.back()">이전</button>
                             <button type="submit" class="btn btn-primary flex-fill" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;">다음 단계로</button>
@@ -237,9 +233,7 @@
             document.addEventListener('DOMContentLoaded', async () => {
                 // 이전에 저장된 데이터 불러오기
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
-                if (savedData.career) document.getElementById('career').value = savedData.career;
-                if (savedData.selfIntro) document.getElementById('selfIntro').value = savedData.selfIntro;
-
+                if (savedData.career) document.getElementById('career').value = savedData.career;               
                 // 파일 리스트 복원
                 if (savedData.academicCertificates && Array.isArray(savedData.academicCertificates)) {
                     renderFileList('academicList', 'academicListCard', savedData.academicCertificates, 'academicCertificate', 'academicCertificates');
@@ -261,18 +255,11 @@
                 event.preventDefault();
 
                 // 필수 필드 검증
-                const career = document.getElementById('career').value.trim();
-                const selfIntro = document.getElementById('selfIntro').value.trim();
-
-                if (!career || !selfIntro) {
-                    alert('필수 항목을 모두 입력해주세요.');
-                    return;
-                }
-
+                const career = document.getElementById('career').value.trim(); 
+                
                 // 2단계 데이터 저장
                 const step2Data = {
-                    career: career,
-                    selfIntro: selfIntro
+                    career: career                   
                 };
 
                 // 파일 처리

@@ -12,6 +12,7 @@
         <result property="profileImg" column="profile_img" />
         <result property="headline" column="headline" />
         <result property="bio" column="bio" />
+        <result property="selfIntro" column="self_intro" />
         <result property="videoUrl" column="video_url" />
         <result property="verified" column="is_verified" />
         <result property="ratingAvg" column="rating_avg" />
@@ -22,15 +23,16 @@
 
     <insert id="upsertProfile">
         INSERT INTO tutor_profile (
-            id, user_id, profile_img, headline, bio, video_url, is_verified, rating_avg, review_count
+            id, user_id, profile_img, headline, bio, self_intro, video_url, is_verified, rating_avg, review_count
         )
         VALUES (
-            #{id}, #{userId}, #{profileImg}, #{headline}, #{bio}, #{videoUrl}, #{verified}, #{ratingAvg}, #{reviewCount}
+            #{id}, #{userId}, #{profileImg}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl}, #{verified}, #{ratingAvg}, #{reviewCount}
         )
         ON DUPLICATE KEY UPDATE
             profile_img = VALUES(profile_img),
             headline = VALUES(headline),
             bio = VALUES(bio),
+            self_intro = VALUES(self_intro),
             video_url = VALUES(video_url),
             updated_at = NOW();
     </insert>

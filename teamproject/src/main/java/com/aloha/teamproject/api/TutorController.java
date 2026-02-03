@@ -4,6 +4,11 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -25,7 +30,7 @@ import com.aloha.teamproject.dto.TutorList;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
 import com.aloha.teamproject.dto.UserAuth;
-import com.aloha.teamproject.service.FileService;
+import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
@@ -35,6 +40,7 @@ import com.aloha.teamproject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.MediaType;
 
 
 @Slf4j
@@ -47,7 +53,6 @@ public class TutorController {
     private final TutorFieldService tutorFieldService;
     private final TutorMyPageService tutorMyPageService;
     private final UserService userService;
-    private final FileService fileService;
     private final TutorListService tutorListService;
 
     @GetMapping("/me")
@@ -66,7 +71,7 @@ public class TutorController {
             tutorMyPage.setUpcomingLessons(tutorMyPageService.selectUpcomingBookingsByUserId(userId));
             tutorMyPage.setTutorReviews(tutorMyPageService.selectTutorReviewsByUserId(userId));
             tutorMyPage.setMonthlyEarnings(tutorMyPageService.selectMonthlyEarningsByUserId(userId));
-            
+
             return ApiResponse.ok(tutorMyPage);
         } catch (Exception e) {
             log.error("/api/tutors/me 조회 실패", e);
@@ -74,7 +79,7 @@ public class TutorController {
         }
     }
 
-    @PostMapping("/subjects")
+    @PostMapping("/subjects") 
     public ApiResponse<Void> subjects(@RequestBody String entity) {
         // TODO: 튜터 과목 관리 - 추후 구현 예정
         return ApiResponse.error("이 기능은 아직 구현 중입니다.");
@@ -104,18 +109,31 @@ public class TutorController {
         return ApiResponse.error("이 기능은 아직 구현 중입니다.");
     }
 
-    @PostMapping("/profile")
-    public ApiResponse<Void> profile(@RequestBody TutorProfile.Request request, Authentication authentication) {
+    @PostMapping(
+        value = "/profile",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ApiResponse<Void> profile(
+        @ModelAttribute TutorProfile.Request request,
+        Authentication authentication
+    ) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
-        try {
+        try {           
+
+            String profileImgPath = null;
+            if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
+                profileImgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
+            }
+
             TutorProfile profile = TutorProfile.builder()
                                                 .userId(authentication.getName())
-                                                .profileImg(request.getProfileImg())
+                                                .profileImg(profileImgPath) // 파일 경로
                                                 .headline(request.getHeadline())
                                                 .bio(request.getBio())
+                                                .selfIntro(request.getSelfIntro())
                                                 .videoUrl(request.getVideoUrl())
                                                 .build();
 
@@ -133,32 +151,45 @@ public class TutorController {
             log.error("/api/tutors/profile 저장 실패", e);
             return ApiResponse.error("튜터 정보를 저장하지 못했습니다.");
         }
-    }
-
-    @PutMapping(
-        value = "/profile",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ApiResponse<Void> profile(
-            Authentication authentication,
+    }  
+    
+    @PutMapping()
+    public ApiResponse<Void> updateTutorProfile(
+            @AuthenticationPrincipal UserDetails userDetails,
             @ModelAttribute TutorProfile.Request request,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
-    ) {
-        try {
-            TutorProfile profile = TutorProfile.builder()
-                    .userId(authentication.getName())
-                    .headline(request.getHeadline())
-                    .bio(request.getBio())
-                    .videoUrl(request.getVideoUrl())
-                    .build();
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String password,
+            @RequestParam(required = false) String passwordConfirm
+    ) throws Exception {
 
-            if (profileImage != null && !profileImage.isEmpty()) {
-                String imagePath = fileService.saveProfileImage(profileImage);
-                profile.setProfileImg(imagePath);
-            }
+        String userId = userDetails.getUsername();
 
-            tutorProfileService.upsertProfile(profile);
-            tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
+        // 1️⃣ Users 정보 수정 (이름 / 전화 / 비밀번호)
+        userService.updateMyInfo(userId, name, phone, password, passwordConfirm);
+
+        // 2️⃣ TutorProfile 정보 수정
+        TutorProfile profile = tutorProfileService.selectByUserId(userId);
+        if (profile == null) {
+            profile = new TutorProfile();
+            profile.setUserId(userId);
+        }
+
+        profile.setHeadline(request.getHeadline());
+        profile.setBio(request.getBio());
+        profile.setSelfIntro(request.getSelfIntro());
+        profile.setVideoUrl(request.getVideoUrl());
+
+        // 프로필 이미지
+        if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
+            String imgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
+            profile.setProfileImg(imgPath);
+        }
+
+        tutorProfileService.upsertProfile(profile);
+
+        return ApiResponse.ok();
+    }
 
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
