@@ -38,15 +38,20 @@ public class BookingController {
 
     @GetMapping
     public ApiResponse<List<Booking>> getAllBookings(Authentication authentication) {
+        log.info("[예약 목록 조회 시작]");
         if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("[예약 목록 조회] 인증 실패 - authentication is null or not authenticated");
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
-            List<Booking> bookings = bookingService.selectByUserId(authentication.getName());
+            String userId = authentication.getName();
+            log.info("[예약 목록 조회] userId: {}", userId);
+            List<Booking> bookings = bookingService.selectByUserId(userId);
+            log.info("[예약 목록 조회 성공] 조회된 예약 수: {}", bookings.size());
             return ApiResponse.ok(bookings);
         } catch (Exception e) {
-            log.error("예약 목록 조회 실패", e);
+            log.error("[예약 목록 조회 실패]", e);
             return ApiResponse.error("예약 목록을 조회하지 못했습니다.");
         }
     }
@@ -68,23 +73,29 @@ public class BookingController {
 
     @PostMapping
     public ApiResponse<Void> createBooking(@RequestBody Booking.Request request, Authentication authentication) {
+        log.info("[예약 생성 시작]");
         if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("[예약 생성] 인증 실패");
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
+            String userId = authentication.getName();
+            log.info("[예약 생성] userId: {}, request: {}", userId, request);
             Booking booking = Booking.builder()
-                .userId(authentication.getName())
+                .userId(userId)
                 .lessonId(request.getLessonId())
                 .availabilityId(request.getAvailabilityId())
                 .title(request.getTitle())
                 .memo(request.getMemo())
                 .build();
 
+            log.info("[예약 생성] booking 객체: {}", booking);
             bookingService.insert(booking);
+            log.info("[예약 생성 성공] bookingId: {}", booking.getId());
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
-            log.error("예약 생성 실패", e);
+            log.error("[예약 생성 실패]", e);
             return ApiResponse.error("예약을 생성하지 못했습니다.");
         }
     }
@@ -154,34 +165,43 @@ public class BookingController {
             @PathVariable String tutorId,
             @RequestBody TutorBookingRequest request,
             Authentication authentication) {
+        log.info("[튜터 예약 생성 시작] tutorId: {}", tutorId);
         if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("[튜터 예약 생성] 인증 실패");
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
             String studentId = authentication.getName();
+            log.info("[튜터 예약 생성] studentId: {}, request: {}", studentId, request);
             
             // 날짜/시간으로 튜터의 availability 찾기
             LocalDateTime startAt = LocalDateTime.parse(request.getDate() + "T" + request.getTime() + ":00");
             LocalDateTime endAt = startAt.plusMinutes(30);
+            log.info("[튜터 예약 생성] 시간 범위 - startAt: {}, endAt: {}", startAt, endAt);
             
             List<TutorAvailability> availabilities = tutorAvailabilityService.selectByUserIdAndDateRange(
                 tutorId, startAt, endAt);
+            log.info("[튜터 예약 생성] availability 조회 결과: {}개", availabilities.size());
             
             if (availabilities.isEmpty()) {
+                log.warn("[튜터 예약 생성] 선택한 시간에 예약 가능한 슬롯 없음");
                 return ApiResponse.error("선택한 시간에 예약 가능한 슬롯이 없습니다.");
             }
             
             TutorAvailability availability = availabilities.get(0);
+            log.info("[튜터 예약 생성] 선택된 availability: {}", availability.getId());
             
             // 튜터의 lesson 찾기 (OPEN 상태인 것), 없으면 자동 생성
             List<Lesson> lessons = lessonService.selectByUserId(tutorId);
+            log.info("[튜터 예약 생성] lesson 조회 결과: {}개", lessons.size());
             Lesson lesson = lessons.stream()
                 .filter(l -> "OPEN".equals(l.getStatus()))
                 .findFirst()
                 .orElse(null);
             
             if (lesson == null) {
+                log.info("[튜터 예약 생성] OPEN 상태 lesson 없음 - 자동 생성");
                 // 튜터의 기본 lesson 자동 생성
                 lesson = Lesson.builder()
                     .userId(tutorId)
@@ -191,6 +211,9 @@ public class BookingController {
                     .price(java.math.BigDecimal.ZERO)
                     .build();
                 lessonService.insert(lesson);
+                log.info("[튜터 예약 생성] lesson 자동 생성 완료: {}", lesson.getId());
+            } else {
+                log.info("[튜터 예약 생성] 기존 lesson 사용: {}", lesson.getId());
             }
             
             // 예약 생성
@@ -202,14 +225,18 @@ public class BookingController {
                 .memo(request.getMessage())
                 .build();
 
+            log.info("[튜터 예약 생성] booking 객체 생성: {}", booking);
             bookingService.insert(booking);
+            log.info("[튜터 예약 생성] booking DB 저장 완료: {}", booking.getId());
             
             // availability 상태를 BOOKED로 변경
             tutorAvailabilityService.updateStatus(availability.getId(), "BOOKED");
+            log.info("[튜터 예약 생성] availability 상태 BOOKED로 변경 완료");
             
+            log.info("[튜터 예약 생성 성공] bookingId: {}", booking.getId());
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
-            log.error("튜터 예약 생성 실패", e);
+            log.error("[튜터 예약 생성 실패] tutorId: {}, request: {}", tutorId, request, e);
             return ApiResponse.error("예약을 생성하지 못했습니다.");
         }
     }

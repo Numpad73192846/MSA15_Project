@@ -19,7 +19,9 @@ import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class TutorsPageController {
@@ -75,7 +77,7 @@ public class TutorsPageController {
             tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects().split(",") : new String[]{});
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
-            tutorMap.put("hourlyRate", tutor.getPrice() != null ? tutor.getPrice() : 0);
+            tutorMap.put("price", tutor.getPrice() != null ? tutor.getPrice() : 0);
             tutorMap.put("availability", "평일 저녁, 주말");
 
             List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());

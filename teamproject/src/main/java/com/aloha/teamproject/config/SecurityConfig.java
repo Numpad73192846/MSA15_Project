@@ -51,7 +51,8 @@ public class SecurityConfig {
             "/api/auth/**",
             "/api/users/**",
             "/api/admin/**",
-            "/api/tutors/**"
+            "/api/tutors/**",
+            "/api/bookings/**"
             ))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
@@ -68,6 +69,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
+                .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/tutors/profile", "/api/tutors/me/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING")
                 .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")

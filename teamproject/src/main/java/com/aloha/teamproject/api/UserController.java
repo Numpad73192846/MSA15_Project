@@ -72,9 +72,8 @@ public class UserController {
 		}
 
 		try {
-			// authentication.getName()은 username(이메일)을 반환하므로 먼저 사용자 조회 후 id 사용
-			Users user = userService.selectByUsername(authentication.getName());
-			String userId = user.getId();
+			// JWT 토큰의 authentication.getName()은 userId(UUID)를 반환
+			String userId = authentication.getName();
 			
 			MemberMyPage memberMyPage = memberMyPageService.selectMemberByUserId(userId);
 			memberMyPage.setMemberStats(memberMyPageService.selectMemberStats(userId));

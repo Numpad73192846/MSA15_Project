@@ -19,10 +19,8 @@
                                             <h1 class="h3 fw-bold mb-1" th:text="${tutor.name}">튜터명</h1>
                                             <div class="text-muted mb-2" th:if="${reviewCount > 0}">
                                                 <span class="me-1">⭐</span>
-                                                <span class="fw-semibold" th:text="${avgRating}">4.9</span>
-                                                <span class="text-muted">(</span><span class="text-muted"
-                                                    th:text="${reviewCount}">127</span><span class="text-muted">개의
-                                                    리뷰)</span>
+                                                <span class="fw-semibold" th:text="${avgRating}"></span>
+                                                <span class="text-muted">([[${reviewCount}]]개의 리뷰)</span>
                                             </div>
                                             <div class="text-muted mb-2" th:if="${reviewCount == 0}">
                                                 <span class="me-1">⭐</span>
@@ -32,9 +30,9 @@
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-1 mb-3"
-                                        th:if="${tutor.subjects != null and tutor.subjects.length() > 0}">
+                                        th:if="${tutor.subjects != null and tutor.subjects.length > 0}">
                                         <span class="badge text-bg-light"
-                                            th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                            th:each="s : ${tutor.subjects}"
                                             th:text="${s}">영어</span>
                                     </div>
 
@@ -65,7 +63,7 @@
 
                             <div th:each="r : ${reviews}" class="mb-3">
                                 <div class="card border review-item"
-                                    th:attr="data-review-id=${r.reviewId},data-user-id=${r.studentId}">
+                                    th:attr="data-review-id=${r.id}">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -85,12 +83,7 @@
                                                 th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                     </div>
-                                    <div class="small">
-                                        <span th:each="i : ${#numbers.sequence(1,5)}"
-                                            th:text="${i <= r.rating ? '★' : '☆'}">★</span>
-                                    </div>
                                 </div>
-                                <div class="text-muted mt-2" th:text="${r.content}">후기</div>
                             </div>
                         </div>
                     </div>
@@ -216,12 +209,19 @@
                                 }
 
                                 async function loadTutorAvailability(tutorId) {
+                                    console.log('[예약 시스템] 튜터 availability 로딩 시작 - tutorId:', tutorId);
                                     try {
                                         const { start, end } = getDateRangeForMaxWeeks(9);
+                                        console.log('[예약 시스템] 조회 기간:', { start, end });
                                         const response = await fetch(`/api/tutors/${tutorId}/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+                                        console.log('[예약 시스템] API 응답 상태:', response.status);
                                         if (!response.ok) throw new Error('Failed to load');
                                         const result = await response.json();
-                                        if (!result.success || !result.data) return [];
+                                        console.log('[예약 시스템] API 응답 데이터:', result);
+                                        if (!result.success || !result.data) {
+                                            console.warn('[예약 시스템] 응답 데이터 없음');
+                                            return [];
+                                        }
 
                                         const grouped = new Map();
                                         result.data.forEach(item => {
@@ -233,16 +233,21 @@
                                             grouped.get(datePart).push(time);
                                         });
 
-                                        return Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
+                                        const availableSlots = Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
+                                        console.log('[예약 시스템] 변환된 슬롯 데이터:', availableSlots);
+                                        return availableSlots;
                                     } catch (e) {
-                                        console.warn('Failed to load tutor availability', e);
+                                        console.error('[예약 시스템] availability 로딩 실패:', e);
                                         return [];
                                     }
                                 }
 
                                 document.addEventListener('DOMContentLoaded', async () => {
+                                    console.log('[예약 시스템] DOMContentLoaded - 초기화 시작');
                                     const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
+                                    console.log('[예약 시스템] tutorId:', tutorId);
                                     const availableSlots = tutorId ? await loadTutorAvailability(tutorId) : [];
+                                    console.log('[예약 시스템] 최종 availableSlots:', availableSlots);
 
                                     const calendar = new TutorCalendar({
                                         containerId: 'tutorScheduleCalendar',
@@ -254,12 +259,68 @@
                                         availableSlots: availableSlots,
                                         availableSlotsOnly: true,
                                         onSlotClick: (dateKey, time) => {
+                                            console.log('[예약 시스템] 슬롯 클릭:', { dateKey, time });
                                             document.getElementById('selectedDate').value = dateKey;
                                             document.getElementById('selectedTime').value = time;
                                             document.getElementById('displaySelectedTime').value = `${dateKey} ${time}`;
                                             document.getElementById('bookingSubmit').disabled = false;
+                                            console.log('[예약 시스템] 선택된 시간:', `${dateKey} ${time}`);
                                         }
                                     });
+                                    console.log('[예약 시스템] 캘린더 초기화 완료');
+
+                                    // 예약 폼 제출 핸들러
+                                    const bookingForm = document.getElementById('bookingForm');
+                                    if (bookingForm) {
+                                        bookingForm.addEventListener('submit', async (e) => {
+                                            e.preventDefault();
+                                            console.log('[예약 폼 제출] 시작');
+                                            
+                                            const formData = new FormData(bookingForm);
+                                            const tutorId = bookingForm.dataset.tutorId;
+                                            const date = formData.get('date');
+                                            const time = formData.get('time');
+                                            const subject = formData.get('subject');
+                                            const message = formData.get('message');
+                                            
+                                            const requestData = { date, time, subject, message };
+                                            console.log('[예약 폼 제출] tutorId:', tutorId);
+                                            console.log('[예약 폼 제출] 요청 데이터:', requestData);
+                                            
+                                            try {
+                                                const token = localStorage.getItem('accessToken');
+                                                console.log('[예약 폼 제출] 토큰:', token ? '있음' : '없음');
+                                                
+                                                const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': token ? `Bearer ${token}` : ''
+                                                    },
+                                                    body: JSON.stringify(requestData)
+                                                });
+                                                
+                                                console.log('[예약 폼 제출] 응답 상태:', response.status);
+                                                const result = await response.json();
+                                                console.log('[예약 폼 제출] 응답 데이터:', result);
+                                                
+                                                if (result.success) {
+                                                    console.log('[예약 폼 제출] 성공!');
+                                                    alert('예약이 완료되었습니다!');
+                                                    location.href = '/member/mypage';
+                                                } else {
+                                                    console.error('[예약 폼 제출] 실패:', result.message);
+                                                    alert(result.message || '예약에 실패했습니다.');
+                                                }
+                                            } catch (error) {
+                                                console.error('[예약 폼 제출] 에러:', error);
+                                                alert('예약 중 오류가 발생했습니다.');
+                                            }
+                                        });
+                                        console.log('[예약 시스템] 폼 제출 핸들러 등록 완료');
+                                    } else {
+                                        console.warn('[예약 시스템] bookingForm을 찾을 수 없습니다.');
+                                    }
                                 });
                             </script>
                         </div>
