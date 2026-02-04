@@ -26,6 +26,7 @@
 		       ta.start_at AS startAt, ta.end_at AS endAt,
 		  CASE
 		    WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
 		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		    ELSE 'PENDING'
 		  END AS status, l.price AS price
@@ -33,8 +34,29 @@
 		JOIN lesson l ON b.lesson_id = l.id
 		JOIN tutor_availability ta ON b.availability_id = ta.id
 		JOIN users u ON b.user_id = u.id
-		WHERE l.user_id = #{userId} AND ta.start_at &gt;= NOW()
+		WHERE l.user_id = #{userId}
+		  AND ta.start_at &gt;= NOW()
+		  AND b.canceled_at IS NULL
+		  AND b.done_at IS NULL
 		ORDER BY ta.start_at ASC
+	</select>
+
+	<select id="selectPastBookingsByUserId" resultType="UpcomingLesson">
+		SELECT b.id AS bookingId, l.id AS lessonId, u.id AS studentId, u.name AS studentName, l.title AS subject,
+		       ta.start_at AS startAt, ta.end_at AS endAt,
+		  CASE
+		    WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
+		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
+		    ELSE 'PENDING'
+		  END AS status, l.price AS price
+		FROM booking b
+		JOIN lesson l ON b.lesson_id = l.id
+		JOIN tutor_availability ta ON b.availability_id = ta.id
+		JOIN users u ON b.user_id = u.id
+		WHERE l.user_id = #{userId}
+		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL OR b.canceled_at IS NOT NULL)
+		ORDER BY ta.start_at DESC
 	</select>
 
 	<select id="selectTutorReviewsByUserId" resultType="TutorReview">

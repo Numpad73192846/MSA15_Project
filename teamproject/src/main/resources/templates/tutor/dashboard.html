@@ -43,14 +43,14 @@
                                                 <div class="d-flex gap-2" th:if="${b.status == '대기중'}">
                                                     <button
                                                         class="btn btn-sm btn-outline-primary flex-fill tutor-booking-action"
-                                                        th:attr="data-booking-id=${b.id},data-action='accept'">확정</button>
+                                                        th:attr="data-booking-id=${b.id},data-action='accept',data-student-name=${b.studentName},data-subject=${b.subject},data-date=${b.date},data-time=${b.time},data-duration=${b.duration},data-price=${b.totalPrice}">확정</button>
                                                     <button
                                                         class="btn btn-sm btn-outline-danger flex-fill tutor-booking-action"
-                                                        th:attr="data-booking-id=${b.id},data-action='reject'">거절</button>
+                                                        th:attr="data-booking-id=${b.id},data-action='reject',data-student-name=${b.studentName},data-subject=${b.subject},data-date=${b.date},data-time=${b.time},data-duration=${b.duration},data-price=${b.totalPrice}">거절</button>
                                                 </div>
                                                 <button class="btn btn-sm btn-primary tutor-booking-action"
                                                     th:if="${b.status == '확정'}"
-                                                    th:attr="data-booking-id=${b.id},data-action='complete'">수업
+                                                    th:attr="data-booking-id=${b.id},data-action='complete',data-student-name=${b.studentName},data-subject=${b.subject},data-date=${b.date},data-time=${b.time},data-duration=${b.duration},data-price=${b.totalPrice}">수업
                                                     완료</button>
                                             </div>
                                         </div>
@@ -267,9 +267,16 @@
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header border-bottom-0 pb-0">
                         <h5 class="modal-title fw-bold">학생 상세 정보</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-primary me-2" id="btnEditStudent">
+                                <i class="bi bi-pencil"></i> 수정
+                            </button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
                     </div>
                     <div class="modal-body">
+                        <input type="hidden" id="detailStudentId">
+                        
                         <div class="d-flex align-items-center mb-4">
                             <div class="avatar-circle bg-light text-primary d-flex align-items-center justify-content-center me-3"
                                 style="width: 50px; height: 50px; font-size: 20px;">
@@ -298,27 +305,143 @@
 
                         <div class="mb-4">
                             <h6 class="fw-bold small mb-2 text-muted">학습 진행 상황</h6>
-                            <div class="p-3 bg-light rounded-3 text-dark small" id="detailProgress">
+                            <div class="p-3 bg-light rounded-3 text-dark small" id="detailProgressView">
                                 진행 상황 내용...
                             </div>
+                            <textarea class="form-control" id="detailProgressEdit" rows="4" style="display: none;"
+                                placeholder="학습 진행 상황을 입력하세요..."></textarea>
                         </div>
 
                         <div class="mb-3">
                             <h6 class="fw-bold small mb-2 text-muted">특이사항 메모</h6>
-                            <div class="p-3 bg-light rounded-3 text-dark small" id="detailNotes">
+                            <div class="p-3 bg-light rounded-3 text-dark small" id="detailNotesView">
                                 메모 내용...
                             </div>
+                            <textarea class="form-control" id="detailNotesEdit" rows="4" style="display: none;"
+                                placeholder="특이사항 메모를 입력하세요..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0 pt-0">
-                        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">확인</button>
+                        <button type="button" class="btn btn-outline-secondary" id="btnCancelEdit" style="display: none;">취소</button>
+                        <button type="button" class="btn btn-success" id="btnSaveStudent" style="display: none;">저장</button>
+                        <button type="button" class="btn btn-primary w-100" id="btnCloseModal" data-bs-dismiss="modal">확인</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <script>
+            async function fetchWithAuth(url, options = {}) {
+                const headers = { ...(options.headers || {}), ...(typeof buildAuthHeaders === 'function' ? buildAuthHeaders() : {}) };
+                const response = await fetch(url, { ...options, headers, credentials: 'include' });
+
+                if (response.status === 401 && typeof refreshAccessToken === 'function') {
+                    const refreshed = await refreshAccessToken();
+                    if (refreshed) {
+                        const retryHeaders = { ...(options.headers || {}), ...(typeof buildAuthHeaders === 'function' ? buildAuthHeaders() : {}) };
+                        return fetch(url, { ...options, headers: retryHeaders, credentials: 'include' });
+                    }
+                }
+
+                return response;
+            }
+
             document.addEventListener('DOMContentLoaded', function () {
+                const bookingButtons = document.querySelectorAll('.tutor-booking-action');
+                let activeBookingId = null;
+
+                const acceptModal = document.getElementById('acceptModal');
+                const rejectModal = document.getElementById('rejectModal');
+                const completeModal = document.getElementById('completeModal');
+
+                bookingButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const action = btn.dataset.action;
+                        activeBookingId = btn.dataset.bookingId;
+                        const studentName = btn.dataset.studentName || '';
+                        const subject = btn.dataset.subject || '';
+                        const dateTime = `${btn.dataset.date || ''} ${btn.dataset.time || ''} (${btn.dataset.duration || ''}h)`;
+                        const price = btn.dataset.price || '';
+
+                        if (action === 'accept') {
+                            document.getElementById('acceptStudentName').textContent = studentName;
+                            document.getElementById('acceptDateTime').textContent = dateTime;
+                            document.getElementById('acceptSubject').textContent = subject;
+                            document.getElementById('acceptPrice').textContent = price;
+                            new bootstrap.Modal(acceptModal).show();
+                        }
+
+                        if (action === 'reject') {
+                            document.getElementById('rejectStudentName').textContent = studentName;
+                            document.getElementById('rejectDateTime').textContent = dateTime;
+                            document.getElementById('rejectSubject').textContent = subject;
+                            document.getElementById('rejectReason').value = '';
+                            new bootstrap.Modal(rejectModal).show();
+                        }
+
+                        if (action === 'complete') {
+                            document.getElementById('completeStudentName').textContent = studentName;
+                            document.getElementById('completeDateTime').textContent = dateTime;
+                            document.getElementById('completeSubject').textContent = subject;
+                            document.getElementById('completePrice').textContent = price;
+                            document.getElementById('completeNotes').value = '';
+                            new bootstrap.Modal(completeModal).show();
+                        }
+                    });
+                });
+
+                document.getElementById('confirmAccept')?.addEventListener('click', async () => {
+                    if (!activeBookingId) return;
+                    const response = await fetchWithAuth(`/api/bookings/${activeBookingId}/confirm`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('예약이 확정되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '확정에 실패했습니다.');
+                    }
+                });
+
+                document.getElementById('confirmReject')?.addEventListener('click', async () => {
+                    if (!activeBookingId) return;
+                    const reason = document.getElementById('rejectReason').value.trim();
+                    if (!reason) {
+                        document.getElementById('rejectReason').classList.add('is-invalid');
+                        return;
+                    }
+                    document.getElementById('rejectReason').classList.remove('is-invalid');
+
+                    const response = await fetchWithAuth(`/api/bookings/${activeBookingId}/cancel`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('예약이 거절되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '거절에 실패했습니다.');
+                    }
+                });
+
+                document.getElementById('confirmComplete')?.addEventListener('click', async () => {
+                    if (!activeBookingId) return;
+                    const response = await fetchWithAuth(`/api/bookings/${activeBookingId}/complete`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('수업이 완료 처리되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '완료 처리에 실패했습니다.');
+                    }
+                });
+
                 // Message Modal
                 var tutorMessageModal = document.getElementById('tutorMessageModal');
                 tutorMessageModal.addEventListener('show.bs.modal', function (event) {
@@ -330,6 +453,8 @@
 
                 // Student Detail Modal
                 var studentDetailModal = document.getElementById('studentDetailModal');
+                var isEditing = false;
+
                 studentDetailModal.addEventListener('show.bs.modal', function (event) {
                     var button = event.relatedTarget;
                     var name = button.getAttribute('data-student-name');
@@ -343,13 +468,105 @@
                     document.getElementById('detailEmail').textContent = email;
                     document.getElementById('detailPhone').textContent = phone;
                     document.getElementById('detailTotal').textContent = total;
-                    document.getElementById('detailProgress').textContent = progress;
-                    document.getElementById('detailNotes').textContent = notes;
+                    document.getElementById('detailProgressView').textContent = progress;
+                    document.getElementById('detailNotesView').textContent = notes;
+                    document.getElementById('detailProgressEdit').value = progress;
+                    document.getElementById('detailNotesEdit').value = notes;
 
                     // Initial
                     var initial = name.trim().charAt(0);
                     document.getElementById('detailInitial').textContent = initial;
+
+                    // Reset edit mode
+                    resetEditMode();
                 });
+
+                // Edit Student Button
+                document.getElementById('btnEditStudent').addEventListener('click', function() {
+                    enterEditMode();
+                });
+
+                // Cancel Edit Button
+                document.getElementById('btnCancelEdit').addEventListener('click', function() {
+                    resetEditMode();
+                });
+
+                // Save Button
+                document.getElementById('btnSaveStudent').addEventListener('click', function() {
+                    saveStudentInfo();
+                });
+
+                function enterEditMode() {
+                    isEditing = true;
+
+                    // Show edit mode for both fields
+                    document.getElementById('detailProgressView').style.display = 'none';
+                    document.getElementById('detailProgressEdit').style.display = 'block';
+                    document.getElementById('detailNotesView').style.display = 'none';
+                    document.getElementById('detailNotesEdit').style.display = 'block';
+
+                    // Hide edit button
+                    document.getElementById('btnEditStudent').style.display = 'none';
+
+                    // Show save/cancel buttons
+                    document.getElementById('btnCancelEdit').style.display = 'inline-block';
+                    document.getElementById('btnSaveStudent').style.display = 'inline-block';
+                    document.getElementById('btnCloseModal').style.display = 'none';
+                }
+
+                function resetEditMode() {
+                    isEditing = false;
+
+                    // Reset both fields to view mode
+                    document.getElementById('detailProgressView').style.display = 'block';
+                    document.getElementById('detailProgressEdit').style.display = 'none';
+                    document.getElementById('detailNotesView').style.display = 'block';
+                    document.getElementById('detailNotesEdit').style.display = 'none';
+
+                    // Show edit button
+                    document.getElementById('btnEditStudent').style.display = 'inline-block';
+
+                    // Reset footer buttons
+                    document.getElementById('btnCancelEdit').style.display = 'none';
+                    document.getElementById('btnSaveStudent').style.display = 'none';
+                    document.getElementById('btnCloseModal').style.display = 'block';
+
+                    // Reset textarea values to current view values
+                    document.getElementById('detailProgressEdit').value = document.getElementById('detailProgressView').textContent;
+                    document.getElementById('detailNotesEdit').value = document.getElementById('detailNotesView').textContent;
+                }
+
+                function saveStudentInfo() {
+                    var studentName = document.getElementById('detailName').textContent;
+                    var progress = document.getElementById('detailProgressEdit').value;
+                    var notes = document.getElementById('detailNotesEdit').value;
+
+                    // Update view with new values
+                    document.getElementById('detailProgressView').textContent = progress;
+                    document.getElementById('detailNotesView').textContent = notes;
+
+                    // TODO: API 호출로 서버에 저장
+                    // Example:
+                    // fetch('/api/tutor/students/update', {
+                    //     method: 'POST',
+                    //     headers: { 'Content-Type': 'application/json' },
+                    //     body: JSON.stringify({
+                    //         studentName: studentName,
+                    //         progress: progress,
+                    //         notes: notes
+                    //     })
+                    // }).then(response => response.json())
+                    //   .then(data => {
+                    //       if (data.success) {
+                    //           alert('저장되었습니다.');
+                    //           resetEditMode();
+                    //       }
+                    //   });
+
+                    // For now, just show success message
+                    alert('학생 정보가 저장되었습니다.');
+                    resetEditMode();
+                }
             });
         </script>
 

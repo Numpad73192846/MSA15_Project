@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+<head>
+    <title>관리자 페이지 - ALOHA</title>
+    <style>
+        .admin-card {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+        }
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div layout:fragment="content" class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="fw-bold mb-4">관리자 대시보드</h2>
+            <ul class="nav nav-pills mb-4" id="adminTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active px-4 py-2 me-2" id="docs-tab" data-bs-toggle="pill" data-bs-target="#docs" type="button" role="tab">서류 검토</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-2" id="settlement-tab" data-bs-toggle="pill" data-bs-target="#settlement" type="button" role="tab">수입 정산</button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content" id="adminTabContent">
+        <!-- 1. 서류 검토 탭 -->
+        <div class="tab-pane fade show active" id="docs" role="tabpanel">
+            <div class="table-container">
+                <h4 class="mb-4">튜터 인증 서류 대기 목록</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>튜터명</th>
+                                <th>서류 유형</th>
+                                <th>파일명</th>
+                                <th>업로드일</th>
+                                <th>확인</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="doc : ${pendingDocs}">
+                                <td th:text="${doc.userName}">홍길동</td>
+                                <td>
+                                    <span th:if="${doc.docType == 'EDUCATION'}" class="badge bg-info">학력</span>
+                                    <span th:if="${doc.docType == 'DEGREE'}" class="badge bg-primary">학위</span>
+                                    <span th:if="${doc.docType == 'CERTIFICATE'}" class="badge bg-success">자격증</span>
+                                </td>
+                                <td th:text="${doc.originalName}">cert.jpg</td>
+                                <td th:text="${#dates.format(doc.createdAt, 'yyyy-MM-dd HH:mm')}">2026-01-30</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" th:data-path="${doc.filePath}" onclick="viewImage(this.getAttribute('data-path'))">미리보기</button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success me-1" th:data-id="${doc.id}" onclick="approveDoc(this.getAttribute('data-id'))">승인</button>
+                                    <button class="btn btn-sm btn-danger" th:data-id="${doc.id}" onclick="openRejectModal(this.getAttribute('data-id'))">거절</button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(pendingDocs)}">
+                                <td colspan="6" class="text-center py-4 text-muted">검토 대기 중인 서류가 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 결산 및 정산 탭 -->
+        <div class="tab-pane fade" id="settlement" role="tabpanel">
+            <div class="table-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4>튜터 수입 및 정산 관리</h4>
+                    <span class="text-muted small"></span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>튜터명(닉네임)</th>
+                                <th>총 수입</th>
+                                <th>이미 정산됨</th>
+                                <th>송금해야 할 금액</th>
+                                <th>상태</th>
+                                <th>송금 실행</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s : ${settlements}">
+                                <td>
+                                    <div class="fw-bold" th:text="${s.userName}">김튜터</div>
+                                    <div class="small text-muted" th:text="'(@' + ${s.nickname} + ')'">(@math_master)</div>
+                                </td>
+                                <td th:text="${#numbers.formatInteger(s.totalAmount, 0, 'COMMA')} + '원'">300,000원</td>
+                                <td th:text="${#numbers.formatInteger(s.remittedAmount, 0, 'COMMA')} + '원'">100,000원</td>
+                                <td>
+                                    <span class="fw-bold text-primary" th:text="${#numbers.formatInteger(s.balance, 0, 'COMMA')} + '원'">200,000원</span>
+                                </td>
+                                <td>
+                                    <span th:if="${s.balance > 0}" class="badge bg-warning text-dark">정산 대기</span>
+                                    <span th:unless="${s.balance > 0}" class="badge bg-secondary">완료</span>
+                                </td>
+                                <td>
+                                    <button th:if="${s.balance > 0}" class="btn btn-sm btn-primary" 
+                                            th:data-id="${s.userId}" 
+                                            th:data-amount="${s.balance}" 
+                                            onclick="processRemittance(this.getAttribute('data-id'), this.getAttribute('data-amount'))">
+                                        자동 송금(시뮬레이션)
+                                    </button>
+                                    <button th:unless="${s.balance > 0}" class="btn btn-sm btn-outline-secondary" disabled>완료됨</button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(settlements)}">
+                                <td colspan="6" class="text-center py-4 text-muted">정산 대상 데이터가 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 미리보기 모달 -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">서류 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="previewImg" src="" class="img-fluid rounded" alt="Document Preview">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 거절 사유 모달 -->
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">서류 거절 사유</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="rejectDocId">
+                    <textarea id="rejectReason" class="form-control" rows="4" placeholder="거절 사유를 입력하세요..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger" onclick="submitReject()">거절 처리</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function viewImage(path) {
+            document.getElementById('previewImg').src = path;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
+
+        function approveDoc(id) {
+            if(!confirm('해당 서류를 승인하시겠습니까?')) return;
+            fetch('/api/admin/documents/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            }).then(res => {
+                if(res.ok) {
+                    alert('승인되었습니다.');
+                    location.reload();
+                }
+            });
+        }
+
+        function openRejectModal(id) {
+            document.getElementById('rejectDocId').value = id;
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        }
+
+        function submitReject() {
+            const id = document.getElementById('rejectDocId').value;
+            const reason = document.getElementById('rejectReason').value;
+            if(!reason) return alert('사유를 입력해주세요.');
+            
+            fetch('/api/admin/documents/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, reason: reason })
+            }).then(res => {
+                if(res.ok) {
+                    alert('거절 처리되었습니다.');
+                    location.reload();
+                }
+            });
+        }
+
+        function processRemittance(userId, amount) {
+            const numAmount = Number(amount);
+            if(!confirm(`해당 튜터에게 ${numAmount.toLocaleString()}원을 송금하시겠습니까?\n(실제 송금 API 연동 시뮬레이션)`)) return;
+            
+            fetch('/api/admin/settlements/remit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userId, amount: numAmount })
+            }).then(res => {
+                if(res.ok) {
+                    alert('송금이 완료되었습니다.');
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</div>
+
+</body>
+</html>

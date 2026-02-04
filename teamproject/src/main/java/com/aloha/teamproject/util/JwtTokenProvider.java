@@ -67,9 +67,10 @@ public class JwtTokenProvider {
         return userId;
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getAuthListFromToken(String token) {
 
-        List<String> authList = parse(token).getPayload().get("auth", List.class);
+        List<String> authList = (List<String>) parse(token).getPayload().get("auth");
         if ( authList == null ) {
             return Collections.emptyList();
         }

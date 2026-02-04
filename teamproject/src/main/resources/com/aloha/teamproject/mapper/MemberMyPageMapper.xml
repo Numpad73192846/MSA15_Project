@@ -31,12 +31,13 @@
 			 WHERE b.user_id = #{userId} AND p.status = 'PAID'), 0) AS totalSpent
 	</select>
 
-	<!-- 예정된 수업 목록 조회 -->
+	<!-- 다가오는 수업 목록 조회 -->
 	<select id="selectUpcomingBookings" resultType="com.aloha.teamproject.dto.StudentBooking">
-		SELECT b.id AS bookingId, l.id AS lessonId, l.user_id AS tutorId, u.name AS tutorName, 
+		SELECT b.id AS bookingId, l.id AS lessonId, l.user_id AS tutorId, tp.id AS tutorProfileId, u.name AS tutorName, 
 		       l.title AS subject, ta.start_at AS startAt, ta.end_at AS endAt,
 		       CASE
 		           WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
+		           WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
 		           WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		           ELSE 'PENDING'
 		       END AS status, 
@@ -45,35 +46,44 @@
 		JOIN lesson l ON b.lesson_id = l.id
 		JOIN tutor_availability ta ON b.availability_id = ta.id
 		JOIN users u ON l.user_id = u.id
-		WHERE b.user_id = #{userId} AND ta.start_at &gt;= NOW()
+		JOIN tutor_profile tp ON l.user_id = tp.user_id
+		WHERE b.user_id = #{userId}
+		  AND ta.start_at &gt;= NOW()
+		  AND b.canceled_at IS NULL
+		  AND b.done_at IS NULL
 		ORDER BY ta.start_at ASC
 	</select>
 
 	<!-- 지난 수업 목록 조회 -->
 	<select id="selectPastBookings" resultType="com.aloha.teamproject.dto.StudentBooking">
-		SELECT b.id AS bookingId, l.id AS lessonId, l.user_id AS tutorId, u.name AS tutorName, 
+		SELECT b.id AS bookingId, l.id AS lessonId, l.user_id AS tutorId, tp.id AS tutorProfileId, u.name AS tutorName, 
 		       l.title AS subject, ta.start_at AS startAt, ta.end_at AS endAt,
 		       CASE
 		           WHEN b.canceled_at IS NOT NULL THEN 'CANCELLED'
-		           ELSE 'COMPLETED'
+		           WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
+		           WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
+		           ELSE 'PENDING'
 		       END AS status, 
 		       l.price AS price
 		FROM booking b
 		JOIN lesson l ON b.lesson_id = l.id
 		JOIN tutor_availability ta ON b.availability_id = ta.id
 		JOIN users u ON l.user_id = u.id
-		WHERE b.user_id = #{userId} AND ta.start_at &lt; NOW()
+		JOIN tutor_profile tp ON l.user_id = tp.user_id
+		WHERE b.user_id = #{userId}
+		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL OR b.canceled_at IS NOT NULL)
 		ORDER BY ta.start_at DESC
 	</select>
 
 	<!-- 회원이 작성한 리뷰 목록 조회 -->
 	<select id="selectStudentReviews" resultType="com.aloha.teamproject.dto.StudentReview">
-		SELECT r.id AS reviewId, l.user_id AS tutorId, u.name AS tutorName,
+		SELECT r.id AS reviewId, l.user_id AS tutorId, tp.id AS tutorProfileId, u.name AS tutorName,
 		       r.rating, r.content, r.created_at AS createdAt
 		FROM review r
 		JOIN booking b ON r.booking_id = b.id
 		JOIN lesson l ON b.lesson_id = l.id
 		JOIN users u ON l.user_id = u.id
+		JOIN tutor_profile tp ON l.user_id = tp.user_id
 		WHERE b.user_id = #{userId}
 		ORDER BY r.created_at DESC
 	</select>

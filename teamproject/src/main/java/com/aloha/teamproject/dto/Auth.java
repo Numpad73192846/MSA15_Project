@@ -4,7 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 
-public class AuthDto {
+public class Auth {
 
     @Data
     public static class TokenResponse {

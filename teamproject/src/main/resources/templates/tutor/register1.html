@@ -1,5 +1,14 @@
+
 <div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layouts/main_layout}">
+      layout:decorate="~{layouts/main_layout}">
+
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </th:block>
+    <th:block layout:fragment="title">
+        <title>튜터 회원가입 (2/4) | 튜터 플랫폼</title>
+    </th:block>
 
     <div layout:fragment="content">
         <div class="container py-5" style="max-width: 720px;">
@@ -17,53 +26,108 @@
                     <form id="tutorProfileForm">
                         <div class="mb-4">
                             <h5 class="fw-bold">1. 학력증명서</h5>
-                            <input type="file" class="form-control" id="academicCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
-                            <small class="text-muted">여러 파일을 선택할 수 있습니다.</small>
-                            <div id="academicListCard" class="card mt-2 overflow-hidden" style="display:none;">
-                                <ul id="academicList" class="list-group list-group-flush"></ul>                                 
-                                <!-- 추가 -->
-                                <div class="file-item-template" style="display: none;">
-                                    <li class="list-group-item py-2 d-flex align-items-center gap-2">
-                                        <div class="col text-break">
-                                            <span class="file-name"></span>
-                                            <small class="file-size"></small>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-1">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
-                                        </div>
-                                    </li>
+                            <div class="border rounded-3 p-3 bg-light">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <div class="fw-semibold">파일 업로드</div>
+                                        <div class="small text-muted">PDF, JPG, PNG 가능 · 여러 파일 선택 가능</div>
+                                    </div>
+                                    <label class="btn btn-outline-primary btn-sm mb-0">
+                                        파일 선택
+                                        <input type="file" class="d-none" id="academicCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                    </label>
                                 </div>
-                                <!-- 추가 END -->
+                                <div id="academicListCard" class="card mt-3 overflow-hidden filelist-card" style="display:none;">
+                                    <ul id="academicList" class="list-group list-group-flush"></ul>
+                                    <div class="file-item-template" style="display: none;">
+                                        <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                                            <div class="col text-break">
+                                                <span class="file-name"></span>
+                                                <small class="file-size"></small>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                                            </div>
+                                        </li>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="mb-4">
                             <h5 class="fw-bold">2. 교육 관련 학위 및 증명서</h5>
-                            <input type="file" class="form-control" id="educationCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
-                            <small class="text-muted">자격증, 수료증 등을 업로드하세요.</small>
-                            <div id="educationListCard" class="card mt-2 overflow-hidden" style="display:none;">
-                                <ul id="educationList" class="list-group list-group-flush"></ul> 
-                                <!-- 추가 -->
-                                <div class="file-item-template" style="display: none;">
-                                    <li class="list-group-item py-2 d-flex align-items-center gap-2">
-                                        <div class="col text-break">
-                                            <span class="file-name" style="font-weight: 500;"></span>
-                                            <small class="file-size" style="color: #666;"></small>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-1">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
-                                        </div>
-                                    </li>
+                            <div class="admin-box">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <div class="fw-semibold">파일 업로드</div>
+                                        <div class="small text-muted">자격증, 수료증 등 업로드</div>
+                                    </div>
+                                    <label class="btn btn-outline-primary btn-sm mb-0">
+                                        파일 선택
+                                        <input type="file" class="d-none" id="educationCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
+                                    </label>
                                 </div>
-                                <!-- 추가 END -->
+                                <div id="educationListCard" class="card mt-3 overflow-hidden filelist-card" style="display:none;">
+                                    <ul id="educationList" class="list-group list-group-flush"></ul>
+                                    <div class="file-item-template" style="display: none;">
+                                        <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                                            <div class="col text-break">
+                                                <span class="file-name" style="font-weight: 500;"></span>
+                                                <small class="file-size" style="color: #666;"></small>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                                            </div>
+                                        </li>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="mb-4">
-                            <h5 class="fw-bold">3. 근무 경력</h5>
-                            <textarea class="form-control" id="career" rows="4" placeholder="근무 경력을 입력하세요&#10;예) 2020-2023 ABC학원 영어강사&#10;2018-2020 XYZ회사 영업팀"></textarea>
-                        </div>                       
-                        <div class="d-flex gap-2">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h5 class="fw-bold mb-0">3. 근무 경력</h5>
+                                <span class="badge text-bg-light border">선택 항목</span>
+                            </div>
+                            <p class="text-muted small mb-2">최근 경력부터 추가해 주세요. 퇴사연도는 재직 중이면 비워두세요.</p>
+                            <div class="card border rounded-3 p-3 bg-light">
+                                <div class="card-body">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted">회사명</label>
+                                            <input type="text" class="form-control" id="careerCompany" placeholder="예) ABC학원">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted">직종</label>
+                                            <input type="text" class="form-control" id="careerJob" placeholder="예) 영어강사">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-muted">직위</label>
+                                            <input type="text" class="form-control" id="careerPosition" placeholder="예) 팀장">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">입사연도</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="careerStartYear" min="1950" max="2100" placeholder="2020">
+                                                <span class="input-group-text">년</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small text-muted">퇴사연도 (선택)</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="careerEndYear" min="1950" max="2100" placeholder="2023">
+                                                <span class="input-group-text">년</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end mt-3">
+                                        <button type="button" class="btn btn-outline-primary" id="btnAddCareer">경력 추가</button>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mt-3" id="careerCardList"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 step-nav">
                             <button type="button" class="btn btn-secondary" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;" onclick="history.back()">이전</button>
                             <button type="submit" class="btn btn-primary flex-fill" style="height: 45px; line-height: 1; display: flex; align-items: center; justify-content: center;">다음 단계로</button>
                         </div>
@@ -72,6 +136,7 @@
             </div>
         </div>
 
+        <th:block layout:fragment="extra-scripts">
         <script>
             function getStoredTokens() {
                 return {
@@ -81,17 +146,41 @@
             }
 
             async function fetchMe(accessToken) {
-                const response = await fetch('/api/users/me', {
+                let response = await fetch('/api/users/me', {
                     headers: { Authorization: `Bearer ${accessToken}` }
                 });
-                if (!response.ok) {
+                if (response.ok) {
+                    const data = await response.json();
+                    return data && data.success ? data.data : null;
+                }
+
+                // 토큰 갱신
+                const refreshToken = localStorage.getItem('refreshToken');
+                const refreshResponse = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken: refreshToken })
+                });
+                if (!refreshResponse.ok) {
                     return null;
                 }
-                const data = await response.json();
-                if (!data || data.success === false) {
-                    return null;
+                const refreshData = await refreshResponse.json();
+                if (refreshData && refreshData.success && refreshData.data && refreshData.data.accessToken) {
+                    const newAccessToken = refreshData.data.accessToken;
+                    localStorage.setItem('accessToken', newAccessToken);
+                    if (refreshData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', refreshData.data.refreshToken);
+                    }
+                    // 갱신된 토큰으로 다시 시도
+                    response = await fetch('/api/users/me', {
+                        headers: { Authorization: `Bearer ${newAccessToken}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data && data.success ? data.data : null;
+                    }
                 }
-                return data.data || null;
+                return null;
             }
 
             function isTutor(authList) {
@@ -224,10 +313,37 @@
                 inputElem.value = null;
             }
 
+            function renderCareerCards(careers) {
+                const list = document.getElementById('careerCardList');
+                if (!list) return;
+                list.innerHTML = '';
+
+                careers.forEach((careerItem, index) => {
+                    const endLabel = careerItem.endYear ? careerItem.endYear : '재직중';
+                    const badge = document.createElement('div');
+                    badge.className = 'admin-chip';
+                    badge.innerHTML = `
+                        <span class="label">${careerItem.company}</span>
+                        <span class="sub">${careerItem.job} · ${careerItem.position} · ${careerItem.startYear}~${endLabel}</span>
+                        <button type="button" class="icon-btn danger" aria-label="삭제"><i class="bi bi-x"></i></button>
+                    `;
+                    badge.querySelector('button').addEventListener('click', () => {
+                        careers.splice(index, 1);
+                        const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
+                        saved.careers = careers;
+                        sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(saved));
+                        renderCareerCards(careers);
+                    });
+                    list.appendChild(badge);
+                });
+            }
+
             document.addEventListener('DOMContentLoaded', async () => {
                 // 이전에 저장된 데이터 불러오기
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
-                if (savedData.career) document.getElementById('career').value = savedData.career;               
+                if (Array.isArray(savedData.careers)) {
+                    renderCareerCards(savedData.careers);
+                }
                 // 파일 리스트 복원
                 if (savedData.academicCertificates && Array.isArray(savedData.academicCertificates)) {
                     renderFileList('academicList', 'academicListCard', savedData.academicCertificates, 'academicCertificate', 'academicCertificates');
@@ -243,17 +359,42 @@
                 document.getElementById('educationCertificate').addEventListener('change', function () {
                     handleFilesSelected(this, 'educationCertificates', 'educationList', 'educationListCard');
                 });
+
+                document.getElementById('btnAddCareer')?.addEventListener('click', () => {
+                    const company = document.getElementById('careerCompany').value.trim();
+                    const job = document.getElementById('careerJob').value.trim();
+                    const position = document.getElementById('careerPosition').value.trim();
+                    const startYear = document.getElementById('careerStartYear').value.trim();
+                    const endYear = document.getElementById('careerEndYear').value.trim();
+
+                    if (!company || !job || !position || !startYear) {
+                        alert('회사명, 직종, 직위, 입사연도를 입력해주세요.');
+                        return;
+                    }
+
+                    const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
+                    const careers = Array.isArray(saved.careers) ? saved.careers : [];
+                    careers.push({ company, job, position, startYear, endYear });
+                    saved.careers = careers;
+                    sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(saved));
+                    renderCareerCards(careers);
+
+                    document.getElementById('careerCompany').value = '';
+                    document.getElementById('careerJob').value = '';
+                    document.getElementById('careerPosition').value = '';
+                    document.getElementById('careerStartYear').value = '';
+                    document.getElementById('careerEndYear').value = '';
+                });
             });
 
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
                 // 필수 필드 검증
-                const career = document.getElementById('career').value.trim(); 
-                
                 // 2단계 데이터 저장
+                const existing = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
                 const step2Data = {
-                    career: career                   
+                    careers: Array.isArray(existing.careers) ? existing.careers : []
                 };
 
                 // 파일 처리
@@ -274,7 +415,6 @@
                 }
 
                 // 이전에 저장된 파일 정보가 있고 새로 업로드하지 않았다면 보존
-                const existing = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
                 if (!step2Data.academicCertificates && existing.academicCertificates) {
                     step2Data.academicCertificates = existing.academicCertificates;
                 }
@@ -288,5 +428,6 @@
                 location.href = '/tutor/register2';
             });
         </script>
+        </th:block>
     </div>
 </div>

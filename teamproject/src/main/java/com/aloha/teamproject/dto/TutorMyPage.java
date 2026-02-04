@@ -11,6 +11,7 @@ public class TutorMyPage {
 	private List<LanguageField> languageFields;
 	private TutorStats tutorStats;
 	private List<UpcomingLesson> upcomingLessons;
+	private List<UpcomingLesson> pastLessons;
 	private List<TutorReview> tutorReviews;
 	private List<MonthlyEarning> monthlyEarnings;
 

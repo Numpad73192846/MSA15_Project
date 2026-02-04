@@ -21,6 +21,8 @@ public interface TutorMyPageMapper {
 
 	public List<UpcomingLesson> selectUpcomingBookingsByUserId(@Param("userId") String userId) throws Exception;
 
+	public List<UpcomingLesson> selectPastBookingsByUserId(@Param("userId") String userId) throws Exception;
+
 	public List<TutorReview> selectTutorReviewsByUserId(@Param("userId") String userId) throws Exception;
 
 	public TutorStats selectTutorStatsByUserId(@Param("userId") String userId) throws Exception;

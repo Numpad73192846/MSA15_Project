@@ -12,7 +12,6 @@ public interface RefreshTokenMapper {
 
     public RefreshToken findByUserIdAndTokenHash(@Param("userId") String userId, @Param("tokenHash") String tokenHash);
 
-    // public int revoke(String userId, String tokenHash);
     public int revoke(@Param("userId") String userId,  @Param("tokenHash") String tokenHash);
 
     public int deleteExpired();

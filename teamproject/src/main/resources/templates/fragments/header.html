@@ -21,10 +21,13 @@
 
                 <!-- 로그인 후 -->
                 <div id="navUserArea" class="gap-2" style="display: none;">
-                    <button id="navUserMyPageBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/mypage'">
+                    <button id="navUserMyPageBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/member/mypage'">
                         마이페이지
                     </button>
-                    <button id="navTutorMyPageBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/mypages'">
+                    <button id="navTutorDashboardBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/tutor/dashboard'" style="display: none;">
+                        대시보드
+                    </button>
+                    <button id="navTutorMyPageBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 nav-action-btn" onclick="location.href='/tutor/mypage'" style="display: none;">
                         마이페이지
                     </button>
                     <button id="navLogoutBtn" class="btn btn-sm btn-danger rounded-pill px-3 nav-action-btn">

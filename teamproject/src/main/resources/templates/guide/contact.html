@@ -1,0 +1,180 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <!-- 문의하기 페이지 -->
+        <section class="contact-section py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <!-- 페이지 제목 -->
+                        <div class="text-center mb-5">
+                            <h1 class="display-5 fw-bold mb-3">문의하기</h1>
+                            <p class="text-muted">궁금하신 사항을 남겨주시면 빠른 시일 내로 답변드리겠습니다.</p>
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- 연락처 정보 -->
+                            <div class="col-lg-5">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body p-5">
+                                        <h4 class="fw-bold mb-4 text-center">연락처 정보</h4>
+                                        
+                                        <!-- 이메일 -->
+                                        <div class="mb-4 text-center">
+                                            <div class="mb-3">
+                                                <i class="bi bi-envelope-fill text-primary" style="font-size: 2rem;"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">이메일</h6>
+                                            <p class="text-muted mb-0">
+                                                <a href="mailto:thejoen@gmail.com" class="text-decoration-none text-muted">
+                                                    thejoen@gmail.com
+                                                </a>
+                                            </p>
+                                        </div>
+
+                                        <!-- 전화번호 -->
+                                        <div class="mb-4 text-center">
+                                            <div class="mb-3">
+                                                <i class="bi bi-telephone-fill text-primary" style="font-size: 2rem;"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">전화번호</h6>
+                                            <p class="text-muted mb-0">
+                                                <a href="tel:032-521-8889" class="text-decoration-none text-muted">
+                                                    032-521-8889
+                                                </a>
+                                            </p>
+                                        </div>
+
+                                        <!-- 운영시간 -->
+                                        <div class="mb-4 text-center">
+                                            <div class="mb-3">
+                                                <i class="bi bi-clock-fill text-primary" style="font-size: 2rem;"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">운영시간</h6>
+                                            <p class="text-muted mb-0">
+                                                평일: 오전 9시 - 오후 6시<br>
+                                                주말 및 공휴일: 휴무
+                                            </p>
+                                        </div>
+
+                                        <!-- 안내사항 -->
+                                        <div class="alert alert-info border-0 mt-4 text-center">
+                                            <i class="bi bi-info-circle-fill me-2"></i>
+                                            <small>
+                                                문의 접수 후 영업일 기준 1~2일 내로 답변드립니다.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 문의 폼 -->
+                            <div class="col-lg-7">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body p-4">
+                                        <h4 class="fw-bold mb-4">문의 남기기</h4>
+                                        
+                                        <form id="contactForm">
+                                            <!-- 이름 -->
+                                            <div class="mb-3">
+                                                <label for="userName" class="form-label fw-bold">
+                                                    이름 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" class="form-control" id="userName" 
+                                                       placeholder="이름을 입력해주세요" required>
+                                            </div>
+
+                                            <!-- 이메일 -->
+                                            <div class="mb-3">
+                                                <label for="userEmail" class="form-label fw-bold">
+                                                    이메일 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="email" class="form-control" id="userEmail" 
+                                                       placeholder="example@email.com" required>
+                                            </div>
+
+                                            <!-- 연락처 -->
+                                            <div class="mb-3">
+                                                <label for="userPhone" class="form-label fw-bold">
+                                                    연락처 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="tel" class="form-control" id="userPhone" 
+                                                       placeholder="010-1234-5678" required>
+                                            </div>
+
+                                            <!-- 문의 제목 -->
+                                            <div class="mb-3">
+                                                <label for="inquiryTitle" class="form-label fw-bold">
+                                                    문의 제목 <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="text" class="form-control" id="inquiryTitle" 
+                                                       placeholder="문의 제목을 입력해주세요" required>
+                                            </div>
+
+                                            <!-- 문의 내용 -->
+                                            <div class="mb-4">
+                                                <label for="inquiryContent" class="form-label fw-bold">
+                                                    문의 내용 <span class="text-danger">*</span>
+                                                </label>
+                                                <textarea class="form-control" id="inquiryContent" rows="6" 
+                                                          placeholder="문의하실 내용을 자세히 작성해주세요" required></textarea>
+                                            </div>
+
+                                            <!-- 버튼 -->
+                                            <div class="d-flex gap-3">
+                                                <button type="submit" class="btn btn-primary px-4" style="width: 130px; height: 48px;">
+                                                    전송하기
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary px-4" 
+                                                        onclick="history.back()" style="width: 130px; height: 48px;">
+                                                    돌아가기
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 추가 스크립트 -->
+    <th:block layout:fragment="extra-scripts">
+        <script>
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 입력값 확인
+                const userName = document.getElementById('userName').value.trim();
+                const userEmail = document.getElementById('userEmail').value.trim();
+                const userPhone = document.getElementById('userPhone').value.trim();
+                const inquiryTitle = document.getElementById('inquiryTitle').value.trim();
+                const inquiryContent = document.getElementById('inquiryContent').value.trim();
+                
+                if (!userName || !userEmail || !userPhone || !inquiryTitle || !inquiryContent) {
+                    alert('모든 필수 항목을 입력해주세요.');
+                    return;
+                }
+                
+                // 이메일 형식 검증
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(userEmail)) {
+                    alert('올바른 이메일 형식을 입력해주세요.');
+                    return;
+                }
+                
+                // 성공 메시지
+                alert('문의가 접수되었습니다. 빠른 시일 내로 답변 드리겠습니다.');
+                
+                // 폼 초기화
+                this.reset();
+            });
+        </script>
+    </th:block>
+
+</div>

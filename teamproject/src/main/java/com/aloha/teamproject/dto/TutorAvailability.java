@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,9 @@ public class TutorAvailability {
     private String userId;
     @Builder.Default
     private String id = UUID.randomUUID().toString();
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endAt;
     @Builder.Default
     private Status status = Status.OPEN;

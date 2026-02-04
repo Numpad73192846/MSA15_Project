@@ -34,14 +34,12 @@ CREATE TABLE `users` (
     `password` VARCHAR(255) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
     `nickname` VARCHAR(64) NOT NULL UNIQUE,
+    `phone` VARCHAR(20) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`no`)
 );
-
-ALTER TABLE users
-ADD COLUMN phone VARCHAR(20) NULL AFTER nickname;
 
 CREATE TABLE `user_auth` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
@@ -142,6 +140,7 @@ CREATE TABLE `lesson` (
     `no` BIGINT AUTO_INCREMENT NOT NULL,
     `user_id` VARCHAR(64) NOT NULL,
     `subject_id` VARCHAR(64) NOT NULL,
+    `field_id` VARCHAR(64) NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,
     `title` VARCHAR(100) NOT NULL,
     `description` TEXT NULL,
@@ -152,8 +151,10 @@ CREATE TABLE `lesson` (
     PRIMARY KEY (`no`),
     INDEX `idx_user_id` (`user_id`),
     INDEX `idx_subject_id` (`subject_id`),
+    INDEX `idx_field_id` (`field_id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`subject_id`) REFERENCES `subject`(`id`) ON DELETE CASCADE
+    FOREIGN KEY (`subject_id`) REFERENCES `subject`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`field_id`) REFERENCES `language_field`(`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `tutor_availability` (

@@ -34,5 +34,4 @@
         DELETE FROM refresh_token
         WHERE expires_at &lt; NOW()
     </delete>
-
 </mapper>

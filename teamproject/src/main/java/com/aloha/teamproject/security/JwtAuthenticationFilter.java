@@ -17,7 +17,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -25,7 +28,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+        @NonNull HttpServletRequest request,
+        @NonNull HttpServletResponse response,
+        @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
         String token = null;
 
         String header = request.getHeader("Authorization");
@@ -45,6 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             String userId = jwtTokenProvider.getUserIdFromToken(token);
             List<String> authList = jwtTokenProvider.getAuthListFromToken(token);
+            
+            log.debug("JWT Auth - userId: {}, authList: {}", userId, authList);
 
             SimpleGrantedAuthority[] authorities = authList.stream()
                                                            .map(SimpleGrantedAuthority::new)
@@ -52,6 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, Arrays.asList(authorities));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else if (token != null) {
+            log.warn("JWT token validation failed for request: {}", request.getRequestURI());
         }
         
         filterChain.doFilter(request, response);

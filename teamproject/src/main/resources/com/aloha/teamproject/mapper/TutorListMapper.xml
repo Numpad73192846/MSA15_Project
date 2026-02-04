@@ -24,21 +24,97 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
-            tp.rating_avg, 
-            tp.review_count, 
             tp.profile_img,
-            GROUP_CONCAT(DISTINCT lf.name SEPARATOR ',') AS subjects,
-            l.price,
-            GROUP_CONCAT(CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
+            COALESCE(
+                (SELECT AVG(r.rating) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS rating_avg,
+            COALESCE(
+                (SELECT COUNT(*) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS review_count,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ', ')
+                 FROM lesson l2
+                 JOIN subject s ON l2.subject_id = s.id
+                 JOIN subject_group sg ON s.group_id = sg.id
+                 JOIN language_field lf ON l2.field_id = lf.id
+                 WHERE l2.user_id = tp.user_id),
+                ''
+            ) AS subjects,
+            COALESCE(
+                (SELECT AVG(l3.price) 
+                 FROM lesson l3
+                 WHERE l3.user_id = tp.user_id),
+                0
+            ) AS price,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ')
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS experience
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
-        LEFT JOIN tutor_field tf ON tp.user_id = tf.user_id
-        LEFT JOIN language_field lf ON tf.field_id = lf.id
-        LEFT JOIN lesson l ON tp.user_id = l.user_id AND l.status = 'OPEN' 
-        LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.rating_avg, tp.review_count, tp.profile_img, l.price
-        ORDER BY tp.rating_avg DESC, tp.review_count DESC
+        ORDER BY rating_avg DESC, review_count DESC
+    </select>
+
+    <select id="selectTutorById" resultMap="TutorListMap">
+        SELECT 
+            tp.id, 
+            tp.user_id, 
+            u.name, 
+            tp.bio, 
+            tp.profile_img,
+            COALESCE(
+                (SELECT AVG(r.rating) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS rating_avg,
+            COALESCE(
+                (SELECT COUNT(*) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS review_count,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ', ')
+                 FROM lesson l2
+                 JOIN subject s ON l2.subject_id = s.id
+                 JOIN subject_group sg ON s.group_id = sg.id
+                 JOIN language_field lf ON l2.field_id = lf.id
+                 WHERE l2.user_id = tp.user_id),
+                ''
+            ) AS subjects,
+            COALESCE(
+                (SELECT AVG(l3.price) 
+                 FROM lesson l3
+                 WHERE l3.user_id = tp.user_id),
+                0
+            ) AS price,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ')
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS experience
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        WHERE tp.id = #{userId}
     </select>
 
     <select id="selectTutorsBySubject" resultMap="TutorListMap">
@@ -47,22 +123,24 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
-            tp.rating_avg, 
-            tp.review_count, 
+            COALESCE(AVG(r.rating), 0) AS rating_avg, 
+            COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             tp.profile_img,
-            GROUP_CONCAT(DISTINCT lf.name SEPARATOR ',') AS subjects,
-            l.price,
-            GROUP_CONCAT(CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
+            GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
+            AVG(l.price) AS price,
+            GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
-        LEFT JOIN tutor_field tf ON tp.user_id = tf.user_id
-        LEFT JOIN language_field lf ON tf.field_id = lf.id
+        LEFT JOIN review r ON r.booking_id IN ( SELECT b.id FROM booking b WHERE b.tutor_id = tp.user_id )
         LEFT JOIN lesson l ON tp.user_id = l.user_id AND l.status = 'OPEN'
+        LEFT JOIN subject s ON l.subject_id = s.id
+        LEFT JOIN subject_group sg ON s.group_id = sg.id
+        LEFT JOIN language_field lf ON l.field_id = lf.id
         LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
-          AND lf.name = #{subject}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.rating_avg, tp.review_count, tp.profile_img, l.price
-        ORDER BY tp.rating_avg DESC, tp.review_count DESC
+          AND sg.name = #{subject}
+        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
+        ORDER BY rating_avg DESC, review_count DESC
     </select>
 
     <select id="selectTutorsByPrice" resultMap="TutorListMap">
@@ -71,23 +149,25 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
-            tp.rating_avg, 
-            tp.review_count, 
+            COALESCE(AVG(r.rating), 0) AS rating_avg, 
+            COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             tp.profile_img,
-            GROUP_CONCAT(DISTINCT lf.name SEPARATOR ',') AS subjects,
-            l.price,
-            GROUP_CONCAT(CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
+            GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
+            AVG(l.price) AS price,
+            GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
-        LEFT JOIN tutor_field tf ON tp.user_id = tf.user_id
-        LEFT JOIN language_field lf ON tf.field_id = lf.id
+        LEFT JOIN review r ON r.booking_id IN ( SELECT b.id FROM booking b WHERE b.tutor_id = tp.user_id )
         LEFT JOIN lesson l ON tp.user_id = l.user_id AND l.status = 'OPEN'
+        LEFT JOIN subject s ON l.subject_id = s.id
+        LEFT JOIN subject_group sg ON s.group_id = sg.id
+        LEFT JOIN language_field lf ON l.field_id = lf.id
         LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND l.price &gt;= #{minPrice} 
           AND l.price &lt;= #{maxPrice}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.rating_avg, tp.review_count, tp.profile_img, l.price
-        ORDER BY tp.rating_avg DESC, tp.review_count DESC
+        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
+        ORDER BY rating_avg DESC, review_count DESC
     </select>
 
     <select id="selectTutorsBySearchTerm" resultMap="TutorListMap">
@@ -96,23 +176,50 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
-            tp.rating_avg, 
-            tp.review_count, 
             tp.profile_img,
-            GROUP_CONCAT(DISTINCT lf.name SEPARATOR ',') AS subjects,
-            l.price,
-            GROUP_CONCAT(CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
+            COALESCE(
+                (SELECT AVG(r.rating) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS rating_avg,
+            COALESCE(
+                (SELECT COUNT(*) 
+                 FROM review r 
+                 JOIN booking b ON r.booking_id = b.id 
+                 JOIN lesson l ON b.lesson_id = l.id
+                 WHERE l.user_id = tp.user_id), 
+                0
+            ) AS review_count,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ', ')
+                 FROM lesson l2
+                 JOIN subject s ON l2.subject_id = s.id
+                 JOIN subject_group sg ON s.group_id = sg.id
+                 JOIN language_field lf ON l2.field_id = lf.id
+                 WHERE l2.user_id = tp.user_id),
+                ''
+            ) AS subjects,
+            COALESCE(
+                (SELECT AVG(l3.price) 
+                 FROM lesson l3
+                 WHERE l3.user_id = tp.user_id),
+                0
+            ) AS price,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ')
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS experience
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
-        LEFT JOIN tutor_field tf ON tp.user_id = tf.user_id
-        LEFT JOIN language_field lf ON tf.field_id = lf.id
-        LEFT JOIN lesson l ON tp.user_id = l.user_id AND l.status = 'OPEN'
-        LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND (u.name LIKE CONCAT('%', #{searchTerm}, '%') 
-               OR lf.name LIKE CONCAT('%', #{searchTerm}, '%'))
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.rating_avg, tp.review_count, tp.profile_img, l.price
-        ORDER BY tp.rating_avg DESC, tp.review_count DESC
+               OR tp.bio LIKE CONCAT('%', #{searchTerm}, '%'))
+        ORDER BY rating_avg DESC, review_count DESC
     </select>
 
 </mapper>

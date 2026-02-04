@@ -218,7 +218,8 @@
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
                 });
                 const data = await response.json();
                 if (!data.success) {
@@ -226,8 +227,12 @@
                     return;
                 }
 
-                if (data.data && data.data.accessToken && typeof setAccessToken === 'function') {
+                if (data.data && typeof setAccessToken === 'function') {
                     setAccessToken(data.data.accessToken);
+                    // refreshToken도 localStorage에 저장
+                    if (data.data.refreshToken) {
+                        localStorage.setItem('refreshToken', data.data.refreshToken);
+                    }
                 }
 
                 location.href = '/';
@@ -303,19 +308,34 @@
                     return;
                 }
 
+                await new Promise(resolve => setTimeout(resolve, 500));
+
                 const loginResponse = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: payload.username, password: payload.password })
+                    body: JSON.stringify({ username: payload.username, password: payload.password }),
+                    credentials: 'include'
                 });
-                const loginData = await loginResponse.json();
-                if (!loginData.success) {
-                    alert(loginData.message || '로그인에 실패했습니다.');
+                
+                if (!loginResponse.ok) {
+                    alert('회원가입은 완료되었습니다. 로그인 페이지에서 다시 로그인해주세요.');
+                    location.reload();
                     return;
                 }
 
-                if (loginData.data && loginData.data.accessToken && typeof setAccessToken === 'function') {
+                const loginData = await loginResponse.json();
+                if (!loginData.success) {
+                    alert('회원가입은 완료되었습니다. 로그인 페이지에서 다시 로그인해주세요.');
+                    location.reload();
+                    return;
+                }
+
+                if (loginData.data && typeof setAccessToken === 'function') {
                     setAccessToken(loginData.data.accessToken);
+                    // refreshToken도 localStorage에 저장
+                    if (loginData.data.refreshToken) {
+                        localStorage.setItem('refreshToken', loginData.data.refreshToken);
+                    }
                 }
 
                 const redirectUrl = payload.role === 'ROLE_TUTOR' ? '/tutor/register' : '/';

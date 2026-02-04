@@ -1,134 +1,184 @@
-/* 튜터 캘린더 공통 스타일 */
-.weekly_calendar_wrap {
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
-    overflow: hidden;
+/* ==============================
+   Tutor Calendar - Admin Clean UI
+   ============================== */
+
+:root{
+  --c-border: #e5e7eb;
+  --c-border2: #eef1f6;
+  --c-text: #0f172a;
+  --c-muted: #64748b;
+  --c-bg: #ffffff;
+  --c-soft: #f8fafc;
+
+  --c-primary: #2563eb;
+  --c-primary-soft: rgba(37,99,235,0.10);
+
+  --c-danger: #ef4444;
+  --c-danger-soft: rgba(239,68,68,0.10);
+
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 10px;
 }
 
-.weekly_head {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+/* wrapper = 카드처럼 */
+.weekly_calendar_wrap{
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
 }
 
-.dayHead {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+/* head = 관리자 페이지처럼 담백 */
+.weekly_head{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--c-bg);
+  border-bottom: 1px solid var(--c-border);
 }
 
-.dayHead > li {
-    flex: 1;
-    text-align: center;
-    padding: 0.75rem 0.5rem;
-    border-right: 1px solid #dee2e6;
+.dayHead{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.dayHead > li:last-child {
-    border-right: none;
+.dayHead > li{
+  padding: 12px 10px;
+  text-align: center;
+  border-right: 1px solid var(--c-border2);
+}
+.dayHead > li:last-child{ border-right:none; }
+
+.head_in{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  align-items:center;
 }
 
-.dayTit {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    font-size: 0.9rem;
+.dayTit{
+  margin:0;
+  font-weight: 800;
+  font-size: .95rem;
+  color: var(--c-text);
+}
+.dayDate{
+  margin:0;
+  font-size: .8rem;
+  color: var(--c-muted);
 }
 
-.dayDate {
-    color: #6c757d;
-    font-size: 0.85rem;
-    margin: 0;
+/* body */
+.dayCon{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 540px;
+  overflow: auto;
+  background: var(--c-bg);
 }
 
-.dayCon {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    max-height: 500px;
-    overflow-y: auto;
+.dayCon > li{
+  border-right: 1px solid var(--c-border2);
+  min-width: 0;
+}
+.dayCon > li:last-child{ border-right:none; }
+
+/* column padding + 슬롯 간격 규칙화 */
+.con_in{
+  padding: 12px;
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
 }
 
-.dayCon > li {
-    flex: 1;
-    border-right: 1px solid #dee2e6;
+/* slot */
+.sch_time a{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  height: 34px;
+  padding: 0 10px;
+
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-bg);
+  color: var(--c-text);
+  text-decoration:none;
+
+  font-size: .84rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+
+  transition: background-color .12s ease, border-color .12s ease;
 }
 
-.dayCon > li:last-child {
-    border-right: none;
+/* hover는 담백하게 */
+.sch_time:not(.off):not(.booked) a:hover{
+  background: var(--c-soft);
+  border-color: #d8dde6;
 }
 
-.con_in {
-    padding: 0.25rem;
+/* disabled */
+.sch_time.off{
+  opacity: .35;
+  pointer-events: none;
 }
 
-.sch_time {
-    margin-bottom: 0.25rem;
+/* selected = 블루 한 가지로만 강조 */
+.sch_time.selected a{
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
 }
 
-.sch_time.off {
-    opacity: 0.3;
-    pointer-events: none;
+/* booked = 빨강 */
+.sch_time.booked a{
+  background: var(--c-danger);
+  border-color: var(--c-danger);
+  color: #fff;
+  cursor:not-allowed;
 }
 
-.sch_time.selected {
-    background-color: #0d6efd;
+/* focus */
+.sch_time a:focus-visible{
+  outline:none;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.18);
 }
 
-.sch_time.booked {
-    background-color: #dc3545;
+/* hide */
+.sch_dsttime{ display:none; }
+
+/* admin-style scroll */
+.dayCon::-webkit-scrollbar{ width: 12px; }
+.dayCon::-webkit-scrollbar-thumb{
+  background: rgba(15,23,42,0.18);
+  border-radius: 999px;
+  border: 3px solid #fff;
+}
+.dayCon::-webkit-scrollbar-track{ background:#fff; }
+
+/* readonly */
+.weekly_calendar_wrap.readonly .sch_time a{
+  cursor: default;
+  pointer-events: none;
+}
+.weekly_calendar_wrap.readonly .sch_time:not(.off):not(.selected):not(.booked) a:hover{
+  background: var(--c-bg);
+  border-color: var(--c-border);
 }
 
-.sch_time a {
-    display: block;
-    padding: 0.35rem 0.5rem;
-    text-align: center;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    color: #212529;
-    font-size: 0.85rem;
+/* responsive */
+@media (max-width: 992px){
+  .dayHead, .dayCon{ grid-template-columns: repeat(2, 1fr); }
 }
-
-.sch_time:not(.off):not(.booked) a:hover {
-    background-color: #e9ecef;
-    border-color: #0d6efd;
-}
-
-.sch_time.selected a {
-    background-color: #0d6efd;
-    color: white;
-    border-color: #0d6efd;
-}
-
-.sch_time.booked a {
-    background-color: #dc3545;
-    color: white;
-    border-color: #dc3545;
-    cursor: not-allowed;
-}
-
-.sch_dsttime {
-    display: none;
-}
-
-.flex {
-    display: flex;
-}
-
-.en {
-    font-family: 'Courier New', monospace;
-}
-
-/* 읽기 전용 모드 */
-.weekly_calendar_wrap.readonly .sch_time a {
-    cursor: default;
-    pointer-events: none;
-}
-
-.weekly_calendar_wrap.readonly .sch_time:not(.off):not(.selected):not(.booked) a:hover {
-    background-color: transparent;
-    border-color: #dee2e6;
+@media (max-width: 520px){
+  .dayHead, .dayCon{ grid-template-columns: 1fr; }
 }
