@@ -4,7 +4,7 @@
     <div layout:fragment="content">
         <div class="container py-5">
             <!-- Header -->
-            <div class="mb-4">
+            <div class="mb-4 p-4 rounded" style="background-color: #f8f9fa; border-left: 4px solid #0d6efd;">
                 <h2 class="h3 fw-bold mb-1">튜터 마이페이지</h2>
                 <p class="text-muted mb-0">프로필과 활동 내역을 관리하세요</p>
             </div>
@@ -70,7 +70,9 @@
                         <div class="col-md-3 col-6">
                             <div class="stat-card card shadow-sm h-100">
                                 <div class="card-body text-center">
-                                    <div class="stat-icon mb-2">📚</div>
+                                    <div class="stat-icon mb-2">
+                                        <img src="/img/tutors/class.svg" alt="총 수업" style="width:42px;height:42px;">
+                                    </div>
                                     <div class="stat-value fw-bold text-primary">127</div>
                                     <div class="stat-label small text-muted">총 수업</div>
                                 </div>
@@ -79,7 +81,9 @@
                         <div class="col-md-3 col-6">
                             <div class="stat-card card shadow-sm h-100">
                                 <div class="card-body text-center">
-                                    <div class="stat-icon mb-2">💰</div>
+                                    <div class="stat-icon mb-2">
+                                        <img src="/img/tutors/money.svg" alt="총 수익" style="width:42px;height:42px;">
+                                    </div>
                                     <div class="stat-value fw-bold text-success">4,500,000</div>
                                     <div class="stat-label small text-muted">총 수익 (원)</div>
                                 </div>
@@ -88,7 +92,9 @@
                         <div class="col-md-3 col-6">
                             <div class="stat-card card shadow-sm h-100">
                                 <div class="card-body text-center">
-                                    <div class="stat-icon mb-2">👥</div>
+                                    <div class="stat-icon mb-2">
+                                        <img src="/img/tutors/student.svg" alt="활성 학생" style="width:42px;height:42px;">
+                                    </div>
                                     <div class="stat-value fw-bold text-info">42</div>
                                     <div class="stat-label small text-muted">활성 학생</div>
                                 </div>
@@ -97,7 +103,9 @@
                         <div class="col-md-3 col-6">
                             <div class="stat-card card shadow-sm h-100">
                                 <div class="card-body text-center">
-                                    <div class="stat-icon mb-2">⏰</div>
+                                    <div class="stat-icon mb-2">
+                                        <img src="/img/tutors/time.svg" alt="시간당 요금" style="width:42px;height:42px;">
+                                    </div>
                                     <div class="stat-value fw-bold text-warning">35,000</div>
                                     <div class="stat-label small text-muted">시간당 (원)</div>
                                 </div>
@@ -499,7 +507,7 @@
                                             <div>
                                                 <div class="fw-semibold">${lesson.studentName} 학생</div>
                                                 <div class="small text-muted mt-1">
-                                                    📅 ${lesson.lessonDate} | ⏰ ${lesson.startTime} (${lesson.durationHours}시간) | 📚 ${lesson.subject}
+                                                    <img src="/img/tutors/cal.svg" alt="날짜" style="width:16px;height:16px;margin-right:4px;"> ${lesson.lessonDate} | <img src="/img/tutors/time.svg" alt="시간" style="width:16px;height:16px;margin-right:4px;"> ${lesson.startTime} (${lesson.durationHours}시간) | <img src="/img/tutors/class.svg" alt="과목" style="width:16px;height:16px;margin-right:4px;"> ${lesson.subject}
                                                 </div>
                                             </div>
                                             <span class="badge ${badgeClass}">
@@ -528,7 +536,7 @@
                                         <div>
                                             <div class="fw-semibold">${lesson.studentName} 학생</div>
                                             <div class="small text-muted mt-1">
-                                                📅 ${lesson.lessonDate} | ⏰ ${lesson.startTime} (${lesson.durationHours}시간) | 📚 ${lesson.subject}
+                                                <img src="/img/tutors/cal.svg" alt="날짜" style="width:16px;height:16px;margin-right:4px;"> ${lesson.lessonDate} | <img src="/img/tutors/time.svg" alt="시간" style="width:16px;height:16px;margin-right:4px;"> ${lesson.startTime} (${lesson.durationHours}시간) | <img src="/img/tutors/class.svg" alt="과목" style="width:16px;height:16px;margin-right:4px;"> ${lesson.subject}
                                             </div>
                                         </div>
                                         <span class="badge ${badgeClass}">

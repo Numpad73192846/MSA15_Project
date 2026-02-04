@@ -335,3 +335,4 @@ CREATE TABLE `refresh_token` (
     INDEX `idx_expires_at` (`expires_at`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
+

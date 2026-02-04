@@ -10,7 +10,9 @@
 <body>
     <div layout:fragment="content">
         <div class="container py-5">
-            <a class="btn btn-link px-0 mb-3" href="/tutors">← 목록으로</a>
+            <a class="btn btn-outline-primary rounded-pill px-4 py-2 mb-3" href="/tutors" style="text-decoration: none;">
+                <i class="bi bi-arrow-left me-2">←목록으로</i>
+            </a>
 
             <div class="row g-4">
                 <div class="col-lg-8">
@@ -28,8 +30,7 @@
                                                 <span class="me-1">⭐</span>
                                                 <span class="fw-semibold" th:text="${avgRating}">4.9</span>
                                                 <span class="text-muted">(</span><span class="text-muted"
-                                                    th:text="${reviewCount}">127</span><span class="text-muted">개의
-                                                    리뷰)</span>
+                                                    th:text="${reviewCount}">127</span><span class="text-muted">개의리뷰)</span>
                                             </div>
                                             <div class="text-muted mb-2" th:if="${reviewCount == 0}">
                                                 <span class="me-1">⭐</span>
