@@ -1,6 +1,10 @@
 <div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
 
+    <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-register-admin.css">       
+    </th:block>
+
     <div layout:fragment="content">
         <div class="container py-5">
             <!-- Header -->
@@ -367,7 +371,35 @@
                             </div>
                             <div class="mb-3">
                                 <label for="editTutorProfileImg" class="form-label">프로필 이미지</label>
-                                <input type="file" class="form-control" id="profileImg" name="profileImg" accept="image/*">
+                                <p class="text-muted small mb-3">학생들에게 보여질 프로필 사진을 업로드하세요.</p>
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                        <div>
+                                            <div class="fw-semibold">파일 업로드</div>
+                                            <div class="small text-muted">JPG, PNG 가능 · 최대 5MB</div>
+                                        </div>
+                                        <label class="btn btn-outline-primary btn-sm mb-0">
+                                            파일 선택
+                                            <input type="file" class="d-none" id="profileImg" accept="image/*">
+                                        </label>
+                                    </div>
+                                    <div id="profileImgCard" class="card mt-3" style="display:none;">
+                                        <div class="row g-0 align-items-center">
+                                            <div class="col-md-4 text-center p-2">
+                                                <img id="profileImgPreview" class="rounded mw-100" style="max-height: 150px;" alt="프로필 미리보기" />
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="card-body">
+                                                    <div id="profileImgActions" class="d-flex gap-2">
+                                                        <button type="button" id="profileImgEditBtn" class="btn btn-sm btn-outline-secondary">수정</button>
+                                                        <button type="button" id="profileImgDeleteBtn" class="btn btn-sm btn-outline-danger">삭제</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <input type="file" class="form-control" id="profileImg" name="profileImg" accept="image/*">
                                 <div id="profileImgCard" class="card my-2" style="display:none;">
                                     <div class="row g-0 align-items-center">
                                         <div class="col-md-4 text-center">
@@ -382,7 +414,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="mb-3">
                                 <label for="editTutorHeadline" class="form-label">한 줄 소개</label>
@@ -455,6 +487,65 @@
                 return response;
             }
 
+            // 프로필 이미지 관련 함수
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            // 프로필 이미지 이벤트 리스너
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileImgInput = document.getElementById('profileImg');
+                const profileImgPreview = document.getElementById('profileImgPreview');
+                const profileImgCard = document.getElementById('profileImgCard');
+                const profileImgEditBtn = document.getElementById('profileImgEditBtn');
+                const profileImgDeleteBtn = document.getElementById('profileImgDeleteBtn');
+
+                // 프로필 이미지 변경 시 미리보기
+                if (profileImgInput) {
+                    profileImgInput.addEventListener('change', async (event) => {
+                        const file = event.target.files[0];
+                        if (!file) return;
+                        
+                        try {
+                            const base64 = await fileToBase64(file);
+                            profileImgPreview.src = base64;
+                            profileImgCard.style.display = 'block';
+                        } catch (e) {
+                            console.error('이미지 처리 실패', e);
+                        }
+                    });
+                }
+
+                // 수정 버튼 클릭 시 파일 선택
+                if (profileImgEditBtn) {
+                    profileImgEditBtn.addEventListener('click', () => {
+                        profileImgInput.click();
+                    });
+                }
+
+                // 삭제 버튼 클릭 시 이미지 제거
+                if (profileImgDeleteBtn) {
+                    profileImgDeleteBtn.addEventListener('click', () => {
+                        profileImgCard.style.display = 'none';
+                        profileImgInput.value = null;
+                        profileImgPreview.src = '';
+                    });
+                }
+            });
+
             // 페이지 로드 시 마이페이지 데이터 초기화
             document.addEventListener('DOMContentLoaded', async function() {
                 try {
@@ -491,6 +582,16 @@
                                 profileImgContainer.innerHTML = `
                                     <span class="fs-1">👨‍🏫</span>
                                 `;
+                            }
+
+                            // 모달 폼에 프로필 이미지 바인딩
+                            const profileImgPreview = document.getElementById('profileImgPreview');
+                            const profileImgCard = document.getElementById('profileImgCard');
+                            if (profile.profileImg) {
+                                profileImgPreview.src = profile.profileImg;
+                                profileImgCard.style.display = 'block';
+                            } else {
+                                profileImgCard.style.display = 'none';
                             }                           
 
                             // 유튜브 URL
@@ -682,26 +783,12 @@
             // 프로필 수정 폼 제출 처리
             document.getElementById('tutorProfileEditForm').addEventListener('submit', async e => {
                 e.preventDefault();
-                const formData = new FormData(e.target);                
-                const entries = Array.from(formData.entries());
-                console.log("FormData entries:", entries);
-                entries.forEach(([key, value]) => {
-                    console.log(`${key}: ${value}`);
-                });
-                
+                const formData = new FormData(e.target);
                 
                 try {
-                    // 간단한 fetch로 직접 시도
-                    const token = localStorage.getItem('accessToken');
-                    const headers = {};
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                    }
-                    
-                    const response = await fetch('/api/tutors', {
+                    const response = await fetchWithAuth('/api/tutors', {
                         method: 'PUT',
-                        body: formData,
-                        headers: headers
+                        body: formData                    
                     });
                     
                     console.log("Response status:", response.status);
