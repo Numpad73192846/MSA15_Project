@@ -43,14 +43,14 @@
                                                 <div class="d-flex gap-2" th:if="${b.status == '대기중'}">
                                                     <button
                                                         class="btn btn-sm btn-outline-primary flex-fill tutor-booking-action"
-                                                        th:attr="data-booking-id=${b.id},data-action='accept'">확정</button>
+                                                        th:attr="data-booking-id=${b.id},data-action='accept',data-student-name=${b.studentName},data-subject=${b.subject},data-date=${b.date},data-time=${b.time},data-duration=${b.duration},data-price=${b.totalPrice}">확정</button>
                                                     <button
                                                         class="btn btn-sm btn-outline-danger flex-fill tutor-booking-action"
-                                                        th:attr="data-booking-id=${b.id},data-action='reject'">거절</button>
+                                                        th:attr="data-booking-id=${b.id},data-action='reject',data-student-name=${b.studentName},data-subject=${b.subject},data-date=${b.date},data-time=${b.time},data-duration=${b.duration},data-price=${b.totalPrice}">거절</button>
                                                 </div>
                                                 <button class="btn btn-sm btn-primary tutor-booking-action"
                                                     th:if="${b.status == '확정'}"
-                                                    th:attr="data-booking-id=${b.id},data-action='complete'">수업
+                                                    th:attr="data-booking-id=${b.id},data-action='complete',data-student-name=${b.studentName},data-subject=${b.subject},data-date=${b.date},data-time=${b.time},data-duration=${b.duration},data-price=${b.totalPrice}">수업
                                                     완료</button>
                                             </div>
                                         </div>
@@ -331,7 +331,117 @@
         </div>
 
         <script>
+            async function fetchWithAuth(url, options = {}) {
+                const headers = { ...(options.headers || {}), ...(typeof buildAuthHeaders === 'function' ? buildAuthHeaders() : {}) };
+                const response = await fetch(url, { ...options, headers, credentials: 'include' });
+
+                if (response.status === 401 && typeof refreshAccessToken === 'function') {
+                    const refreshed = await refreshAccessToken();
+                    if (refreshed) {
+                        const retryHeaders = { ...(options.headers || {}), ...(typeof buildAuthHeaders === 'function' ? buildAuthHeaders() : {}) };
+                        return fetch(url, { ...options, headers: retryHeaders, credentials: 'include' });
+                    }
+                }
+
+                return response;
+            }
+
             document.addEventListener('DOMContentLoaded', function () {
+                const bookingButtons = document.querySelectorAll('.tutor-booking-action');
+                let activeBookingId = null;
+
+                const acceptModal = document.getElementById('acceptModal');
+                const rejectModal = document.getElementById('rejectModal');
+                const completeModal = document.getElementById('completeModal');
+
+                bookingButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const action = btn.dataset.action;
+                        activeBookingId = btn.dataset.bookingId;
+                        const studentName = btn.dataset.studentName || '';
+                        const subject = btn.dataset.subject || '';
+                        const dateTime = `${btn.dataset.date || ''} ${btn.dataset.time || ''} (${btn.dataset.duration || ''}h)`;
+                        const price = btn.dataset.price || '';
+
+                        if (action === 'accept') {
+                            document.getElementById('acceptStudentName').textContent = studentName;
+                            document.getElementById('acceptDateTime').textContent = dateTime;
+                            document.getElementById('acceptSubject').textContent = subject;
+                            document.getElementById('acceptPrice').textContent = price;
+                            new bootstrap.Modal(acceptModal).show();
+                        }
+
+                        if (action === 'reject') {
+                            document.getElementById('rejectStudentName').textContent = studentName;
+                            document.getElementById('rejectDateTime').textContent = dateTime;
+                            document.getElementById('rejectSubject').textContent = subject;
+                            document.getElementById('rejectReason').value = '';
+                            new bootstrap.Modal(rejectModal).show();
+                        }
+
+                        if (action === 'complete') {
+                            document.getElementById('completeStudentName').textContent = studentName;
+                            document.getElementById('completeDateTime').textContent = dateTime;
+                            document.getElementById('completeSubject').textContent = subject;
+                            document.getElementById('completePrice').textContent = price;
+                            document.getElementById('completeNotes').value = '';
+                            new bootstrap.Modal(completeModal).show();
+                        }
+                    });
+                });
+
+                document.getElementById('confirmAccept')?.addEventListener('click', async () => {
+                    if (!activeBookingId) return;
+                    const response = await fetchWithAuth(`/api/bookings/${activeBookingId}/confirm`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('예약이 확정되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '확정에 실패했습니다.');
+                    }
+                });
+
+                document.getElementById('confirmReject')?.addEventListener('click', async () => {
+                    if (!activeBookingId) return;
+                    const reason = document.getElementById('rejectReason').value.trim();
+                    if (!reason) {
+                        document.getElementById('rejectReason').classList.add('is-invalid');
+                        return;
+                    }
+                    document.getElementById('rejectReason').classList.remove('is-invalid');
+
+                    const response = await fetchWithAuth(`/api/bookings/${activeBookingId}/cancel`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('예약이 거절되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '거절에 실패했습니다.');
+                    }
+                });
+
+                document.getElementById('confirmComplete')?.addEventListener('click', async () => {
+                    if (!activeBookingId) return;
+                    const response = await fetchWithAuth(`/api/bookings/${activeBookingId}/complete`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('수업이 완료 처리되었습니다.');
+                        location.reload();
+                    } else {
+                        alert(result.message || '완료 처리에 실패했습니다.');
+                    }
+                });
+
                 // Message Modal
                 var tutorMessageModal = document.getElementById('tutorMessageModal');
                 tutorMessageModal.addEventListener('show.bs.modal', function (event) {

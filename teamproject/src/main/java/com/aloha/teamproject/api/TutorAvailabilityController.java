@@ -35,8 +35,8 @@ public class TutorAvailabilityController {
      */
     @GetMapping("/me/availability")
     public ApiResponse<List<TutorAvailability>> getMyAvailability(
-            @RequestParam String start, // ISO format: "2026-02-01T00:00:00"
-            @RequestParam String end,
+            @RequestParam("start") String start, // ISO format: "2026-02-01T00:00:00"
+            @RequestParam("end") String end,
             Authentication authentication
     ) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -45,8 +45,11 @@ public class TutorAvailabilityController {
 
         try {
             String userId = authentication.getName();
-            LocalDateTime startDate = LocalDateTime.parse(start);
-            LocalDateTime endDate = LocalDateTime.parse(end);
+            LocalDateTime startDate = parseDateTimeOrNull(start);
+            LocalDateTime endDate = parseDateTimeOrNull(end);
+            if (startDate == null || endDate == null) {
+                return ApiResponse.error("잘못된 날짜 형식입니다.");
+            }
 
                 List<TutorAvailability> availabilities = tutorAvailabilityService
                     .selectByUserIdAndDateRange(userId, startDate, endDate);
@@ -63,13 +66,16 @@ public class TutorAvailabilityController {
      */
     @GetMapping("/{tutorId}/availability")
     public ApiResponse<List<TutorAvailability>> getTutorAvailability(
-            @PathVariable String tutorId,
-            @RequestParam String start,
-            @RequestParam String end
+            @PathVariable("tutorId") String tutorId,
+            @RequestParam("start") String start,
+            @RequestParam("end") String end
     ) {
         try {
-            LocalDateTime startDate = LocalDateTime.parse(start);
-            LocalDateTime endDate = LocalDateTime.parse(end);
+            LocalDateTime startDate = parseDateTimeOrNull(start);
+            LocalDateTime endDate = parseDateTimeOrNull(end);
+            if (startDate == null || endDate == null) {
+                return ApiResponse.error("잘못된 날짜 형식입니다.");
+            }
 
                 List<TutorAvailability> availabilities = tutorAvailabilityService
                     .selectByUserIdAndDateRange(tutorId, startDate, endDate);
@@ -91,8 +97,8 @@ public class TutorAvailabilityController {
      */
     @PostMapping("/me/availability")
     public ApiResponse<Void> saveMyAvailability(
-            @RequestParam String start,
-            @RequestParam String end,
+            @RequestParam("start") String start,
+            @RequestParam("end") String end,
                 @RequestBody List<TutorAvailability> availabilityDTOs,
             Authentication authentication
     ) {
@@ -102,8 +108,11 @@ public class TutorAvailabilityController {
 
         try {
             String userId = authentication.getName();
-            LocalDateTime startDate = LocalDateTime.parse(start);
-            LocalDateTime endDate = LocalDateTime.parse(end);
+            LocalDateTime startDate = parseDateTimeOrNull(start);
+            LocalDateTime endDate = parseDateTimeOrNull(end);
+            if (startDate == null || endDate == null) {
+                return ApiResponse.error("잘못된 날짜 형식입니다.");
+            }
 
             List<TutorAvailability> availabilities = availabilityDTOs.stream()
                     .peek(dto -> {
@@ -128,8 +137,8 @@ public class TutorAvailabilityController {
      */
     @PatchMapping("/me/availability/{id}/status")
     public ApiResponse<Void> updateAvailabilityStatus(
-            @PathVariable String id,
-            @RequestParam String status,
+            @PathVariable("id") String id,
+            @RequestParam("status") String status,
             Authentication authentication
     ) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -150,7 +159,7 @@ public class TutorAvailabilityController {
      */
     @DeleteMapping("/me/availability/{id}")
     public ApiResponse<Void> deleteAvailability(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             Authentication authentication
     ) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -163,6 +172,15 @@ public class TutorAvailabilityController {
         } catch (Exception e) {
             log.error("가용 시간 삭제 실패", e);
             return ApiResponse.error("가용 시간을 삭제하지 못했습니다.");
+        }
+    }
+
+    private LocalDateTime parseDateTimeOrNull(String value) {
+        try {
+            return LocalDateTime.parse(value);
+        } catch (Exception e) {
+            log.warn("Invalid datetime format: {}", value, e);
+            return null;
         }
     }
 }

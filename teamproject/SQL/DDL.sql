@@ -34,6 +34,7 @@ CREATE TABLE `users` (
     `password` VARCHAR(255) NOT NULL,
     `name` VARCHAR(64) NOT NULL,
     `nickname` VARCHAR(64) NOT NULL UNIQUE,
+    `phone` VARCHAR(20) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -58,7 +59,7 @@ CREATE TABLE `tutor_profile` (
     `id` VARCHAR(64) NOT NULL UNIQUE,
     `profile_img` VARCHAR(255) NULL,
     `headline` VARCHAR(100) NULL,
-    `bio` TEXT NULL,
+    `bio` TEXT NULL,   
     `video_url` VARCHAR(255) NULL,
     `is_verified` BOOLEAN NOT NULL DEFAULT FALSE,
     `rating_avg` DECIMAL(3, 2) NOT NULL DEFAULT 0.0,
@@ -68,6 +69,9 @@ CREATE TABLE `tutor_profile` (
     PRIMARY KEY (`no`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
+
+ALTER TABLE tutor_profile
+ADD COLUMN self_intro TEXT NULL AFTER bio; 
 
 CREATE TABLE `persistent_logins` (
     `series` VARCHAR(64) NOT NULL,

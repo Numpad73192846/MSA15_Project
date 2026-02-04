@@ -20,6 +20,7 @@ public class Users {
 	private String password;
 	private String name;
 	private String nickname;
+	private String phone;
 	@Builder.Default
 	private String role = "ROLE_USER";
 	@Builder.Default

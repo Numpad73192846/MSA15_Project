@@ -22,4 +22,13 @@ public class Review {
 	private String studentName;
 	private LocalDateTime createdAt;
 
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class Request {
+		private String bookingId;
+		private Integer rating;
+		private String content;
+	}
+
 }

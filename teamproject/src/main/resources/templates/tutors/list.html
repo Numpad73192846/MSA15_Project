@@ -200,22 +200,29 @@
       }
 
       try {
-        const response = await fetch('/api/tutors?' + params.toString());
+        const url = '/api/tutors?' + params.toString();
+        console.log('[DEBUG] Fetching tutors:', url);
+        const response = await fetch(url);
         const result = await response.json();
+        console.log('[DEBUG] API Response:', result);
         
         if ( result.success ) {
+          console.log('[DEBUG] Tutors data:', result.data);
           renderTutors(result.data);
         }
         else {
+          console.log('[DEBUG] API failed:', result);
           renderTutors([]);
         }
       } catch (error) {
+        console.error('[DEBUG] Fetch error:', error);
         renderTutors([]);
       }
 
     }
 
     function renderTutors(tutors) {
+      console.log('[DEBUG] Rendering tutors:', tutors);
       const tutorList = document.getElementById('tutorList');
       const tutorEmpty = document.getElementById('tutorEmpty');
 

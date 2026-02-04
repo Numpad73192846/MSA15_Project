@@ -72,6 +72,7 @@ public class UserController {
 		}
 
 		try {
+			// JWT 토큰의 authentication.getName()은 userId(UUID)를 반환
 			String userId = authentication.getName();
 			
 			MemberMyPage memberMyPage = memberMyPageService.selectMemberByUserId(userId);

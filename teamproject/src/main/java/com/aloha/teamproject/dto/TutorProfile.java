@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,11 +21,13 @@ public class TutorProfile {
     private String name;
     private String email;
     private String nickname;
+    private String phone;
     @Builder.Default
     private String id = UUID.randomUUID().toString();
     private String profileImg;
     private String headline;
     private String bio;
+    private String selfIntro;
     private String videoUrl;
     @Builder.Default
     private boolean verified = false;
@@ -42,10 +46,11 @@ public class TutorProfile {
     }
 
     @Data
-    public static class Request {
-        private String profileImg;
+    public static class Request {      
+        private MultipartFile profileImg;
         private String headline;
         private String bio;
+        private String selfIntro;
         private String videoUrl;
         private List<String> fieldIds;
     }

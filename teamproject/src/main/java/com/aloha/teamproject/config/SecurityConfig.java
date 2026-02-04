@@ -51,7 +51,9 @@ public class SecurityConfig {
             "/api/auth/**",
             "/api/users/**",
             "/api/admin/**",
-            "/api/tutors/**"
+            "/api/tutors/**",
+            "/api/reviews/**",
+            "/api/bookings/**"
             ))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
@@ -60,17 +62,16 @@ public class SecurityConfig {
                 .requestMatchers("/tutor/mypage", "/mypage", "/member/mypage").permitAll()
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
-                // ============================== 수정 (이용안내 및 기타 안내 페이지 경로 추가) ==============================
-                // 작성일: 2026-02-02 (업데이트: 2026-02-03)
-                // 수정 내용: /guide 및 하위 경로, /faq, /contact, /about, /partnership 경로 permitAll 추가
                 .requestMatchers("/guide", "/guide/**", "/faq", "/contact", "/about", "/partnership").permitAll()
-                // ============================== 수정 종료 ==============================
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tutors/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
+                .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
+                .requestMatchers("/api/tutors/profile", "/api/tutors/me/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING")
                 .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
                 .anyRequest().authenticated()

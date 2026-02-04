@@ -48,6 +48,14 @@ public class TutorMyPageServiceImpl extends BaseServiceImpl implements TutorMyPa
 	}
 
 	@Override
+	public List<UpcomingLesson> selectPastBookingsByUserId(String userId) throws Exception {
+		log.debug("[TutorMyPage] 지난 수업 조회 - userId: {}", userId);
+		List<UpcomingLesson> lessons = tutorMyPageMapper.selectPastBookingsByUserId(userId);
+		log.debug("[TutorMyPage] 지난 수업 조회 완료 - 총 {}개", lessons.size());
+		return lessons;
+	}
+
+	@Override
 	public List<TutorReview> selectTutorReviewsByUserId(String userId) throws Exception {
 		log.debug("[TutorMyPage] 튜터 리뷰 조회 - userId: {}", userId);
 		List<TutorReview> reviews = tutorMyPageMapper.selectTutorReviewsByUserId(userId);
@@ -59,6 +67,9 @@ public class TutorMyPageServiceImpl extends BaseServiceImpl implements TutorMyPa
 	public TutorStats selectTutorStatsByUserId(String userId) throws Exception {
 		log.debug("[TutorMyPage] 튜터 통계 조회 - userId: {}", userId);
 		TutorStats stats = tutorMyPageMapper.selectTutorStatsByUserId(userId);
+		if (stats == null) {
+			stats = new TutorStats();
+		}
 		log.debug("[TutorMyPage] 튜터 통계 조회 완료 - 총 수업: {}, 총 수익: {}", 
 			stats.getTotalLessons(), stats.getTotalEarnings());
 		return stats;
