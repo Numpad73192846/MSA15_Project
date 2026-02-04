@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
@@ -152,14 +151,17 @@ public class TutorController {
     )
     public ApiResponse<Void> updateTutorProfile(
             Authentication authentication,
-            @ModelAttribute TutorProfile.Request request,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String phone,
-            @RequestParam(required = false) String password,
-            @RequestParam(required = false) String passwordConfirm
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "passwordConfirm", required = false) String passwordConfirm,
+            @RequestParam(value = "headline", required = false) String headline,
+            @RequestParam(value = "bio", required = false) String bio,
+            @RequestParam(value = "selfIntro", required = false) String selfIntro,
+            @RequestParam(value = "videoUrl", required = false) String videoUrl,
+            @RequestParam(value = "profileImg", required = false) MultipartFile profileImg
     ) throws Exception {
 
-        log.info("PUT /api/tutors 프로필 수정 요청 시작");
         
         if (authentication == null || !authentication.isAuthenticated()) {
             log.error("인증 실패");
@@ -168,11 +170,9 @@ public class TutorController {
 
         try {
             String userId = authentication.getName();
-            log.info("userId = {}", userId);
 
             // 1️⃣ Users 정보 수정 (이름 / 전화 / 비밀번호)
             userService.updateMyInfo(userId, name, phone, password, passwordConfirm);
-            log.info("Users 정보 수정 완료");
 
             // 2️⃣ TutorProfile 정보 수정
             TutorProfile profile = tutorProfileService.selectByUserId(userId);
@@ -181,14 +181,14 @@ public class TutorController {
                 profile.setUserId(userId);
             }
 
-            profile.setHeadline(request.getHeadline());
-            profile.setBio(request.getBio());
-            profile.setSelfIntro(request.getSelfIntro());
-            profile.setVideoUrl(request.getVideoUrl());
+            profile.setHeadline(headline);
+            profile.setBio(bio);
+            profile.setSelfIntro(selfIntro);
+            profile.setVideoUrl(videoUrl);
 
             // 프로필 이미지
-            if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
-                String imgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
+            if (profileImg != null && !profileImg.isEmpty()) {
+                String imgPath = tutorProfileService.saveProfileImg(profileImg);
                 profile.setProfileImg(imgPath);
                 log.info("프로필 이미지 저장 완료: {}", imgPath);
             }

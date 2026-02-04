@@ -683,16 +683,37 @@
             document.getElementById('tutorProfileEditForm').addEventListener('submit', async e => {
                 e.preventDefault();
                 const formData = new FormData(e.target);                
+                const entries = Array.from(formData.entries());
+                console.log("FormData entries:", entries);
+                entries.forEach(([key, value]) => {
+                    console.log(`${key}: ${value}`);
+                });
+                
                 
                 try {
-                    const response = await fetchWithAuth('/api/tutors', {
+                    // 간단한 fetch로 직접 시도
+                    const token = localStorage.getItem('accessToken');
+                    const headers = {};
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    
+                    const response = await fetch('/api/tutors', {
                         method: 'PUT',
                         body: formData,
-                        headers: headers 
+                        headers: headers
                     });
-                    console.log(formData);
-
-                    if (!response.ok) throw new Error('Failed to fetch');
+                    
+                    console.log("Response status:", response.status);
+                    console.log("Response ok:", response.ok);
+                    console.log("Response:", response);
+                    
+                    // 에러 응답 내용 확인
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.log("Error response:", errorText);
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
 
                     const result = await response.json();
                     if (!result.success) {
@@ -703,7 +724,7 @@
                     alert('프로필 수정 완료');
                     location.reload();
                 } catch (error) {
-                    // console.error('Error:', error);
+                    console.error('Error:', error);
                     alert('서버와 통신 중 오류가 발생했습니다: ' + error.message);
                 }                
 
