@@ -36,6 +36,15 @@ public class HomeController {
 		return "guide/policies";
 	}
 
+	// ============================== 추가 (세계인들의 언어 페이지 매핑) ==============================
+	// 작성일: 2026-02-03
+	// 수정 내용: /guide/language 경로 매핑 추가 - 인기 과목 TOP 10 페이지
+	@GetMapping("/guide/language")
+	public String language() {
+		return "guide/language";
+	}
+	// ============================== 수정 종료 ==============================
+
 	@GetMapping("/faq")
 	public String faq() {
 		return "guide/faq";
