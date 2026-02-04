@@ -132,6 +132,22 @@
   pointer-events: none;
 }
 
+/* 지나간 시간 스타일 */
+.sch_time.past {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* 예약된 시간 스타일 (표시하되 비활성화) */
+.sch_time.booked {
+    background-color: #ffebee;
+    pointer-events: none;
+}
+
+.sch_time.disabled {
+    cursor: not-allowed;
+}
+
 /* selected = 블루 한 가지로만 강조 */
 .sch_time.selected a{
   background: var(--c-primary);

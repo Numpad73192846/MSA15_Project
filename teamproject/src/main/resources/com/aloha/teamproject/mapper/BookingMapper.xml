@@ -66,9 +66,11 @@
     </update>
 
     <update id="cancelBooking">
-        UPDATE booking
-        SET canceled_at = NOW()
-        WHERE id = #{id}
+        UPDATE booking b
+        JOIN tutor_availability ta ON b.availability_id = ta.id
+        SET b.canceled_at = NOW(),
+            ta.status = 'OPEN'
+        WHERE b.id = #{id}
     </update>
 
     <update id="completeBooking">

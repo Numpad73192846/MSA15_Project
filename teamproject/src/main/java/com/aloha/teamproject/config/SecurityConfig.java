@@ -12,6 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +46,55 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // CORS 설정 빈
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 허용할 출처 (Origin) 설정
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+            "http://127.0.0.1:3000"
+        ));
+        
+        // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+        
+        // 허용할 요청 헤더
+        configuration.setAllowedHeaders(List.of("*"));
+        
+        // 자격증명(쿠키, Authorization 헤더) 포함 허용
+        configuration.setAllowCredentials(true);
+        
+        // preflight 요청 캐시 시간 (초 단위)
+        configuration.setMaxAge(3600L);
+        
+        // 응답 헤더 노출
+        configuration.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "X-Total-Count"
+        ));
+        
+        // /api/**, /auth/** 경로에 CORS 설정 적용
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/auth/**", configuration);
+        
+        return source;
+    }
+
     // 보안 필터 체인 설정
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        // ✅ CORS 설정 활성화
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+        
         // ✅ 인가 설정
         http
             .csrf(csrf -> csrf.ignoringRequestMatchers(

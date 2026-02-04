@@ -534,17 +534,18 @@
                             const hourly = stats.hourlyRate || 0;
                             document.querySelectorAll('.stat-value')[3].textContent = new Intl.NumberFormat('ko-KR').format(hourly);
                             
-                            // 평점 및 리뷰 수
-                            if (stats.ratingAvg !== undefined && stats.ratingAvg !== null) {
-                                const stars = '★'.repeat(Math.floor(stats.ratingAvg)) + '☆'.repeat(5 - Math.floor(stats.ratingAvg));
-                                const ratingDiv = document.querySelector('.rating');
-                                if (ratingDiv) {
-                                    ratingDiv.innerHTML = `
-                                        <span class="text-warning">${stars}</span>
-                                        <span class="ms-1 fw-semibold">${stats.ratingAvg || 0}</span>
-                                        <span class="text-muted small">(${stats.reviewCount || 0} 리뷰)</span>
-                                    `;
-                                }
+                            // 평점 및 리뷰 수 (tutorStats에서 전체 통계 사용)
+                            const ratingDiv = document.querySelector('.rating');
+                            if (ratingDiv && mypage.tutorStats) {
+                                const stats = mypage.tutorStats;
+                                const ratingAvg = (stats.ratingAvg === undefined || stats.ratingAvg === null) ? 0 : Number(stats.ratingAvg);
+                                const reviewCount = (stats.reviewCount === undefined || stats.reviewCount === null) ? 0 : Number(stats.reviewCount);
+                                const stars = '★'.repeat(Math.floor(ratingAvg)) + '☆'.repeat(5 - Math.floor(ratingAvg));
+                                ratingDiv.innerHTML = `
+                                    <span class="text-warning">${stars}</span>
+                                    <span class="ms-1 fw-semibold">${ratingAvg}</span>
+                                    <span class="text-muted small">(${reviewCount} 리뷰)</span>
+                                `;
                             }
                         }
                         
@@ -633,10 +634,10 @@
                         }
                         
                         // 리뷰 바인딩
-                        if (mypage.tutorReviews && mypage.tutorReviews.length > 0) {
-                            const reviewContainer = document.querySelector('#reviewsTab .d-grid');
-                            if (reviewContainer) {
-                                reviewContainer.innerHTML = '';
+                        const reviewContainer = document.querySelector('#reviewsTab .d-grid');
+                        if (reviewContainer) {
+                            reviewContainer.innerHTML = '';
+                            if (mypage.tutorReviews && mypage.tutorReviews.length > 0) {
                                 mypage.tutorReviews.forEach(review => {
                                     const rating = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
                                     const createdDate = new Date(review.createdAt).toLocaleDateString('ko-KR');
@@ -652,14 +653,18 @@
                                     `;
                                     reviewContainer.appendChild(item);
                                 });
+                            } else {
+                                reviewContainer.innerHTML = `
+                                    <div class="text-muted text-center py-3">리뷰가 없습니다.</div>
+                                `;
                             }
                         }
                         
                         // 월별 수익 바인딩
-                        if (mypage.monthlyEarnings && mypage.monthlyEarnings.length > 0) {
-                            const tbody = document.querySelector('#earningsTab tbody');
-                            if (tbody) {
-                                tbody.innerHTML = '';
+                        const tbody = document.querySelector('#earningsTab tbody');
+                        if (tbody) {
+                            tbody.innerHTML = '';
+                            if (mypage.monthlyEarnings && mypage.monthlyEarnings.length > 0) {
                                 mypage.monthlyEarnings.forEach(earning => {
                                     const yearMonth = earning.yearMonth.replace('-', '년 ') + '월';
                                     const row = document.createElement('tr');
@@ -671,6 +676,12 @@
                                     `;
                                     tbody.appendChild(row);
                                 });
+                            } else {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td colspan="4" class="text-center text-muted py-3">수익 내역이 없습니다.</td>
+                                `;
+                                tbody.appendChild(row);
                             }
                         }
                     }
@@ -688,6 +699,8 @@
                     method: 'PUT',
                     body: formData
                 });
+
+                console.log(response);
 
                 const result = await response.json();
                 if (result.success) {

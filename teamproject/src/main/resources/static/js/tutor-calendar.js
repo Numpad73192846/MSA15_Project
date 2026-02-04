@@ -111,6 +111,14 @@ class TutorCalendar {
         return false;
     }
 
+    isPartTime(dateKey, time) {
+        const now = new Date();
+        const [hour, minute] = time.split(':').map(Number);
+        const slotDate = new Date(dateKey);
+        slotDate.setHours(hour, minute, 0, 0);
+        return slotDate < now;
+    }
+
     buildTimeSlots(container, dateKey, dayOfWeek) {
         container.innerHTML = '';
         const step = Math.max(15, Number(this.options.timeStepMinutes) || 30);
@@ -131,15 +139,17 @@ class TutorCalendar {
                     continue;
                 }
             }
-
+            
             const isBooked = this.state.bookedSlots.get(dateKey)?.has(time);
             const isSelected = this.state.selectedSlots.get(dateKey)?.has(time);
+            const isPast = this.isPartTime(dateKey, time);
             
             timeSlots.push({
                 time,
                 inRange,
                 isBooked,
                 isSelected,
+                isPast,
                 minutes
             });
         }
@@ -150,7 +160,8 @@ class TutorCalendar {
             const wrap = document.createElement('div');
             let className = 'sch_time';
             if (!slot.inRange) className += ' off';
-            if (slot.isBooked) className += ' booked';
+            if (slot.isPast) className += ' past disabled';
+            if (slot.isBooked) className += ' booked disabled';
             else if (slot.isSelected) className += ' selected';
             wrap.className = className;
 
@@ -345,6 +356,11 @@ class TutorCalendar {
                 // 예약된 슬롯은 클릭 불가
                 if (this.state.bookedSlots.get(dateKey)?.has(time)) {
                     alert('이미 예약된 시간입니다.');
+                    return;
+                }
+
+                if (this.isPartTime(dateKey, time)) {
+                    alert('지나간 시간은 선택할 수 없습니다.');
                     return;
                 }
 

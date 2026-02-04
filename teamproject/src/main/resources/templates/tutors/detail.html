@@ -281,7 +281,13 @@
                         const response = await fetch(`/api/tutors/${tutorId}/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
                         if (!response.ok) throw new Error('Failed to load');
                         const result = await response.json();
-                        if (!result.success || !result.data) return [];
+                        console.log('API response', result);
+
+                        if (!result.success || !result.data) {
+                            console.warn('No availability data');
+                            return [];
+                        }
+
 
                         const grouped = new Map();
                         result.data.forEach(item => {

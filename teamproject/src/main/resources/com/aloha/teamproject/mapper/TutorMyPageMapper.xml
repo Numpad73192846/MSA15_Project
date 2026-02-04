@@ -76,12 +76,12 @@
 			   COALESCE(SUM(p.amount), 0) AS totalEarnings,
 			   COUNT(DISTINCT b.user_id) AS activeStudents,
 			   NULL AS hourlyRate,
-			   tp.rating_avg AS ratingAvg,
-			   tp.review_count AS reviewCount
+			   COALESCE(AVG(r.rating), 0) AS ratingAvg,
+			   COUNT(r.id) AS reviewCount
 		FROM lesson l
 		LEFT JOIN booking b ON l.id = b.lesson_id
 		LEFT JOIN payment p ON p.booking_id = b.id AND p.status = 'PAID'
-		LEFT JOIN tutor_profile tp ON l.user_id = tp.user_id
+		LEFT JOIN review r ON b.id = r.booking_id
 		WHERE l.user_id = #{userId}
 	</select>
 
