@@ -203,7 +203,8 @@ function setNavState(isAuth, authList) {
                 // 튜터 마이페이지 버튼 표시
                 navTutorMyPageBtn.textContent = "추가 정보 작성";
                 // 버튼 텍스트를"추가 정보 작성"으로 설정
-                navTutorMyPageBtn.onclick = () => { location.href = "/tutor/register"; };
+                navTutorMyPageBtn.onclick = () => { location.href = "/tutor/register"; 
+                };
                 // 버튼클릭 시 "/tutor/register" 페이지로 이동
             } else {
                 // 튜터 승인이 완료된 경우
@@ -213,7 +214,6 @@ function setNavState(isAuth, authList) {
                 // 튜터 마이페이지 버튼 표시
             }
         } 
-        
         else {
             // 일반 사용자인 경우(튜터가 아닌경우)
             navUserMyPageBtn.style.display = "inline-block";
@@ -224,7 +224,6 @@ function setNavState(isAuth, authList) {
             // 튜터 마이페이지 버튼 숨김
         }
     }
-
     else {
         // isAuth가 false(비인증 사용자)
         navGuestArea.style.display = "flex";
@@ -232,7 +231,6 @@ function setNavState(isAuth, authList) {
         navUserArea.style.display = "none";
         // 사용자 영역 숨김
     }
-
 }
 
 function fetchUserInfo() {
@@ -296,30 +294,48 @@ function fetchUserInfo() {
     .then((data) => {
         // 사용자 정보를 받는 최종 then 블록: 응답 데이터를 처리
         console.log("[FetchUserInfo] 사용자 데이터:", data);
+        // 콘솔에 응답 데이터 출력
         if (data && data.success && data.data) {
+            // 데이터가 존재하고 success가 ture이고 data 객체가 있는지 확인
             const authList = data.data.authList || [];
+            // const: 상수선언 / authList를 가져오되, 없으면 빈 배열 사용
             setNavState(true, authList);
+            // 네비게이션 상태를 로그인 상태(true)로 설정하고 권한 목록 전달
 
             const isTutorPending = Array.isArray(authList) && authList.some(a => a.auth === "ROLE_TUTOR_PENDING" || a === "ROLE_TUTOR_PENDING");
+            // authList가 배열이고 "ROLE_TUTOR_PENDING" 권한이 있는지 확인
+            // pending: 대기 중인, 보류 중인
             const isRegisterPage = location.pathname.startsWith("/tutor/register");
+            // 현재 페이지 경로가 "/tutor/register"로 시작하는지 확인
             if (isTutorPending && !isRegisterPage) {
+                // 튜터 승인 대기중이고 현재 페이지가 등록 페이지가 아닌 경우
                 location.href = "/tutor/register";
+                // "/tutor/register" 페이지로 강제 이동
             }
         } else {
+            // 데이터가 없거나 실패한 경우
             setNavState(false);
+            // 네비게이션 상태를 비로그인 상태(false)로 설정
         }
     })
     .catch((error) => {
+        // fetch 과정에서 에러가 발생하면 실행되는 catch 블록
         console.error("사용자 정보 조회 실패:", error);
+        // 에러 로그 출력
         setNavState(false);
+        // 네비게이션 상태를 비로그인 상태로 설정
     });
 }
 
 
 function setupLogoutButton() {
+    // 로그아웃 버튼을 설정하는 함수 정의
     const logoutBtn = document.getElementById("navLogoutBtn");
+    // navLogoutBtn: 로그아웃 버튼 요소 가져오기 / document.getElementById(): HTML에서 id가 "navLogoutBtn"인 요소 선택
     if (logoutBtn) {
+        // 로그아웃 버튼이 존재하는지 확인
         logoutBtn.addEventListener("click", async () => {
+            // 버튼에 클릭 이벤트 리스너 추가(비동기 화살표 함수)
             const refreshToken = localStorage.getItem('refreshToken');
             await fetch("/api/auth/logout", {
                 method: "POST",

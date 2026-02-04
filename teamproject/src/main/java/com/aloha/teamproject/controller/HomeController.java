@@ -45,6 +45,15 @@ public class HomeController {
 	}
 	// ============================== 수정 종료 ==============================
 
+	// ============================== 추가 (한국어 게임 페이지 매핑) ==============================
+	// 작성일: 2026-02-04
+	// 수정 내용: /game/korean 경로 매핑 추가 - 한국어 속담 게임 페이지
+	@GetMapping("/game/korean")
+	public String koreanGame() {
+		return "game/korean-game";
+	}
+	// ============================== 수정 종료 ==============================
+
 	@GetMapping("/faq")
 	public String faq() {
 		return "guide/faq";

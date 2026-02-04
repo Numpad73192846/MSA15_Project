@@ -252,7 +252,7 @@
                             <div class="flex-grow-1">
                                 <div class="fw-bold fs-5">${tutor.name || '튜터'}</div>
                                 <div class="small text-muted mb-2">
-                                    <span class="me-1">⭐</span>
+                                    <img src="/img/tutors/star.svg" alt="별점" style="width:16px;height:16px;margin-right:4px;">
                                     <span class="fw-semibold">${tutor.ratingAvg || '-'}</span>
                                     <span class="text-muted">(${tutor.reviewCount || 0})</span>
                                 </div>
@@ -264,8 +264,14 @@
                         
                         <p class="text-muted mt-3 mb-3">${tutor.bio || ''}</p>
                         
-                        <div class="small text-muted mb-1">⏱️ 경력 <span>${tutor.experience || '정보 없음'}</span></div>
-                        <div class="small mb-3">💰 <span class="fw-semibold text-primary">수업당 <span>${tutor.price ? Number(tutor.price).toLocaleString() : '가격 미정'}</span>원</span></div>
+                        <div class="small text-muted mb-1">
+                            <img src="/img/tutors/time.svg" alt="경력" style="width:16px;height:16px;margin-right:4px;">
+                            경력 <span>${tutor.experience || '정보 없음'}</span>
+                        </div>
+                        <div class="small mb-3">
+                            <img src="/img/tutors/money.svg" alt="가격" style="width:16px;height:16px;margin-right:4px;">
+                            <span class="fw-semibold text-primary">수업당 <span>${tutor.price ? Number(tutor.price).toLocaleString() : '가격 미정'}</span>원</span>
+                        </div>
                         
                         <a class="btn btn-primary w-100" href="/tutors/${tutor.id}">프로필 보기</a>
                     </div>

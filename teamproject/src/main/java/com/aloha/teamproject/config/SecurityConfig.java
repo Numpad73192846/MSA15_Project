@@ -53,7 +53,8 @@ public class SecurityConfig {
             "/api/admin/**",
             "/api/tutors/**",
             "/api/reviews/**",
-            "/api/bookings/**"
+            "/api/bookings/**",
+            "/api/game/**"
             ))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
@@ -63,6 +64,8 @@ public class SecurityConfig {
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 .requestMatchers("/guide", "/guide/**", "/faq", "/contact", "/about", "/partnership").permitAll()
+                .requestMatchers("/game", "/game/**").permitAll()
+                .requestMatchers("/api/game/**").permitAll()
                 .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tutors/**").permitAll()
