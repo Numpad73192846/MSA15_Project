@@ -198,10 +198,14 @@ class TutorCalendar {
         const dates = this.getWeekDates(this.state.weekStart);
         const body = document.querySelector(`#${this.options.containerId} .dayCon`);
         const columns = body.querySelectorAll('li .con_in');
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
         columns.forEach((col, idx) => {
             const dateKey = this.formatDate(dates[idx]);
             const dayOfWeek = dates[idx].getDay();
+            // 모바일용 날짜 레이블 설정
+            const dateLabel = `${this.formatLabel(dates[idx])} (${dayNames[dayOfWeek]})`;
+            col.setAttribute('data-date-label', dateLabel);
             this.buildTimeSlots(col, dateKey, dayOfWeek);
         });
 
