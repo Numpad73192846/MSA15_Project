@@ -59,8 +59,12 @@ CREATE TABLE `tutor_profile` (
     `id` VARCHAR(64) NOT NULL UNIQUE,
     `profile_img` VARCHAR(255) NULL,
     `headline` VARCHAR(100) NULL,
-    `bio` TEXT NULL,   
+    `bio` TEXT NULL,
+    `self_intro` TEXT NULL,
     `video_url` VARCHAR(255) NULL,
+    `bank_name` VARCHAR(50) NULL,
+    `account_number` VARCHAR(50) NULL,
+    `account_holder` VARCHAR(50) NULL,
     `is_verified` BOOLEAN NOT NULL DEFAULT FALSE,
     `rating_avg` DECIMAL(3, 2) NOT NULL DEFAULT 0.0,
     `review_count` INT NOT NULL DEFAULT 0,
@@ -69,9 +73,6 @@ CREATE TABLE `tutor_profile` (
     PRIMARY KEY (`no`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
-
-ALTER TABLE tutor_profile
-ADD COLUMN self_intro TEXT NULL AFTER bio; 
 
 CREATE TABLE `persistent_logins` (
     `series` VARCHAR(64) NOT NULL,

@@ -188,6 +188,17 @@ public class TutorController {
             profile.setBio(request.getBio());
             profile.setSelfIntro(request.getSelfIntro());
             profile.setVideoUrl(request.getVideoUrl());
+            
+            // 계좌 정보
+            if (request.getBankName() != null && !request.getBankName().isBlank()) {
+                profile.setBankName(request.getBankName());
+            }
+            if (request.getAccountNumber() != null && !request.getAccountNumber().isBlank()) {
+                profile.setAccountNumber(request.getAccountNumber());
+            }
+            if (request.getAccountHolder() != null && !request.getAccountHolder().isBlank()) {
+                profile.setAccountHolder(request.getAccountHolder());
+            }
 
             // 프로필 이미지
             if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {

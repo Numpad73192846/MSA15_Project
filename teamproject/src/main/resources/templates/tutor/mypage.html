@@ -33,14 +33,9 @@
                                 <span class="text-muted small">(127 리뷰)</span>
                             </div>
 
-                            <button class="btn btn-outline-primary w-100" id="btnEditProfile" data-bs-toggle="modal"
-                                data-bs-target="#tutorProfileEditModal">
-                                프로필 수정
-                            </button>
-                            <button class="btn btn-outline-success w-100 mt-2" id="btnEditInfo" data-bs-toggle="modal"
-                                data-bs-target="#tutorInfoEditModal">
-                                튜터정보 수정
-                            </button>
+                            <a href="/tutor/profile-edit" class="btn btn-primary w-100">
+                                <i class="bi bi-pencil-square me-1"></i> 프로필 수정
+                            </a>
                         </div>
                     </div>
 
@@ -334,82 +329,6 @@
                 </div>
             </div>
 
-        <!-- Tutor Profile Edit Modal -->
-        <div class="modal fade" id="tutorProfileEditModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <form id="tutorProfileEditForm">
-                        <div class="modal-header">
-                            <h5 class="modal-title fw-bold">프로필 수정</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">                            
-                            <div class="alert alert-light border mb-3"><span id="editTutorEmail" class="fw-bold"> </span> [ <span id="editTutorNickName"> </span> ]</div>
-                            <div class="mb-3 row g-3">
-                                <div class="col-md-6">
-                                    <label for="editTutorPassword" class="form-label">비밀번호 변경</label>
-                                    <input type="password" class="form-control" id="editTutorPassword" name="password">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="editTutorPasswordConfirm" class="form-label">비밀번호 확인</label>
-                                    <input type="password" class="form-control" id="editTutorPasswordConfirm" name="passwordConfirm">
-                                </div>
-                            </div>
-                            <div class="mb-3 row g-3">
-                                <div class="col-md-6">
-                                    <label for="editTutorName" class="form-label">이름</label>
-                                    <input type="text" class="form-control" id="editTutorName" name="name" value="김민지 튜터" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="editTutorPhone" class="form-label">연락처</label>
-                                    <input type="text" class="form-control" id="editTutorPhone" name="phone" placeholder="010-0000-0000" required>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editTutorProfileImg" class="form-label">프로필 이미지</label>
-                                <input type="file" class="form-control" id="profileImg" name="profileImg" accept="image/*">
-                                <div id="profileImgCard" class="card my-2" style="display:none;">
-                                    <div class="row g-0 align-items-center">
-                                        <div class="col-md-4 text-center">
-                                            <img id="profileImgPreview" class="rounded-start mw-100 mx-auto" alt="프로필 미리보기" />
-                                        </div>
-                                        <div class="col-md-8">
-                                            <div class="card-body">
-                                                <div id="profileImgActions" class="d-flex gap-1">
-                                                    <button type="button" id="profileImgEditBtn" class="btn btn-sm btn-outline-secondary">수정</button>
-                                                    <button type="button" id="profileImgDeleteBtn" class="btn btn-sm btn-outline-danger">삭제</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editTutorHeadline" class="form-label">한 줄 소개</label>
-                                <input type="text" class="form-control" id="editTutorHeadline" name="headline" value="안녕하세요.">
-                            </div>
-                            <div class="mb-3">
-                                <label for="editTutorBio" class="form-label">소개</label>
-                                <textarea class="form-control" id="editTutorBio" name="bio" rows="4"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editTutorSelfIntro" class="form-label">강의 스타일</label>
-                                <textarea class="form-control" id="editTutorSelfIntro" name="selfIntro" rows="4"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="editTutorVideoUrl" class="form-label">소개 영상 유튜브 URL</label>
-                                <input type="url" class="form-control" id="editTutorVideoUrl" name="videoUrl">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                            <button type="submit" class="btn btn-primary">저장</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
         <!-- CSS/JS for Schedule Editor -->
         <link rel="stylesheet" href="/css/tutor-calendar.css">
         <script src="/js/tutor-calendar.js"></script>
@@ -508,16 +427,6 @@
                             document.getElementById('tutorEmail').textContent = profile.email || '';
                             document.getElementById('tutorHeadline').textContent = profile.headline || '소개가 없습니다.';
                             document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
-                            
-                            // 모달 폼에도 바인딩
-                            document.getElementById('editTutorEmail').textContent = profile.email || '';
-                            document.getElementById('editTutorNickName').textContent = profile.nickname || '';
-                            document.getElementById('editTutorName').value = profile.name || '';
-                            document.getElementById('editTutorPhone').value = profile.phone || '';
-                            document.getElementById('editTutorHeadline').value = profile.headline || '';
-                            document.getElementById('editTutorBio').value = profile.bio || '';
-                            document.getElementById('editTutorSelfIntro').value = profile.selfIntro || '';
-                            document.getElementById('editTutorVideoUrl').value = profile.videoUrl || '';
                         }
                         
                         // Stats 바인딩
@@ -676,23 +585,6 @@
                     }
                 } catch (e) {
                     console.warn('마이페이지 데이터 로드 실패', e);
-                }
-            });
-
-            // 프로필 수정 폼 제출 처리
-            document.getElementById('tutorProfileEditForm').addEventListener('submit', async e => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-
-                const response = await fetchWithAuth('/api/tutors', {
-                    method: 'PUT',
-                    body: formData
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    alert('프로필 수정 완료');
-                    location.reload();
                 }
             });
             

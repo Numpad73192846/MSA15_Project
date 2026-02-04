@@ -1,0 +1,382 @@
+<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layouts/main_layout}">
+
+    <th:block layout:fragment="extra-css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #f8fafc; }
+        .edit-shell { display: flex; gap: 24px; }
+        .edit-sidebar { width: 280px; flex: 0 0 280px; position: sticky; top: 90px; height: fit-content; }
+        .edit-card { border-radius: 16px; border: 1px solid #e5e7eb; }
+        .edit-menu .list-group-item { border: 0; border-radius: 12px; padding: 12px 14px; color: #334155; cursor: pointer; }
+        .edit-menu .list-group-item.active { background: #2563eb; color: #fff; }
+        .edit-menu .list-group-item:hover:not(.active) { background: #f1f5f9; }
+        .panel-title { font-weight: 800; }
+        .muted { color: #64748b; }
+        .divider { height: 1px; background: #e5e7eb; margin: 14px 0; }
+        .form-label { font-weight: 600; color: #334155; }
+        .btn-pill { border-radius: 999px; }
+        
+        @media (max-width: 992px) {
+            .edit-shell { flex-direction: column; }
+            .edit-sidebar { width: 100%; position: static; }
+        }
+    </style>
+    </th:block>
+
+    <div layout:fragment="content">
+        <div class="container py-4">
+            <!-- 헤더 -->
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">프로필 수정</h2>
+                    <div class="muted small">튜터 정보를 수정하세요</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/tutor/mypage" class="btn btn-outline-secondary btn-sm btn-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> 마이페이지로
+                    </a>
+                </div>
+            </div>
+
+            <div class="edit-shell">
+                <!-- 사이드바 -->
+                <aside class="edit-sidebar">
+                    <div class="card edit-card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div id="sidebarProfileImg" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:60px;height:60px;font-size:1.5rem;">
+                                    👨‍🏫
+                                </div>
+                                <div>
+                                    <div class="fw-bold" id="sidebarName">튜터</div>
+                                    <div class="muted small" id="sidebarEmail">email@example.com</div>
+                                </div>
+                            </div>
+
+                            <div class="divider"></div>
+
+                            <div class="list-group edit-menu">
+                                <a class="list-group-item active" data-section="basic">
+                                    <i class="bi bi-person me-2"></i> 기본 정보
+                                </a>
+                                <a class="list-group-item" data-section="profile">
+                                    <i class="bi bi-card-text me-2"></i> 프로필
+                                </a>
+                                <a class="list-group-item" data-section="account">
+                                    <i class="bi bi-bank me-2"></i> 계좌 정보
+                                </a>
+                                <a class="list-group-item" data-section="security">
+                                    <i class="bi bi-shield-lock me-2"></i> 보안
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- 메인 컨텐츠 -->
+                <main class="flex-grow-1">
+                    <form id="profileEditForm">
+                        <!-- 기본 정보 섹션 -->
+                        <section id="section-basic" class="edit-section">
+                            <div class="card edit-card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="panel-title mb-1">기본 정보</div>
+                                    <div class="muted small mb-4">이름, 연락처, 프로필 이미지를 수정하세요</div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">이름 <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="editName" name="name" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">연락처 <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="editPhone" name="phone" placeholder="010-0000-0000" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">프로필 이미지</label>
+                                        <div class="border rounded p-3 bg-light">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div id="currentProfileImg" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:80px;height:80px;font-size:2rem;">
+                                                    👨‍🏫
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <input type="file" class="form-control" id="editProfileImg" name="profileImg" accept="image/*">
+                                                    <small class="text-muted">JPG, PNG 가능 · 최대 5MB</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 프로필 섹션 -->
+                        <section id="section-profile" class="edit-section d-none">
+                            <div class="card edit-card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="panel-title mb-1">프로필</div>
+                                    <div class="muted small mb-4">학생들에게 보여지는 소개 정보를 수정하세요</div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">한 줄 소개 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="editHeadline" name="headline" 
+                                               placeholder="예) 영어 회화 전문 10년 경력, TOEIC 만점 강사" required>
+                                        <small class="text-muted">학생들에게 보여지는 첫 인상입니다</small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">소개 <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="editBio" name="bio" rows="5" 
+                                                  placeholder="튜터님에 대해 자세히 소개해 주세요" required></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">강의 스타일 <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="editSelfIntro" name="selfIntro" rows="5" 
+                                                  placeholder="어떤 방식으로 수업을 진행하시나요?" required></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">소개 영상 (선택)</label>
+                                        <input type="url" class="form-control" id="editVideoUrl" name="videoUrl" 
+                                               placeholder="https://youtube.com/watch?v=...">
+                                        <small class="text-muted">유튜브 소개 영상이 있다면 링크를 입력하세요</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 계좌 정보 섹션 -->
+                        <section id="section-account" class="edit-section d-none">
+                            <div class="card edit-card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="panel-title mb-1">계좌 정보</div>
+                                    <div class="muted small mb-4">정산을 위한 계좌 정보를 입력하세요</div>
+
+                                    <div class="alert alert-info small mb-3">
+                                        <i class="bi bi-info-circle me-1"></i> 정산을 위한 계좌 정보입니다. 정확하게 입력해 주세요.
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">은행명 <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="editBankName" name="bankName" required>
+                                                <option value="">은행을 선택하세요</option>
+                                                <option value="국민은행">국민은행</option>
+                                                <option value="우리은행">우리은행</option>
+                                                <option value="신한은행">신한은행</option>
+                                                <option value="하나은행">하나은행</option>
+                                                <option value="카카오뱅크">카카오뱅크</option>
+                                                <option value="NH농협">NH농협</option>
+                                                <option value="기업은행">기업은행</option>
+                                                <option value="대구은행">대구은행</option>
+                                                <option value="부산은행">부산은행</option>
+                                                <option value="광주은행">광주은행</option>
+                                                <option value="전북은행">전북은행</option>
+                                                <option value="제주은행">제주은행</option>
+                                                <option value="수협">수협</option>
+                                                <option value="산업은행">산업은행</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">계좌번호 <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="editAccountNumber" name="accountNumber" 
+                                                   placeholder="계좌번호 입력" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">예금주명 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="editAccountHolder" name="accountHolder" 
+                                               placeholder="예금주명 입력" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 보안 섹션 -->
+                        <section id="section-security" class="edit-section d-none">
+                            <div class="card edit-card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="panel-title mb-1">보안</div>
+                                    <div class="muted small mb-4">비밀번호를 변경하세요</div>
+
+                                    <div class="alert alert-warning small mb-3">
+                                        <i class="bi bi-exclamation-triangle me-1"></i> 비밀번호 변경 시에만 입력하세요. 빈칸으로 두면 기존 비밀번호가 유지됩니다.
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">새 비밀번호</label>
+                                            <input type="password" class="form-control" id="editPassword" name="password" 
+                                                   placeholder="변경 시에만 입력">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">비밀번호 확인</label>
+                                            <input type="password" class="form-control" id="editPasswordConfirm" name="passwordConfirm" 
+                                                   placeholder="비밀번호 확인">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- 저장 버튼 -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/tutor/mypage" class="btn btn-outline-secondary px-4">취소</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i> 저장
+                            </button>
+                        </div>
+                    </form>
+                </main>
+            </div>
+        </div>
+
+        <script>
+            const getFallbackToken = () => localStorage.getItem('accessToken');
+            const getAuthHeaders = () => {
+                if (typeof buildAuthHeaders === 'function') {
+                    return buildAuthHeaders();
+                }
+                const token = getFallbackToken();
+                return token ? { 'Authorization': `Bearer ${token}` } : {};
+            };
+
+            async function ensureAuth() {
+                const token = (typeof getAccessToken === 'function') ? getAccessToken() : getFallbackToken();
+                if (token) return true;
+                if (typeof refreshAccessToken === 'function') {
+                    return await refreshAccessToken();
+                }
+                return false;
+            }
+
+            async function fetchWithAuth(url, options = {}) {
+                const headers = { ...(options.headers || {}), ...getAuthHeaders() };
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 && typeof refreshAccessToken === 'function') {
+                    const refreshed = await refreshAccessToken();
+                    if (refreshed) {
+                        const retryHeaders = { ...(options.headers || {}), ...getAuthHeaders() };
+                        return fetch(url, {
+                            ...options,
+                            headers: retryHeaders,
+                            credentials: 'include'
+                        });
+                    }
+                }
+
+                return response;
+            }
+
+            // 섹션 전환
+            document.querySelectorAll('.edit-menu .list-group-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // 메뉴 활성화
+                    document.querySelectorAll('.edit-menu .list-group-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 섹션 표시
+                    const section = this.dataset.section;
+                    document.querySelectorAll('.edit-section').forEach(s => s.classList.add('d-none'));
+                    document.getElementById(`section-${section}`).classList.remove('d-none');
+                });
+            });
+
+            // 페이지 로드 시 데이터 바인딩
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    const authed = await ensureAuth();
+                    if (!authed) {
+                        location.href = '/auth/login';
+                        return;
+                    }
+
+                    const response = await fetchWithAuth('/api/tutors/me');
+                    if (!response.ok) throw new Error('Failed to fetch');
+
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const profile = result.data.tutorProfile;
+                        if (profile) {
+                            // 사이드바
+                            document.getElementById('sidebarName').textContent = profile.name || '튜터';
+                            document.getElementById('sidebarEmail').textContent = profile.email || '';
+                            if (profile.profileImg) {
+                                document.getElementById('sidebarProfileImg').innerHTML = 
+                                    `<img src="${profile.profileImg}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
+                                document.getElementById('currentProfileImg').innerHTML = 
+                                    `<img src="${profile.profileImg}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
+                            }
+
+                            // 기본 정보
+                            document.getElementById('editName').value = profile.name || '';
+                            document.getElementById('editPhone').value = profile.phone || '';
+
+                            // 프로필
+                            document.getElementById('editHeadline').value = profile.headline || '';
+                            document.getElementById('editBio').value = profile.bio || '';
+                            document.getElementById('editSelfIntro').value = profile.selfIntro || '';
+                            document.getElementById('editVideoUrl').value = profile.videoUrl || '';
+
+                            // 계좌 정보
+                            document.getElementById('editBankName').value = profile.bankName || '';
+                            document.getElementById('editAccountNumber').value = profile.accountNumber || '';
+                            document.getElementById('editAccountHolder').value = profile.accountHolder || '';
+                        }
+                    }
+                } catch (e) {
+                    console.warn('프로필 데이터 로드 실패', e);
+                }
+            });
+
+            // 폼 제출
+            document.getElementById('profileEditForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                // 비밀번호 확인
+                const password = document.getElementById('editPassword').value;
+                const passwordConfirm = document.getElementById('editPasswordConfirm').value;
+                if (password && password !== passwordConfirm) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                    return;
+                }
+
+                const formData = new FormData(this);
+
+                // 프로필 이미지 파일 추가
+                const profileImgInput = document.getElementById('editProfileImg');
+                if (profileImgInput.files[0]) {
+                    formData.set('profileImg', profileImgInput.files[0]);
+                }
+
+                try {
+                    const response = await fetchWithAuth('/api/tutors', {
+                        method: 'PUT',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('프로필이 수정되었습니다.');
+                        location.href = '/tutor/mypage';
+                    } else {
+                        alert(result.message || '프로필 수정에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('프로필 수정 실패:', error);
+                    alert('프로필 수정 중 오류가 발생했습니다.');
+                }
+            });
+        </script>
+    </div>
+</div>
