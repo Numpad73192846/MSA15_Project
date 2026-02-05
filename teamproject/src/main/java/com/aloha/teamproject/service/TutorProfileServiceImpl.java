@@ -37,9 +37,14 @@ public class TutorProfileServiceImpl extends BaseServiceImpl implements TutorPro
 
         // ⭐ 유튜브 URL 변환
         if (profile.getVideoUrl() != null && !profile.getVideoUrl().isBlank()) {
-            profile.setVideoUrl(
-                youtubeUtil.toEmbedUrl(profile.getVideoUrl())
-            );
+            try {
+                profile.setVideoUrl(
+                    youtubeUtil.toEmbedUrl(profile.getVideoUrl())
+                );
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid YouTube URL: {}", profile.getVideoUrl());
+                profile.setVideoUrl(null);
+            }
         } else {
             profile.setVideoUrl(null);
         }

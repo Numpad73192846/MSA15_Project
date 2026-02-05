@@ -26,7 +26,7 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">이름</label>
-                                    <input type="text" class="form-control bg-light" id="basicName" >
+                                    <input type="text" class="form-control bg-light" id="basicName" disabled>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">연락처</label>
@@ -252,9 +252,9 @@
                 // }
 
                 // 사용자 이름 자동 채우기 (읽기 전용)
-                if (me.userName) {
-                    document.getElementById('basicName').value = me.userName;
-                }
+                if (me.name) {
+                    document.getElementById('basicName').value = me.name;
+                }               
 
                 // 이전에 저장된 데이터 불러오기
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');

@@ -73,8 +73,7 @@
 		JOIN users u ON l.user_id = u.id
 		JOIN tutor_profile tp ON l.user_id = tp.user_id
 		WHERE b.user_id = #{userId}
-		  AND b.canceled_at IS NULL
-		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL)
+		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL OR b.canceled_at IS NOT NULL)
 		ORDER BY ta.start_at DESC
 	</select>
 

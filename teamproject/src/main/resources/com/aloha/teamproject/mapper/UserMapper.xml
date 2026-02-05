@@ -84,6 +84,7 @@
 			password = #{password},
 			name = #{name},
 			nickname = #{nickname},
+			phone = #{phone},
 			status = #{status},
 			updated_at = NOW()
 		WHERE no = #{no}

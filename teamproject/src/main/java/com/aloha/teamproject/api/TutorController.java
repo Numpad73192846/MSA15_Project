@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
@@ -147,35 +148,33 @@ public class TutorController {
         }
     }  
     
-    @PutMapping()
+    @PutMapping(
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public ApiResponse<Void> updateTutorProfile(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @ModelAttribute TutorProfile.Request request,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String phone,
-            @RequestParam(required = false) String password,
-            @RequestParam(required = false) String passwordConfirm
-    ) {
+            Authentication authentication,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "passwordConfirm", required = false) String passwordConfirm,
+            @RequestParam(value = "headline", required = false) String headline,
+            @RequestParam(value = "bio", required = false) String bio,
+            @RequestParam(value = "selfIntro", required = false) String selfIntro,
+            @RequestParam(value = "videoUrl", required = false) String videoUrl,
+            @RequestParam(value = "profileImg", required = false) MultipartFile profileImg
+    ) throws Exception {
+
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.error("인증 실패");
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
         try {
-            String userId = userDetails.getUsername();
+            String userId = authentication.getName();
 
             // 1️⃣ Users 정보 수정 (이름 / 전화 / 비밀번호)
-            Users user = userService.selectById(userId);
-            if (user != null) {
-                if (name != null && !name.isBlank()) {
-                    user.setName(name);
-                }
-                if (phone != null && !phone.isBlank()) {
-                    user.setPhone(phone);
-                }
-                if (password != null && !password.isBlank()) {
-                    if (passwordConfirm == null || !password.equals(passwordConfirm)) {
-                        return ApiResponse.error("비밀번호가 일치하지 않습니다.");
-                    }
-                    user.setPassword(password);
-                }
-                userService.update(user);
-            }
+            userService.updateMyInfo(userId, name, phone, password, passwordConfirm);
 
             // 2️⃣ TutorProfile 정보 수정
             TutorProfile profile = tutorProfileService.selectByUserId(userId);
@@ -184,34 +183,25 @@ public class TutorController {
                 profile.setUserId(userId);
             }
 
-            profile.setHeadline(request.getHeadline());
-            profile.setBio(request.getBio());
-            profile.setSelfIntro(request.getSelfIntro());
-            profile.setVideoUrl(request.getVideoUrl());
-            
-            // 계좌 정보
-            if (request.getBankName() != null && !request.getBankName().isBlank()) {
-                profile.setBankName(request.getBankName());
-            }
-            if (request.getAccountNumber() != null && !request.getAccountNumber().isBlank()) {
-                profile.setAccountNumber(request.getAccountNumber());
-            }
-            if (request.getAccountHolder() != null && !request.getAccountHolder().isBlank()) {
-                profile.setAccountHolder(request.getAccountHolder());
-            }
+            profile.setHeadline(headline);
+            profile.setBio(bio);
+            profile.setSelfIntro(selfIntro);
+            profile.setVideoUrl(videoUrl);
 
             // 프로필 이미지
-            if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
-                String imgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
+            if (profileImg != null && !profileImg.isEmpty()) {
+                String imgPath = tutorProfileService.saveProfileImg(profileImg);
                 profile.setProfileImg(imgPath);
+                log.info("프로필 이미지 저장 완료: {}", imgPath);
             }
 
             tutorProfileService.upsertProfile(profile);
+            log.info("TutorProfile 업데이트 완료");
 
-            return ApiResponse.ok(SuccessCode.CREATED);
+            return ApiResponse.ok(SuccessCode.UPDATED);
         } catch (Exception e) {
-            log.error("튜터 프로필 저장 실패", e);
-            return ApiResponse.error("튜터 프로필 저장 실패");
+            log.error("프로필 수정 실패", e);
+            return ApiResponse.error("프로필 수정 실패: " + e.getMessage());
         }
     }
 
