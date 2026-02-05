@@ -1,0 +1,267 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+     layout:decorate="~{layouts/main_layout}">
+
+    <div layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="py-5 position-relative overflow-hidden" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 280px;">
+            <div class="container py-4 position-relative" style="z-index: 1;">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bold mb-3">전세계 사용언어 TOP 5</h1>
+                    <p class="lead mb-0 opacity-75">다양한 분야의 전문가를 만나보세요</p>
+                    <p class="mb-0 mt-2 opacity-75 small">튜터링고에서 다양한 국적의 언어를 학습하세요!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Language Rankings -->
+        <section class="py-5 bg-white">
+            <div class="container">
+                <!-- 1위 - 특별 강조 -->
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden position-relative" style="min-height: 350px;">
+                            <!-- 배경 이미지 -->
+                            <div class="position-absolute w-100 h-100" style="top: 0; left: 0; z-index: 0;">
+                                <img src="/img/introflag/us.jpg" alt="영어 배경" 
+                                     style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+                                <div class="position-absolute w-100 h-100" 
+                                     style="top: 0; left: 0; background: linear-gradient(135deg, rgba(255, 216, 155, 0.5) 0%, rgba(25, 84, 123, 0.6) 100%);"></div>
+                            </div>
+                            
+                            <!-- 텍스트 콘텐츠 -->
+                            <div class="card-body p-5 position-relative" style="z-index: 1;">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <span class="badge bg-warning text-dark fs-3 px-4 py-2 rounded-pill me-3">1위</span>
+                                            <img src="/img/introflag/us.jpg" alt="영어" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 1px solid white;">
+                                        </div>
+                                        <h2 class="fw-bolder text-dark mb-3" style="font-size: 2.5rem;">영어 (English)</h2>
+                                        <p class="text-dark mb-3 fs-5">세계 공용어의 절대 강자, 국제 비즈니스의 필수 언어</p>
+                                        <p class="text-dark opacity-75 mb-3">전 세계 약 15억 명 이상이 사용하며, 약 100개국 이상에서 공용어로 지정된 영어는 국제 비즈니스, 학술 연구, 여행의 핵심 언어입니다. 
+                                        원어민 튜터와 함께 회화, 비즈니스 영어, TOEIC 등 다양한 학습 목표를 달성하세요.</p>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="badge bg-dark text-white px-3 py-2">Hollywood</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">Netflix</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">Silicon Valley</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">Harry Potter</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">Marvel</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+                                        <div class="display-1 text-dark opacity-75 fw-bold">15억+</div>
+                                        <p class="text-dark small mb-0">전체 사용자 수</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2~5위 카드 -->
+                <div class="row g-4 mb-5">
+                    <!-- 2위 - 중국어 -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift position-relative overflow-hidden" style="min-height: 300px;">
+                            <!-- 배경 이미지 -->
+                            <div class="position-absolute w-100 h-100" style="top: 0; left: 0; z-index: 0;">
+                                <img src="/img/introflag/cn.jpg" alt="중국어 배경" 
+                                     style="width: 100%; height: 100%; object-fit: cover; opacity: 0.45;">
+                                <div class="position-absolute w-100 h-100" 
+                                     style="top: 0; left: 0; background: linear-gradient(135deg, rgba(220, 38, 38, 0.45) 0%, rgba(127, 29, 29, 0.55) 100%);"></div>
+                            </div>
+                            
+                            <!-- 텍스트 콘텐츠 -->
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-danger fs-5 px-3 py-2 rounded-pill">2위</span>
+                                    <img src="/img/introflag/cn.jpg" alt="중국어" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 1px solid white;">
+                                </div>
+                                <h3 class="fw-bolder mb-3 text-dark" style="font-size: 1.8rem;">중국어 (Mandarin)</h3>
+                                <p class="text-dark mb-3">세계 최대 시장과 소통하는 열쇠</p>
+                                <p class="small text-dark opacity-75 mb-3">약 11~12억 명이 사용하는 중국어는 모국어 사용자 수 1위 언어입니다. 
+                                거대한 중국 시장 진출을 위한 비즈니스 필수 언어로, HSK 시험부터 실용 회화까지 체계적으로 학습하세요.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="badge bg-dark text-white px-3 py-2">만리장성</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">중국요리</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">무협소설</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">TikTok</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3위 - 힌디어 -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift position-relative overflow-hidden" style="min-height: 300px;">
+                            <!-- 배경 이미지 -->
+                            <div class="position-absolute w-100 h-100" style="top: 0; left: 0; z-index: 0;">
+                                <img src="/img/introflag/id.jpg" alt="힌디어 배경" 
+                                     style="width: 100%; height: 100%; object-fit: cover; opacity: 0.45;">
+                                <div class="position-absolute w-100 h-100" 
+                                     style="top: 0; left: 0; background: linear-gradient(135deg, rgba(234, 179, 8, 0.45) 0%, rgba(161, 98, 7, 0.55) 100%);"></div>
+                            </div>
+                            
+                            <!-- 텍스트 콘텐츠 -->
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-warning text-dark fs-5 px-3 py-2 rounded-pill">3위</span>
+                                    <img src="/img/introflag/id.jpg" alt="힌디어" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 1px solid white;">
+                                </div>
+                                <h3 class="fw-bolder mb-3 text-dark" style="font-size: 1.8rem;">힌디어 (Hindi)</h3>
+                                <p class="text-dark mb-3">떠오르는 IT 강국, 인도의 주요 언어</p>
+                                <p class="small text-dark opacity-75 mb-3">약 6억 명 이상이 사용하는 힌디어는 인도의 공용어입니다. 
+                                세계 IT 산업의 중심지이자 거대 소비 시장으로 성장 중인 인도와 소통하기 위한 필수 언어입니다.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="badge bg-dark text-white px-3 py-2">볼리우드</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">요가</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">카레</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">크리켓</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4위 - 스페인어 -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift position-relative overflow-hidden" style="min-height: 300px;">
+                            <!-- 배경 이미지 -->
+                            <div class="position-absolute w-100 h-100" style="top: 0; left: 0; z-index: 0;">
+                                <img src="/img/introflag/sp.jpg" alt="스페인어 배경" 
+                                     style="width: 100%; height: 100%; object-fit: cover; opacity: 0.45;">
+                                <div class="position-absolute w-100 h-100" 
+                                     style="top: 0; left: 0; background: linear-gradient(135deg, rgba(239, 68, 68, 0.45) 0%, rgba(220, 38, 38, 0.55) 100%);"></div>
+                            </div>
+                            
+                            <!-- 텍스트 콘텐츠 -->
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-success fs-5 px-3 py-2 rounded-pill">4위</span>
+                                    <img src="/img/introflag/sp.jpg" alt="스페인어" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 1px solid white;">
+                                </div>
+                                <h3 class="fw-bolder mb-3 text-dark" style="font-size: 1.8rem;">스페인어 (Spanish)</h3>
+                                <p class="text-dark mb-3">정열의 언어, 남미 전역을 아우르는 언어</p>
+                                <p class="small text-dark opacity-75 mb-3">약 5억 4천만 명 이상이 사용하며, 스페인과 남미 20개국에서 공용어로 사용됩니다. 
+                                로망스 언어의 대표로 비즈니스와 여행 모두에서 유용한 언어입니다.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="badge bg-dark text-white px-3 py-2">플라멩코</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">축구</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">라틴음악</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">타파스</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5위 - 프랑스어 -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 rounded-4 hover-lift position-relative overflow-hidden" style="min-height: 300px;">
+                            <!-- 배경 이미지 -->
+                            <div class="position-absolute w-100 h-100" style="top: 0; left: 0; z-index: 0;">
+                                <img src="/img/introflag/fr.jpg" alt="프랑스어 배경" 
+                                     style="width: 100%; height: 100%; object-fit: cover; opacity: 0.45;">
+                                <div class="position-absolute w-100 h-100" 
+                                     style="top: 0; left: 0; background: linear-gradient(135deg, rgba(59, 130, 246, 0.45) 0%, rgba(29, 78, 216, 0.55) 100%);"></div>
+                            </div>
+                            
+                            <!-- 텍스트 콘텐츠 -->
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-info fs-5 px-3 py-2 rounded-pill">5위</span>
+                                    <img src="/img/introflag/fr.jpg" alt="프랑스어" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 1px solid white;">
+                                </div>
+                                <h3 class="fw-bolder mb-3 text-dark" style="font-size: 1.8rem;">프랑스어 (French)</h3>
+                                <p class="text-dark mb-3">우아함의 상징, 국제기구의 공식 언어</p>
+                                <p class="small text-dark opacity-75 mb-3">약 2억 7천만 명 이상이 사용하며, 프랑스를 비롯한 29개국에서 공용어로 사용됩니다. 
+                                유엔, EU 등 국제기구의 공식 언어로 외교와 문화 분야에서 중요한 역할을 합니다.</p>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="badge bg-dark text-white px-3 py-2">패션</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">에펠탑</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">향수</span>
+                                    <span class="badge bg-dark text-white px-3 py-2">미식</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 급상승 중인 언어 - 한국어 특별 섹션 -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-10">
+                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden position-relative" style="min-height: 350px;">
+                            <!-- 배경 이미지 -->
+                            <div class="position-absolute w-100 h-100" style="top: 0; left: 0; z-index: 0;">
+                                <img src="/img/introflag/kr.jpg" alt="한국어 배경" 
+                                     style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+                                <div class="position-absolute w-100 h-100" 
+                                     style="top: 0; left: 0; background: linear-gradient(135deg, rgba(234, 102, 113, 0.5) 0%, rgba(75, 98, 162, 0.6) 100%);"></div>
+                            </div>
+                            
+                            <!-- 텍스트 콘텐츠 -->
+                            <div class="card-body p-5 position-relative" style="z-index: 1;">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <span class="badge bg-light text-primary fs-5 px-4 py-2 rounded-pill me-3">급상승 중</span>
+                                            <img src="/img/introflag/kr.jpg" alt="한국어" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 1px solid white;">
+                                        </div>
+                                        <h3 class="fw-bolder text-dark mb-3" style="font-size: 2rem;">한국어 (Korean)</h3>
+                                        <p class="text-dark mb-3 fs-5">K-문화와 함께 전 세계로 뻗어나가는 언어</p>
+                                        <p class="text-dark opacity-75 mb-3">약 7,700~8,000만 명이 사용하는 한국어는 세계 언어 사용 순위 약 12~15위권에 위치합니다. 
+                                        하지만 K-POP, K-드라마, K-무비 등 한류 열풍과 함께 학습 수요가 폭발적으로 증가하고 있는 주목받는 언어입니다.</p>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="badge bg-dark text-white px-3 py-2">BTS</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">블랙핑크</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">오징어게임</span>
+                                            <span class="badge bg-dark text-white px-3 py-2">기생충</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-center">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 참고 정보 -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="card border-0 bg-light rounded-4">
+                            <div class="card-body p-4 text-center">
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    위 순위는 2025-2026년 기준 에스놀로그(Ethnologue) 자료를 참고하여 모국어 및 제2외국어 사용자를 모두 포함한 전체 사용자 수를 기준으로 작성되었습니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="container text-center text-white py-4">
+                <h3 class="fw-bold mb-3">지금 바로 시작하세요!</h3>
+                <p class="lead mb-4">전문 튜터와 함께 원하는 언어를 마스터하세요</p>
+                <button class="btn btn-light btn-lg px-5 rounded-pill shadow" onclick="location.href='/tutors'">
+                    튜터 찾기
+                </button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+    }
+</style>

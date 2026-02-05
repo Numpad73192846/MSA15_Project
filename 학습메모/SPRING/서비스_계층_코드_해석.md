@@ -1,0 +1,81 @@
+```java
+@Service
+// Service: 스프링에게 이 클래스가 서비스 꼐층임을 알림
+// 예: 게시판 비즈니스 로직 담당
+@RequiredArgsConstructor
+// final이 붙은 필드를 매개변수로 받는 생성자를 자동으로 생성
+// 의존성 주입(Dependency Injection)을 편리하게 해줌
+@slf4j
+@Transactional(readOnly = true)
+// 트랜재개션 자동설정, 이 클래스의 기본설정은 읽기전용, DB에서 수정은 안함
+public class BoardService {
+// public: 누구나 접근가능한, class: 클래스선언, BoardService: 클래스이름
+    private final BoardRepository boardRepository;
+    // private: 이 클래스는, final: 변경불가, BoardRepository: BoardRepository 타입,
+    // boardRepository: 변수이름
+
+    /** 선언, 생성, 할당
+     * 선언: private final BoardRepository boardRepository;
+     * 할당: boardRepository = new BoardRepository()
+    */
+    @Transactional
+    // 이 메서드 실행중 에러가 발생한다면 -> 모든 DB작업 롤백
+    public BoardResponseDto createBoard(BoardRequestDto requestDto) {
+    // 모든곳에서 접근가능한, BoardResponseDto 반환타입 게시글 생성 후 응답 데이터, createBoard: 메서드 이름, BoardRequestDto requestDto: 게시글 생성 메서드, 요청 데이터를 받아서 응답 데이터 반환
+        Board board = Board.builder()
+        // Board.builder(): 빌더 패턴으로 Board 객체 생성
+        // 빌더패턴 = 앞에 this가 생략되어있다.
+            .title(requestDto.getTitle())
+            .content(requestDto.getContent())
+            .author(requestDto.getAuthor())
+            .build();
+        // 전체 해석: 사용자가 보낸 제목, 내용, 작성자 정보로 Board 객체 생성
+        
+        Board savedBoard = boardRepository.save(board);
+        // boardRepository의 save 메서드가 실행된 후, 그 결과값(객체)을 savedBoard 변수에 할당.
+         
+        log.info("게시글 생성완료 - ID: {}, 작성자: {}", savedBoard.getId(), savedBoard.getAuthor());
+        // 로그 정보 출력: 게시글 생성 완료 하고 ID, 작성자 순서대로 getId, getAuthor로 ID로 가지고옴 
+        return BoardResponseDto.from(savedBoard);
+        // BoardResponseDto.from(): savedBoard 객체를 받아서 BoardResponseDto 객체로 변환 후 반환
+    }
+
+    public BoardResponseDto getBoardById(Long id) {
+    // 전체 해석: ID로 게시글을 조회하는 메서드
+        Board board = boardRepository.findById(id)
+        // boardRepository의 findById 메서드를 사용하여 id로 게시글 조회
+            .orElseThrow(() -> new AppException(ErrorCode.BOARD_NOT_FOUND));
+        // .orElseThrow(): 조회된 게시글이 없으면 예외로 던짐
+        // () -> new AppException(ErrorCode.BOARD_NOT_FOUND): 람다식으로 AppException 예외 객체 생성
+        // 게시글 없으면 "게시글을 찾을 수 없습니다."라는 에러코드 던짐
+        return BoardResponseDto.from(board);
+        // 
+    }
+
+    @Transactional
+    public void deleteBoard(Long id) {
+        if (!boardRepository.existsById(id)) {
+            throw new AppException(ErrorCode.BOARD_NOT_FOUND);
+        }
+        boardRepository.deleteById(id);
+        log.info("게시글 삭제 완료 - ID: {}", id);
+    }
+
+    public Page<BoardResponseDto> getBoardList(Pageable pageable) {
+
+        return boardRrepository.findAll(pageable)
+            .map(BoardResponseDto::from);
+    }
+
+    @Transactional
+    public BoardResponseDto increaseViewCount(Long id) {
+        Board board = boardRepository.findById(id)
+        .orElseThrow(() -> new AppException(ErrorCode.BOARD_NOT_FOUND));
+
+        board.increaseViewCount();
+
+        return BoardResponseDto.from(board);
+    }
+}
+
+
