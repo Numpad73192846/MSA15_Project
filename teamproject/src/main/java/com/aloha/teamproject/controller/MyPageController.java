@@ -4,6 +4,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +32,15 @@ public class MyPageController {
     public String tutorProfileEdit() {
         log.info("[GET] - /tutor/profile-edit");
         return "tutor/profile-edit";
+    }
+
+    @GetMapping("/tutor/profile-edit/partial/{section}")
+    public String tutorProfileEditPartial(@PathVariable("section") String section) {
+        String safe = switch (section) {
+            case "basic", "profile", "account", "documents", "security" -> section;
+            default -> "basic";
+        };
+        return "tutor/partials/profile-edit-" + safe;
     }
 
     @GetMapping({"/member/mypage", "/mypage"})

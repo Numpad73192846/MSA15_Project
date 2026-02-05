@@ -21,6 +21,85 @@
   --r-sm: 10px;
 }
 
+/* calendar toolbar (prev/next + range) */
+.tc-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:10px 12px;
+  box-shadow:0 1px 0 rgba(15,23,42,0.04);
+}
+.tc-iconbtn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  cursor:pointer;
+  transition:all .12s ease;
+}
+.tc-iconbtn svg{ width:18px; height:18px; stroke:#111827; stroke-width:2.2; fill:none; }
+.tc-iconbtn i{ font-size:18px; color:#111827; line-height:1; }
+.tc-iconbtn:hover{ background:#f8fafc; border-color:#dbe1ea; }
+.tc-iconbtn:active{ transform:translateY(1px); }
+.tc-iconbtn.danger{
+  border-color: rgba(239,68,68,0.35);
+  color: var(--c-danger);
+}
+.tc-iconbtn.danger i{
+  color: var(--c-danger);
+}
+.tc-iconbtn.danger:hover{
+  background: var(--c-danger-soft);
+  border-color: var(--c-danger);
+}
+.tc-range{
+  font-weight:800;
+  color:#2563eb;
+  letter-spacing:-0.2px;
+  font-size:.92rem;
+  padding:6px 10px;
+  border-radius:999px;
+  background: rgba(37,99,235,0.10);
+  white-space:nowrap;
+}
+
+/* base time range editor (register3-style card) */
+#baseTimeRangeEditor .border.rounded{
+  border:1px solid #e5e7eb !important;
+  border-radius:16px !important;
+  background:#fff;
+  padding:16px !important;
+  margin-bottom:12px !important;
+}
+#baseTimeRangeEditor .fw-semibold{
+  font-weight:800 !important;
+  color:#0f172a;
+}
+#baseTimeRangeEditor .d-flex.align-items-center.gap-2{
+  gap:10px !important;
+}
+#baseTimeRangeEditor input[type="time"].form-control-sm{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  height:34px;
+}
+#baseTimeRangeEditor .btn-outline-primary.btn-sm{
+  border-radius:999px;
+  padding:6px 10px;
+}
+#baseTimeRangeEditor .btn-outline-danger.btn-sm{
+  border-radius:999px;
+  padding:6px 10px;
+}
+
 /* wrapper = 카드처럼 */
 .weekly_calendar_wrap{
   background: var(--c-bg);
@@ -125,8 +204,8 @@
 
 /* hover는 담백하게 */
 .sch_time:not(.off):not(.booked) a:hover{
-  background: var(--c-soft);
-  border-color: #d8dde6;
+  /* background-color: var(--c-soft); */
+  border-color: #2563eb;
 }
 
 /* disabled */

@@ -15,94 +15,12 @@
             box-shadow: 0 6px 18px rgba(16,24,40,0.06);
             }
 
-            #weekRangeLabel{
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: rgba(47,111,237,0.10);
-            color: #2f6fed !important;
-            }
-
             #btnApplyWeekTo9Weeks{
             border-radius: 999px;
             padding-left: 14px;
             padding-right: 14px;
             }
 
-            /* 요일 카드(기본 시간대 박스) */
-            #baseTimeRangeEditor .border.rounded{
-            border:1px solid #e5e7eb !important;
-            border-radius:16px !important;
-            background:#fff;
-            padding:16px !important;
-            margin-bottom:12px !important;
-            }
-
-            /* 요일 헤더 */
-            #baseTimeRangeEditor .fw-semibold{
-            font-weight:800 !important;
-            color:#0f172a;
-            }
-
-            /* 시간대 row 간격 정돈 */
-            #baseTimeRangeEditor .d-flex.align-items-center.gap-2{
-            gap:10px !important;
-            }
-
-            /* time input을 관리자스럽게 */
-            #baseTimeRangeEditor input[type="time"].form-control-sm{
-            border:1px solid #e5e7eb;
-            border-radius:12px;
-            height:34px;
-            }
-
-            /* “시간대 추가” 버튼 pill */
-            #baseTimeRangeEditor .btn-outline-primary.btn-sm{
-            border-radius:999px;
-            padding:6px 10px;
-            }
-
-            /* 삭제 버튼: 빨강 외곽은 유지하되 투박함 줄이기 */
-            #baseTimeRangeEditor .btn-outline-danger.btn-sm{
-            border-radius:999px;
-            padding:6px 10px;
-            }
-
-
-            .tc-toolbar{
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:10px;
-            padding:10px 12px;
-            border:1px solid #e5e7eb;
-            border-radius:14px;
-            background:#fff;
-            }
-
-            .tc-iconbtn{
-            width:34px; height:34px;
-            display:grid; place-items:center;
-            border:1px solid #e5e7eb;
-            background:#fff;
-            border-radius:999px;
-            color:#0f172a;
-            transition: background-color .12s ease, border-color .12s ease;
-            }
-
-            .tc-iconbtn:hover{
-            background:#f8fafc;
-            border-color:#d8dde6;
-            }
-
-            .tc-range{
-            font-weight:800;
-            font-size:.92rem;
-            color:#2563eb;
-            padding:6px 10px;
-            border-radius:999px;
-            background: rgba(37,99,235,0.10);
-            white-space:nowrap;
-            }
 
         </style>
      
@@ -148,7 +66,6 @@
                                             <i class="bi bi-chevron-right"></i>
                                         </button>
                                     </div>
-                                    <div class="fw-semibold text-primary" id="weekRangeLabel">2026.02.03 ~ 2026.02.09</div>
                                     <div class="ms-auto">
                                         <button type="button" class="btn btn-primary btn-sm" id="btnApplyWeekTo9Weeks">
                                             9주 자동 적용
@@ -156,8 +73,8 @@
                                     </div>
                                 </div>
 
-                                <div class="weekly_calendar_wrap shadow-sm border rounded overflow-hidden" id="tutorScheduleCalendar" style="background: #fff;">
-                                    <div class="weekly_head" style="background: linear-gradient(to bottom, #f8f9fa, #e9ecef);">
+                                <div class="weekly_calendar_wrap border rounded overflow-hidden" id="tutorScheduleCalendar" style="background: #fff;">
+                                    <div class="weekly_head">
                                         <ul class="dayHead flex" id="calendarDayHead">
                                             <li class="flex"><div class="head_in"><p class="dayTit fw-bold">일</p><p class="dayDate en">02.02</p></div></li>
                                             <li class="flex"><div class="head_in"><p class="dayTit fw-bold">월</p><p class="dayDate en">02.03</p></div></li>
@@ -282,13 +199,13 @@
             const indexToDayEnum = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
             const DEFAULT_BASE_TIME_RANGES = {
-                0: [],
+                0: [{ start: '09:00', end: '18:00' }],
                 1: [{ start: '09:00', end: '18:00' }],
                 2: [{ start: '09:00', end: '18:00' }],
                 3: [{ start: '09:00', end: '18:00' }],
                 4: [{ start: '09:00', end: '18:00' }],
                 5: [{ start: '09:00', end: '18:00' }],
-                6: []
+                6: [{ start: '09:00', end: '18:00' }]
             };
 
             function formatLocalDateTime(date) {
@@ -334,7 +251,7 @@
                     if (!response.ok) throw new Error('Failed to load');
                     const result = await response.json();
                     if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-                        const ranges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+                        const ranges = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
                         result.data.forEach(item => {
                             const dayIdx = dayEnumToIndex[item.dayOfWeek];
                             if (dayIdx !== undefined) {

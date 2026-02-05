@@ -2,7 +2,9 @@
     layout:decorate="~{layouts/main_layout}">
 
     <th:block layout:fragment="extra-css">
+        <link rel="stylesheet" href="/css/tutor-calendar.css">
         <link rel="stylesheet" href="/css/tutor-register-admin.css">       
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     </th:block>
 
     <div layout:fragment="content">
@@ -22,8 +24,8 @@
                                 <!-- 프로필 이미지 -->
                                 <div id="profileImg" class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto"></div>
                             </div>
-                            <h3 class="h5 fw-bold mb-1" id="tutorName">김민지 튜터</h3>
-                            <p class="text-muted small mb-3" id="tutorEmail">minji.kim@example.com</p>
+                            <h3 class="h5 fw-bold mb-1" id="tutorName"></h3>
+                            <p class="text-muted small mb-3" id="tutorEmail"></p>
 
                             <div id="fieldContainer" class="d-flex flex-wrap justify-content-center gap-2 mb-3">
                                 <span class="badge bg-primary">영어</span>
@@ -53,15 +55,11 @@
                         <div class="card-body gap-4">
                             <div>
                                 <h4 class="h6 fw-bold mb-2">한 줄 소개</h4>
-                                <p class="small text-muted mb-0" id="tutorHeadline">
-                                    튜터의 한 줄 소개입니다. 
-                                </p>
+                                <p class="small text-muted mb-0" id="tutorHeadline"></p>
                             </div>
                             <div>
                                 <h4 class="h6 fw-bold mb-2">소개</h4>
-                                <p class="small text-muted mb-0" id="tutorBio">
-                                    10년 경력의 영어 전문 튜터입니다. 학생 개개인의 수준에 맞춘 맞춤형 수업을 제공합니다.
-                                </p>
+                                <p class="small text-muted mb-0" id="tutorBio"></p>
                             </div>
                         </div>
                     </div>
@@ -77,7 +75,7 @@
                                     <div class="stat-icon mb-2">
                                         <img src="/img/tutors/class.svg" alt="총 수업" style="width:42px;height:42px;">
                                     </div>
-                                    <div class="stat-value fw-bold text-primary">127</div>
+                                    <div class="stat-value fw-bold text-primary" id="statTotalLessons">0</div>
                                     <div class="stat-label small text-muted">총 수업</div>
                                 </div>
                             </div>
@@ -88,7 +86,7 @@
                                     <div class="stat-icon mb-2">
                                         <img src="/img/tutors/money.svg" alt="총 수익" style="width:42px;height:42px;">
                                     </div>
-                                    <div class="stat-value fw-bold text-success">4,500,000</div>
+                                    <div class="stat-value fw-bold text-success" id="statTotalEarnings">0</div>
                                     <div class="stat-label small text-muted">총 수익 (원)</div>
                                 </div>
                             </div>
@@ -99,19 +97,8 @@
                                     <div class="stat-icon mb-2">
                                         <img src="/img/tutors/student.svg" alt="활성 학생" style="width:42px;height:42px;">
                                     </div>
-                                    <div class="stat-value fw-bold text-info">42</div>
+                                    <div class="stat-value fw-bold text-info" id="statActiveStudents">0</div>
                                     <div class="stat-label small text-muted">활성 학생</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="stat-card card shadow-sm h-100">
-                                <div class="card-body text-center">
-                                    <div class="stat-icon mb-2">
-                                        <img src="/img/tutors/time.svg" alt="시간당 요금" style="width:42px;height:42px;">
-                                    </div>
-                                    <div class="stat-value fw-bold text-warning">35,000</div>
-                                    <div class="stat-label small text-muted">시간당 (원)</div>
                                 </div>
                             </div>
                         </div>
@@ -121,7 +108,7 @@
                     <ul class="nav nav-tabs mb-3" role="tablist">
 
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#scheduleTab" type="button">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#scheduleTab" type="button" aria-selected="true">
                                 일정
                             </button>
                         </li>
@@ -149,14 +136,14 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <strong>스케줄 관리 방식 선택</strong>
-                                        <p class="mb-0 small text-muted mt-1">팀 리뷰를 위해 2가지 방식을 모두 구현했습니다</p>
+                                        <p class="mb-0 small text-muted mt-1">A는 이번 주만 수정, B는 전체 스케줄 수정</p>
                                     </div>
                                     <div>
                                         <button class="btn btn-sm btn-outline-primary me-2" onclick="toggleScheduleEditor()">
-                                            방식 A: 여기서 편집
+                                            방식 A: 이번 주 편집
                                         </button>
                                         <a href="/tutor/schedule-edit" class="btn btn-sm btn-outline-success">
-                                            방식 B: 별도 페이지에서 편집
+                                            방식 B: 전체 스케줄 편집
                                         </a>
                                     </div>
                                 </div>
@@ -173,17 +160,15 @@
                                     </div>
 
                                     <!-- 주간 네비게이션 -->
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnPrevWeek">
-                                                <i class="bi bi-chevron-left"></i> 이전
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                        <div class="tc-toolbar">
+                                            <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                                                <i class="bi bi-chevron-left"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnNextWeek">
-                                                다음 <i class="bi bi-chevron-right"></i>
+                                            <div class="tc-range" id="weekRangeLabel">2026.02.02 ~ 02.08</div>
+                                            <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                                                <i class="bi bi-chevron-right"></i>
                                             </button>
-                                        </div>
-                                        <div>
-                                            <span class="fw-semibold" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
                                         </div>
                                     </div>
 
@@ -486,12 +471,14 @@
                             // 모달 폼에 프로필 이미지 바인딩
                             const profileImgPreview = document.getElementById('profileImgPreview');
                             const profileImgCard = document.getElementById('profileImgCard');
-                            if (profile.profileImg) {
-                                profileImgPreview.src = profile.profileImg;
-                                profileImgCard.style.display = 'block';
-                            } else {
-                                profileImgCard.style.display = 'none';
-                            }                           
+                            if (profileImgPreview && profileImgCard) {
+                                if (profile.profileImg) {
+                                    profileImgPreview.src = profile.profileImg;
+                                    profileImgCard.style.display = 'block';
+                                } else {
+                                    profileImgCard.style.display = 'none';
+                                }
+                            }
 
                             // 유튜브 URL
                             const videoWrap = document.getElementById('videoWrap');
@@ -514,15 +501,12 @@
                         if (mypage.tutorStats) {
                             const stats = mypage.tutorStats;
                             // 총 수업 수
-                            document.querySelectorAll('.stat-value')[0].textContent = stats.totalLessons || 0;
+                            document.getElementById('statTotalLessons').textContent = stats.totalLessons || 0;
                             // 총 수익
                             const earnings = stats.totalEarnings || 0;
-                            document.querySelectorAll('.stat-value')[1].textContent = new Intl.NumberFormat('ko-KR').format(earnings);
+                            document.getElementById('statTotalEarnings').textContent = new Intl.NumberFormat('ko-KR').format(earnings);
                             // 활성 학생 수
-                            document.querySelectorAll('.stat-value')[2].textContent = stats.activeStudents || 0;
-                            // 시간당 요금
-                            const hourly = stats.hourlyRate || 0;
-                            document.querySelectorAll('.stat-value')[3].textContent = new Intl.NumberFormat('ko-KR').format(hourly);
+                            document.getElementById('statActiveStudents').textContent = stats.activeStudents || 0;
                             
                             // 평점 및 리뷰 수 (tutorStats에서 전체 통계 사용)
                             const ratingDiv = document.querySelector('.rating');
@@ -681,7 +665,7 @@
             });
 
             // 프로필 수정 폼 제출 처리
-            document.getElementById('tutorProfileEditForm').addEventListener('submit', async e => {
+            document.getElementById('tutorProfileEditForm')?.addEventListener('submit', async e => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
                 

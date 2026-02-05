@@ -1,14 +1,17 @@
 package com.aloha.teamproject.api;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -19,14 +22,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.FilenameUtils;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.dto.TutorDocument;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
 import com.aloha.teamproject.dto.UserAuth;
-import com.aloha.teamproject.dto.Users;
+import com.aloha.teamproject.service.TutorDocumentService;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
@@ -44,10 +49,13 @@ import lombok.extern.slf4j.Slf4j;
 public class TutorController {
 
     private final TutorProfileService tutorProfileService;
+    private final TutorDocumentService tutorDocumentService;
     private final TutorFieldService tutorFieldService;
     private final TutorMyPageService tutorMyPageService;
     private final UserService userService;
     private final TutorListService tutorListService;
+
+    private static final String DOC_UPLOAD_DIR = "uploads/tutors/documents/";
 
     @GetMapping("/me")
     public ApiResponse<TutorMyPage> me(Authentication authentication) {
@@ -98,10 +106,66 @@ public class TutorController {
         return ApiResponse.error("시간대 관리는 /api/tutors/me/time-ranges를 사용해주세요.");
     }
 
-    @PostMapping("/documents")
-    public ApiResponse<Void> documents(@RequestBody String entity) {
-        // TODO: 튜터 문서 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
+    @GetMapping("/documents")
+    public ApiResponse<List<TutorDocument>> myDocuments(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            List<TutorDocument> docs = tutorDocumentService.selectByUserId(authentication.getName());
+            return ApiResponse.ok(docs);
+        } catch (Exception e) {
+            log.error("/api/tutors/documents 조회 실패", e);
+            return ApiResponse.error("서류 목록을 가져오지 못했습니다.");
+        }
+    }
+
+    @PostMapping(
+        value = "/documents",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ApiResponse<Void> uploadDocument(
+        Authentication authentication,
+        @RequestParam("docType") String docType,
+        @RequestParam("file") MultipartFile file
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+        if (file == null || file.isEmpty()) {
+            return ApiResponse.error("업로드할 파일이 없습니다.");
+        }
+
+        Set<String> allowed = Set.of("EDUCATION", "DEGREE", "CERTIFICATE");
+        if (!allowed.contains(docType)) {
+            return ApiResponse.error("허용되지 않는 서류 유형입니다.");
+        }
+
+        try {
+            String originalName = file.getOriginalFilename();
+            String ext = FilenameUtils.getExtension(originalName);
+            String storeName = UUID.randomUUID() + (ext != null && !ext.isBlank() ? "." + ext : "");
+            Path path = Paths.get(DOC_UPLOAD_DIR + storeName);
+            Files.createDirectories(path.getParent());
+            Files.write(path, file.getBytes());
+
+            TutorDocument doc = TutorDocument.builder()
+                .userId(authentication.getName())
+                .docType(docType)
+                .fileSize((int) file.getSize())
+                .originalName(originalName)
+                .storeName(storeName)
+                .filePath("/uploads/tutors/documents/" + storeName)
+                .contentType(file.getContentType())
+                .build();
+
+            tutorDocumentService.insert(doc);
+            return ApiResponse.ok(SuccessCode.CREATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/documents 업로드 실패", e);
+            return ApiResponse.error("서류 업로드에 실패했습니다.");
+        }
     }
 
     @PostMapping(
@@ -161,6 +225,9 @@ public class TutorController {
             @RequestParam(value = "bio", required = false) String bio,
             @RequestParam(value = "selfIntro", required = false) String selfIntro,
             @RequestParam(value = "videoUrl", required = false) String videoUrl,
+            @RequestParam(value = "bankName", required = false) String bankName,
+            @RequestParam(value = "accountNumber", required = false) String accountNumber,
+            @RequestParam(value = "accountHolder", required = false) String accountHolder,
             @RequestParam(value = "profileImg", required = false) MultipartFile profileImg
     ) throws Exception {
 
@@ -187,6 +254,9 @@ public class TutorController {
             profile.setBio(bio);
             profile.setSelfIntro(selfIntro);
             profile.setVideoUrl(videoUrl);
+            profile.setBankName(bankName);
+            profile.setAccountNumber(accountNumber);
+            profile.setAccountHolder(accountHolder);
 
             // 프로필 이미지
             if (profileImg != null && !profileImg.isEmpty()) {

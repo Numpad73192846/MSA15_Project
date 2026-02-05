@@ -9,6 +9,7 @@
     </th:block>
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" href="/css/tutor-calendar.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     </th:block>
 </head>
 
@@ -58,18 +59,15 @@
                     <div class="card shadow-sm">
                         <div class="card-body p-4">
                             <!-- 주간 네비게이션 -->
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <button type="button" class="btn btn-outline-primary" id="btnPrevWeek">
-                                        <i class="bi bi-chevron-left"></i> 이전 주
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                                <div class="tc-toolbar">
+                                    <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
+                                        <i class="bi bi-chevron-left"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-primary" id="btnNextWeek">
-                                        다음 주 <i class="bi bi-chevron-right"></i>
+                                    <div class="tc-range" id="weekRangeLabel">2026.02.02 ~ 02.08</div>
+                                    <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
+                                        <i class="bi bi-chevron-right"></i>
                                     </button>
-                                </div>
-                                <div>
-                                    <span class="fw-bold fs-5" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
-                                    <span class="badge bg-secondary ms-2" id="weekYearLabel">2026년</span>
                                 </div>
                             </div>
 
@@ -159,7 +157,7 @@
                     const result = await response.json();
                     
                     if (result.success && result.data) {
-                        const ranges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
+                        const ranges = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
                         result.data.forEach(item => {
                             const dayIdx = dayEnumToIndex[item.dayOfWeek];
                             if (dayIdx !== undefined) {
@@ -263,7 +261,10 @@
                                 <input type="time" class="form-control form-control-sm" value="${range.start}">
                                 <span>~</span>
                                 <input type="time" class="form-control form-control-sm" value="${range.end}">
-                                <button type="button" class="btn btn-sm btn-outline-danger">삭제</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" aria-label="시간대 삭제" title="시간대 삭제">
+                                    <i class="bi bi-x-lg"></i>
+                                    <span class="visually-hidden">삭제</span>
+                                </button>
                             `;
 
                             const [startInput, endInput] = row.querySelectorAll('input');

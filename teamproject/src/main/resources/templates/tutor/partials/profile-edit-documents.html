@@ -1,0 +1,74 @@
+<section class="edit-section">
+  <div class="card edit-card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="step-section-title">서류 업로드</div>
+      <div class="step-section-desc">학위/학력/자격증을 수정 업로드하세요</div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="admin-box h-100">
+            <label class="form-label">학력 증명서</label>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="small text-muted">PDF, JPG, PNG 가능</div>
+              <label class="btn btn-outline-primary btn-sm mb-0">
+                파일 선택
+                <input type="file" class="d-none" id="editDocEducation" accept=".pdf,.jpg,.jpeg,.png" multiple>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="admin-box h-100">
+            <label class="form-label">학위 증명서</label>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="small text-muted">PDF, JPG, PNG 가능</div>
+              <label class="btn btn-outline-primary btn-sm mb-0">
+                파일 선택
+                <input type="file" class="d-none" id="editDocDegree" accept=".pdf,.jpg,.jpeg,.png" multiple>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="admin-box h-100">
+            <label class="form-label">자격증</label>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="small text-muted">PDF, JPG, PNG 가능</div>
+              <label class="btn btn-outline-primary btn-sm mb-0">
+                파일 선택
+                <input type="file" class="d-none" id="editDocCertificate" accept=".pdf,.jpg,.jpeg,.png" multiple>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-outline-primary btn-sm btn-pill px-3" id="btnDocUpload">
+          <i class="bi bi-upload me-1"></i> 서류 업로드
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="step-section-title">내 서류 목록</div>
+      <div class="step-section-desc">업로드된 서류 현황을 확인하세요</div>
+
+      <div class="filelist-card">
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>유형</th>
+                <th>파일명</th>
+                <th>업로드일</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody id="docList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
