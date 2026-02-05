@@ -92,12 +92,12 @@
           </div>
 
           <div class="list-group admin-menu">
-            <a class="list-group-item active" data-tab="dashboard" href="#">대시보드</a>
-            <a class="list-group-item" data-tab="doc" href="#">서류 검토</a>
-            <a class="list-group-item" data-tab="settlement" href="#">수입 정산</a>
-            <a class="list-group-item" data-tab="users" href="#">회원 관리</a>
-            <a class="list-group-item" data-tab="tickets" href="#">문의/신고</a>
-            <a class="list-group-item" data-tab="settings" href="#">설정</a>
+            <a class="list-group-item active" data-tab="dashboard" href="/admin?tab=dashboard">대시보드</a>
+            <a class="list-group-item" data-tab="doc" href="/admin?tab=doc">서류 검토</a>
+            <a class="list-group-item" data-tab="settlement" href="/admin?tab=settlement">수입 정산</a>
+            <a class="list-group-item" data-tab="users" href="/admin?tab=users">회원 관리</a>
+            <a class="list-group-item" data-tab="tickets" href="/admin?tab=tickets">문의/신고</a>
+            <a class="list-group-item" data-tab="settings" href="/admin?tab=settings">설정</a>
           </div>
 
           <div class="divider"></div>
@@ -144,502 +144,8 @@
         </div>
       </div>
 
-      <!-- ====== 탭: 대시보드 ====== -->
-      <section id="tab-dashboard" class="admin-tab">
-        <div class="row g-3">
-          <div class="col-lg-7">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <div class="panel-title">최근 서류 제출</div>
-                    <div class="muted small">대기/승인/반려 현황을 확인하세요.</div>
-                  </div>
-                  <button class="btn btn-outline-primary btn-sm btn-pill px-3" data-go="doc">서류 검토로</button>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-sm align-middle mb-0">
-                    <thead>
-                    <tr>
-                      <th>튜터</th>
-                      <th>유형</th>
-                      <th>업로드일</th>
-                      <th>상태</th>
-                    </tr>
-                    </thead>
-                    <tbody id="dashDocTbody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-5">
-            <div class="card admin-card shadow-sm mb-3">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <div class="panel-title">정산 대기 TOP</div>
-                    <div class="muted small">송금해야 할 금액이 있는 튜터</div>
-                  </div>
-                  <button class="btn btn-outline-primary btn-sm btn-pill px-3" data-go="settlement">정산으로</button>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-sm align-middle mb-0">
-                    <thead>
-                    <tr>
-                      <th>튜터</th>
-                      <th class="text-end">금액</th>
-                    </tr>
-                    </thead>
-                    <tbody id="dashSettleTbody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="panel-title mb-2">최근 문의</div>
-                <div class="table-responsive">
-                  <table class="table table-sm align-middle mb-0">
-                    <thead>
-                    <tr>
-                      <th>제목</th>
-                      <th>상태</th>
-                    </tr>
-                    </thead>
-                    <tbody id="dashTicketTbody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====== 탭: 서류 검토 (좌 목록 + 우 검토 패널) ====== -->
-      <section id="tab-doc" class="admin-tab d-none">
-        <div class="row g-3">
-          <!-- 좌: 목록 -->
-          <div class="col-lg-8">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <div class="panel-title">튜터 인증 서류</div>
-                    <div class="muted small">목록에서 선택 → 우측에서 미리보기/검증 후 승인 또는 반려</div>
-                  </div>
-
-                  <div class="d-flex gap-2 flex-wrap justify-content-end">
-                    <select class="form-select form-select-sm select-pill" id="docFilterStatus" style="width:140px;">
-                      <option value="ALL">전체 상태</option>
-                      <option value="PENDING">대기</option>
-                      <option value="APPROVED">승인</option>
-                      <option value="REJECTED">반려</option>
-                    </select>
-                    <select class="form-select form-select-sm select-pill" id="docFilterType" style="width:140px;">
-                      <option value="ALL">전체 유형</option>
-                      <option value="EDUCATION">학력</option>
-                      <option value="DEGREE">학위</option>
-                      <option value="CERTIFICATE">자격증</option>
-                      <option value="OTHER">기타</option>
-                    </select>
-                    <input class="form-control form-control-sm pill-input" id="docSearch" placeholder="튜터명 검색" style="width:180px;">
-                  </div>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table align-middle">
-                    <thead>
-                    <tr>
-                      <th style="width:26%;">튜터</th>
-                      <th style="width:18%;">서류 유형</th>
-                      <th>파일</th>
-                      <th style="width:14%;">업로드일</th>
-                      <th style="width:12%;">상태</th>
-                    </tr>
-                    </thead>
-                    <tbody id="docTbody"></tbody>
-                  </table>
-                </div>
-
-                <div id="docEmpty" class="empty-hero d-none">
-                  <div class="emoji">📄</div>
-                  <div class="fw-semibold">조건에 맞는 서류가 없습니다.</div>
-                  <div class="muted small mb-3">필터를 변경하거나 검색어를 지워보세요.</div>
-                  <button class="btn btn-outline-primary btn-sm btn-pill px-3" id="docReset">필터 초기화</button>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <!-- 우: 검토 패널 -->
-          <div class="col-lg-4">
-            <div class="card admin-card shadow-sm mb-3">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div class="panel-title">검토 패널</div>
-                  <span class="badge text-bg-light" id="docPanelStatus">선택 없음</span>
-                </div>
-                <div class="muted small mb-2" id="docPanelHint">좌측 목록에서 서류를 선택하세요.</div>
-
-                <div id="docPanelBody" class="d-none">
-                  <div class="fw-semibold" id="docPanelTutor">-</div>
-                  <div class="muted small mb-2" id="docPanelMeta">-</div>
-
-                  <div class="d-flex gap-2 mb-3">
-                    <a class="btn btn-outline-primary btn-sm btn-pill px-3" target="_blank" id="docBtnPreview">미리보기</a>
-                    <a class="btn btn-outline-secondary btn-sm btn-pill px-3" target="_blank" id="docBtnDownload">다운로드</a>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">검증 체크리스트</div>
-                  <div class="vstack gap-2 mb-3">
-                    <label class="check-item">
-                      <input type="checkbox" id="chkIdentity">
-                      <span class="small">계정 정보와 제출자 정보가 일치함</span>
-                    </label>
-                    <label class="check-item">
-                      <input type="checkbox" id="chkLegible">
-                      <span class="small">문서가 선명하고 주요 항목을 확인할 수 있음</span>
-                    </label>
-                    <label class="check-item">
-                      <input type="checkbox" id="chkRequired">
-                      <span class="small">필수 항목(기관/발급일/명칭 등)이 포함됨</span>
-                    </label>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">처리</div>
-                  <div class="d-flex gap-2 mb-2">
-                    <button class="btn btn-success btn-sm btn-pill px-3" id="btnApprove">승인</button>
-                    <button class="btn btn-outline-danger btn-sm btn-pill px-3" id="btnReject">반려</button>
-                  </div>
-
-                  <div id="rejectBox" class="d-none">
-                    <textarea class="form-control form-control-sm" id="rejectReason" rows="3" placeholder="반려 사유를 입력하세요 (예: 식별 불가, 발급기관 누락 등)"></textarea>
-                    <div class="d-flex justify-content-end mt-2">
-                      <button class="btn btn-danger btn-sm btn-pill px-3" id="btnRejectConfirm">반려 확정</button>
-                    </div>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">최근 처리 내역(예시)</div>
-                  <div class="muted small" id="docPanelLog">-</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="panel-title mb-2">처리 가이드</div>
-                <ul class="muted small mb-0">
-                  <li>미리보기로 내용 식별 가능 여부를 우선 확인</li>
-                  <li>필수 항목이 누락되면 반려 사유를 명확히 작성</li>
-                  <li>승인 시 튜터 인증 상태를 업데이트(백엔드)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====== 탭: 수입 정산 ====== -->
-      <section id="tab-settlement" class="admin-tab d-none">
-        <div class="row g-3">
-          <div class="col-lg-8">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <div class="panel-title">수입 및 정산</div>
-                    <div class="muted small">정산 대기 튜터를 선택 후 우측에서 송금(시뮬레이션) 실행</div>
-                  </div>
-                  <div class="d-flex gap-2 flex-wrap justify-content-end">
-                    <select class="form-select form-select-sm select-pill" id="settleFilter" style="width:140px;">
-                      <option value="ALL">전체</option>
-                      <option value="WAIT">정산 대기</option>
-                      <option value="DONE">완료</option>
-                    </select>
-                    <input class="form-control form-control-sm pill-input" id="settleSearch" placeholder="튜터명 검색" style="width:180px;">
-                  </div>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table align-middle">
-                    <thead>
-                    <tr>
-                      <th style="width:26%;">튜터</th>
-                      <th style="width:14%;">총 수입</th>
-                      <th style="width:14%;">정산됨</th>
-                      <th style="width:16%;">송금해야 함</th>
-                      <th style="width:12%;">상태</th>
-                    </tr>
-                    </thead>
-                    <tbody id="settleTbody"></tbody>
-                  </table>
-                </div>
-
-                <div id="settleEmpty" class="empty-hero d-none">
-                  <div class="emoji">💸</div>
-                  <div class="fw-semibold">조건에 맞는 정산 항목이 없습니다.</div>
-                  <div class="muted small">검색/필터를 변경해보세요.</div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-4">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="panel-title mb-2">정산 실행</div>
-                <div class="muted small mb-2" id="settlePanelHint">좌측 목록에서 튜터를 선택하세요.</div>
-
-                <div id="settlePanelBody" class="d-none">
-                  <div class="fw-semibold" id="settleTutor">-</div>
-                  <div class="muted small mb-2" id="settleMeta">-</div>
-
-                  <div class="divider"></div>
-
-                  <div class="d-flex justify-content-between">
-                    <span class="muted small">송금해야 할 금액</span>
-                    <span class="fw-bold" id="settleAmount">0원</span>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <button class="btn btn-primary btn-sm btn-pill w-100" id="btnSettleRun">
-                    자동 송금(시뮬레이션)
-                  </button>
-                  <div class="muted small mt-2">
-                    * 실제 송금 API 연동 전에는 시뮬레이션 처리로 표시합니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====== 탭: 회원 관리 ====== -->
-      <section id="tab-users" class="admin-tab d-none">
-        <div class="row g-3">
-          <div class="col-lg-8">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <div class="panel-title">회원 관리</div>
-                    <div class="muted small">상태 변경(활성/정지/비활성) 및 기본 정보 확인</div>
-                  </div>
-                  <div class="d-flex gap-2 flex-wrap justify-content-end">
-                    <select class="form-select form-select-sm select-pill" id="userRoleFilter" style="width:140px;">
-                      <option value="ALL">전체 역할</option>
-                      <option value="USER">USER</option>
-                      <option value="TUTOR">TUTOR</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
-                    <select class="form-select form-select-sm select-pill" id="userStatusFilter" style="width:140px;">
-                      <option value="ALL">전체 상태</option>
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="SUSPENDED">SUSPENDED</option>
-                      <option value="INACTIVE">INACTIVE</option>
-                    </select>
-                    <input class="form-control form-control-sm pill-input" id="userSearch" placeholder="이름/닉네임 검색" style="width:180px;">
-                  </div>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table align-middle">
-                    <thead>
-                    <tr>
-                      <th style="width:22%;">이름(닉네임)</th>
-                      <th style="width:18%;">아이디</th>
-                      <th style="width:14%;">역할</th>
-                      <th style="width:14%;">상태</th>
-                      <th style="width:16%;">가입일</th>
-                      <th style="width:16%;">관리</th>
-                    </tr>
-                    </thead>
-                    <tbody id="userTbody"></tbody>
-                  </table>
-                </div>
-
-                <div id="userEmpty" class="empty-hero d-none">
-                  <div class="emoji">👤</div>
-                  <div class="fw-semibold">조건에 맞는 회원이 없습니다.</div>
-                  <div class="muted small">검색/필터를 변경해보세요.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-4">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="panel-title mb-2">회원 상세</div>
-                <div class="muted small mb-2" id="userPanelHint">좌측 목록에서 회원을 선택하세요.</div>
-
-                <div id="userPanelBody" class="d-none">
-                  <div class="fw-semibold" id="userName">-</div>
-                  <div class="muted small" id="userId">-</div>
-
-                  <div class="divider"></div>
-
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="muted small">역할</span>
-                    <span class="fw-bold" id="userRole">-</span>
-                  </div>
-                  <div class="d-flex justify-content-between mb-2">
-                    <span class="muted small">상태</span>
-                    <span class="fw-bold" id="userStatus">-</span>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">상태 변경</div>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-secondary btn-sm btn-pill px-3" id="btnUserInactive">비활성</button>
-                    <button class="btn btn-outline-danger btn-sm btn-pill px-3" id="btnUserSuspend">정지</button>
-                    <button class="btn btn-success btn-sm btn-pill px-3" id="btnUserActivate">활성</button>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">변경 사유(선택)</div>
-                  <textarea class="form-control form-control-sm" id="userStatusReason" rows="3" placeholder="사유를 입력하세요(선택)"></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====== 탭: 문의/신고 ====== -->
-      <section id="tab-tickets" class="admin-tab d-none">
-        <div class="row g-3">
-          <div class="col-lg-8">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <div class="panel-title">문의/신고</div>
-                    <div class="muted small">티켓을 선택 → 우측에서 답변/상태 변경</div>
-                  </div>
-                  <div class="d-flex gap-2 flex-wrap justify-content-end">
-                    <select class="form-select form-select-sm select-pill" id="ticketStatusFilter" style="width:140px;">
-                      <option value="ALL">전체 상태</option>
-                      <option value="OPEN">접수</option>
-                      <option value="IN_PROGRESS">처리중</option>
-                      <option value="DONE">완료</option>
-                    </select>
-                    <select class="form-select form-select-sm select-pill" id="ticketCatFilter" style="width:140px;">
-                      <option value="ALL">전체 유형</option>
-                      <option value="INQUIRY">문의</option>
-                      <option value="REPORT">신고</option>
-                      <option value="PAYMENT">결제</option>
-                      <option value="ACCOUNT">계정</option>
-                    </select>
-                    <input class="form-control form-control-sm pill-input" id="ticketSearch" placeholder="제목 검색" style="width:180px;">
-                  </div>
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table align-middle">
-                    <thead>
-                    <tr>
-                      <th style="width:40%;">제목</th>
-                      <th style="width:16%;">작성자</th>
-                      <th style="width:14%;">유형</th>
-                      <th style="width:14%;">상태</th>
-                      <th style="width:16%;">등록일</th>
-                    </tr>
-                    </thead>
-                    <tbody id="ticketTbody"></tbody>
-                  </table>
-                </div>
-
-                <div id="ticketEmpty" class="empty-hero d-none">
-                  <div class="emoji">💬</div>
-                  <div class="fw-semibold">조건에 맞는 티켓이 없습니다.</div>
-                  <div class="muted small">검색/필터를 변경해보세요.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-4">
-            <div class="card admin-card shadow-sm">
-              <div class="card-body">
-                <div class="panel-title mb-2">티켓 처리</div>
-                <div class="muted small mb-2" id="ticketPanelHint">좌측 목록에서 티켓을 선택하세요.</div>
-
-                <div id="ticketPanelBody" class="d-none">
-                  <div class="fw-semibold" id="ticketTitle">-</div>
-                  <div class="muted small mb-2" id="ticketMeta">-</div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">내용</div>
-                  <div class="small" id="ticketContent">-</div>
-
-                  <div class="divider"></div>
-
-                  <div class="fw-bold mb-2">답변</div>
-                  <textarea class="form-control form-control-sm" id="ticketReply" rows="4" placeholder="답변을 입력하세요"></textarea>
-
-                  <div class="d-flex gap-2 mt-2">
-                    <button class="btn btn-outline-primary btn-sm btn-pill px-3" id="btnTicketProgress">처리중</button>
-                    <button class="btn btn-success btn-sm btn-pill px-3" id="btnTicketDone">완료</button>
-                  </div>
-
-                  <div class="divider"></div>
-
-                  <button class="btn btn-primary btn-sm btn-pill w-100" id="btnTicketSave">
-                    답변 저장(시뮬레이션)
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ====== 탭: 설정 (빈 화면 방지용 샘플) ====== -->
-      <section id="tab-settings" class="admin-tab d-none">
-        <div class="card admin-card shadow-sm">
-          <div class="card-body">
-            <div class="panel-title mb-1">설정</div>
-            <div class="muted small mb-3">프로젝트 범위에 맞게 필요한 설정 항목을 추가하세요.</div>
-
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="p-3 bg-white admin-card">
-                  <div class="fw-bold mb-1">파일 정책</div>
-                  <div class="muted small">허용 확장자, 최대 용량 등을 관리합니다.</div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="p-3 bg-white admin-card">
-                  <div class="fw-bold mb-1">정산 규칙</div>
-                  <div class="muted small">수수료/정산 주기 등 운영 규칙을 관리합니다.</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      <!-- ====== 탭 콘텐츠(비동기 로딩) ====== -->
+      <div id="adminTabContainer"></div>
 
     </main>
   </div>
@@ -788,21 +294,56 @@ function catLabel(c){
 }
 
 /* =========================
-   2) 탭 전환(사이드바만 사용)
+   2) 탭 전환(비동기 로딩)
    ========================= */
 const tabs = ["dashboard","doc","settlement","users","tickets","settings"];
-function showTab(key){
-  tabs.forEach(t => {
-    const el = document.getElementById(`tab-${t}`);
-    if(!el) return;
-    el.classList.toggle("d-none", t !== key);
+const tabContainer = document.getElementById("adminTabContainer");
+
+function bindDataGo(root=document){
+  root.querySelectorAll("[data-go]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      showTab(btn.getAttribute("data-go"));
+    });
   });
+}
+
+async function showTab(key){
+  const safeKey = tabs.includes(key) ? key : "dashboard";
 
   document.querySelectorAll(".admin-menu [data-tab]").forEach(a => {
-    a.classList.toggle("active", a.getAttribute("data-tab") === key);
+    a.classList.toggle("active", a.getAttribute("data-tab") === safeKey);
   });
 
-  location.hash = key;
+  location.hash = safeKey;
+
+  if (!tabContainer) return;
+  try {
+    const res = await fetch(`/admin/partial/${safeKey}`);
+    if (!res.ok) throw new Error("tab load failed");
+    const html = await res.text();
+    tabContainer.innerHTML = html;
+    bindDataGo(tabContainer);
+    initTab(safeKey);
+  } catch (e) {
+    tabContainer.innerHTML = `
+      <div class="card admin-card shadow-sm">
+        <div class="card-body">
+          <div class="panel-title mb-1">불러오기 실패</div>
+          <div class="muted small">잠시 후 다시 시도해주세요.</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function initTab(key){
+  if (key === "dashboard") return initDashboardTab();
+  if (key === "doc") return initDocTab();
+  if (key === "settlement") return initSettlementTab();
+  if (key === "users") return initUsersTab();
+  if (key === "tickets") return initTicketsTab();
+  if (key === "settings") return initSettingsTab();
 }
 
 document.querySelectorAll(".admin-menu [data-tab]").forEach(a => {
@@ -812,11 +353,7 @@ document.querySelectorAll(".admin-menu [data-tab]").forEach(a => {
   });
 });
 
-document.querySelectorAll("[data-go]").forEach(btn => {
-  btn.addEventListener("click", () => showTab(btn.getAttribute("data-go")));
-});
-
-document.getElementById("btnRefresh").addEventListener("click", () => location.reload());
+document.getElementById("btnRefresh")?.addEventListener("click", () => location.reload());
 
 /* =========================
    3) KPI/배지 렌더
@@ -837,6 +374,9 @@ function renderKPI(){
    4) 대시보드(요약 테이블)
    ========================= */
 function renderDashboard(){
+  const dashDoc = document.getElementById("dashDocTbody");
+  if (!dashDoc) return;
+
   const docRows = DATA.docs.slice(0,5).map(d => `
     <tr>
       <td>${d.tutorName} <span class="muted small">(${d.nickname})</span></td>
@@ -845,7 +385,7 @@ function renderDashboard(){
       <td>${badgeStatus("doc", d.status)}</td>
     </tr>
   `).join("");
-  document.getElementById("dashDocTbody").innerHTML = docRows || `<tr><td colspan="4" class="muted text-center py-3">데이터 없음</td></tr>`;
+  dashDoc.innerHTML = docRows || `<tr><td colspan="4" class="muted text-center py-3">데이터 없음</td></tr>`;
 
   const settleRows = DATA.settlements
     .filter(s => s.status==="WAIT" && s.payable>0)
@@ -888,8 +428,9 @@ function filterDocs(){
 }
 
 function renderDocs(){
-  const list = filterDocs();
   const tbody = document.getElementById("docTbody");
+  if (!tbody) return;
+  const list = filterDocs();
   tbody.innerHTML = list.map(d => `
     <tr data-doc-row="${d.id}" style="cursor:pointer;">
       <td>
@@ -906,7 +447,7 @@ function renderDocs(){
     </tr>
   `).join("");
 
-  document.getElementById("docEmpty").classList.toggle("d-none", list.length !== 0);
+  document.getElementById("docEmpty")?.classList.toggle("d-none", list.length !== 0);
   document.querySelectorAll("[data-doc-row]").forEach(tr => {
     tr.addEventListener("click", () => selectDoc(tr.getAttribute("data-doc-row")));
   });
@@ -937,47 +478,53 @@ function selectDoc(id){
   document.getElementById("rejectReason").value = "";
 }
 
-document.getElementById("docFilterStatus").addEventListener("change", renderDocs);
-document.getElementById("docFilterType").addEventListener("change", renderDocs);
-document.getElementById("docSearch").addEventListener("input", renderDocs);
-document.getElementById("docReset").addEventListener("click", () => {
-  document.getElementById("docFilterStatus").value = "ALL";
-  document.getElementById("docFilterType").value = "ALL";
-  document.getElementById("docSearch").value = "";
+function initDocTab(){
+  const statusEl = document.getElementById("docFilterStatus");
+  if (!statusEl) return;
+  statusEl.addEventListener("change", renderDocs);
+  document.getElementById("docFilterType")?.addEventListener("change", renderDocs);
+  document.getElementById("docSearch")?.addEventListener("input", renderDocs);
+  document.getElementById("docReset")?.addEventListener("click", () => {
+    document.getElementById("docFilterStatus").value = "ALL";
+    document.getElementById("docFilterType").value = "ALL";
+    document.getElementById("docSearch").value = "";
+    renderDocs();
+  });
+
+  document.getElementById("btnReject")?.addEventListener("click", () => {
+    if(!selectedDocId) return alert("서류를 선택하세요.");
+    document.getElementById("rejectBox").classList.toggle("d-none");
+  });
+
+  document.getElementById("btnApprove")?.addEventListener("click", () => {
+    if(!selectedDocId) return alert("서류를 선택하세요.");
+    // 프론트 시뮬레이션: 상태만 변경
+    const d = DATA.docs.find(x => x.id===selectedDocId);
+    d.status = "APPROVED";
+    d.log = "관리자 승인(시뮬레이션)";
+    renderDocs();
+    selectDoc(selectedDocId);
+
+    // TODO(백엔드): approve API 호출 후 성공 시 갱신
+    // fetch(`/admin/docs/${selectedDocId}/approve`, {method:"POST"})
+  });
+
+  document.getElementById("btnRejectConfirm")?.addEventListener("click", () => {
+    if(!selectedDocId) return alert("서류를 선택하세요.");
+    const reason = document.getElementById("rejectReason").value.trim();
+    if(!reason) return alert("반려 사유를 입력하세요.");
+
+    const d = DATA.docs.find(x => x.id===selectedDocId);
+    d.status = "REJECTED";
+    d.log = `반려(시뮬레이션): ${reason}`;
+    renderDocs();
+    selectDoc(selectedDocId);
+
+    // TODO(백엔드): reject API 호출(reason 포함)
+  });
+
   renderDocs();
-});
-
-document.getElementById("btnReject").addEventListener("click", () => {
-  if(!selectedDocId) return alert("서류를 선택하세요.");
-  document.getElementById("rejectBox").classList.toggle("d-none");
-});
-
-document.getElementById("btnApprove").addEventListener("click", () => {
-  if(!selectedDocId) return alert("서류를 선택하세요.");
-  // 프론트 시뮬레이션: 상태만 변경
-  const d = DATA.docs.find(x => x.id===selectedDocId);
-  d.status = "APPROVED";
-  d.log = "관리자 승인(시뮬레이션)";
-  renderDocs();
-  selectDoc(selectedDocId);
-
-  // TODO(백엔드): approve API 호출 후 성공 시 갱신
-  // fetch(`/admin/docs/${selectedDocId}/approve`, {method:"POST"})
-});
-
-document.getElementById("btnRejectConfirm").addEventListener("click", () => {
-  if(!selectedDocId) return alert("서류를 선택하세요.");
-  const reason = document.getElementById("rejectReason").value.trim();
-  if(!reason) return alert("반려 사유를 입력하세요.");
-
-  const d = DATA.docs.find(x => x.id===selectedDocId);
-  d.status = "REJECTED";
-  d.log = `반려(시뮬레이션): ${reason}`;
-  renderDocs();
-  selectDoc(selectedDocId);
-
-  // TODO(백엔드): reject API 호출(reason 포함)
-});
+}
 
 /* =========================
    6) 정산(좌 목록 + 우 실행)
@@ -996,8 +543,9 @@ function filterSettles(){
 }
 
 function renderSettles(){
-  const list = filterSettles();
   const tbody = document.getElementById("settleTbody");
+  if (!tbody) return;
+  const list = filterSettles();
   tbody.innerHTML = list.map(s => `
     <tr data-settle-row="${s.id}" style="cursor:pointer;">
       <td>
@@ -1011,7 +559,7 @@ function renderSettles(){
     </tr>
   `).join("");
 
-  document.getElementById("settleEmpty").classList.toggle("d-none", list.length !== 0);
+  document.getElementById("settleEmpty")?.classList.toggle("d-none", list.length !== 0);
 
   document.querySelectorAll("[data-settle-row]").forEach(tr => {
     tr.addEventListener("click", () => selectSettle(tr.getAttribute("data-settle-row")));
@@ -1032,24 +580,29 @@ function selectSettle(id){
   document.getElementById("btnSettleRun").disabled = !(s.status==="WAIT" && s.payable>0);
 }
 
-document.getElementById("settleFilter").addEventListener("change", renderSettles);
-document.getElementById("settleSearch").addEventListener("input", renderSettles);
+function initSettlementTab(){
+  if (!document.getElementById("settleFilter")) return;
+  document.getElementById("settleFilter")?.addEventListener("change", renderSettles);
+  document.getElementById("settleSearch")?.addEventListener("input", renderSettles);
 
-document.getElementById("btnSettleRun").addEventListener("click", () => {
-  if(!selectedSettleId) return alert("정산 항목을 선택하세요.");
-  const s = DATA.settlements.find(x => x.id===selectedSettleId);
-  if(!s || s.status!=="WAIT" || s.payable<=0) return;
+  document.getElementById("btnSettleRun")?.addEventListener("click", () => {
+    if(!selectedSettleId) return alert("정산 항목을 선택하세요.");
+    const s = DATA.settlements.find(x => x.id===selectedSettleId);
+    if(!s || s.status!=="WAIT" || s.payable<=0) return;
 
-  // 시뮬레이션 완료 처리
-  s.status = "DONE";
-  s.settled += s.payable;
-  s.payable = 0;
+    // 시뮬레이션 완료 처리
+    s.status = "DONE";
+    s.settled += s.payable;
+    s.payable = 0;
+
+    renderSettles();
+    selectSettle(selectedSettleId);
+
+    // TODO(백엔드): 정산 실행 API 호출
+  });
 
   renderSettles();
-  selectSettle(selectedSettleId);
-
-  // TODO(백엔드): 정산 실행 API 호출
-});
+}
 
 /* =========================
    7) 회원 관리(좌 목록 + 우 상세)
@@ -1070,8 +623,9 @@ function filterUsers(){
 }
 
 function renderUsers(){
-  const list = filterUsers();
   const tbody = document.getElementById("userTbody");
+  if (!tbody) return;
+  const list = filterUsers();
   tbody.innerHTML = list.map(u => `
     <tr data-user-row="${u.id}" style="cursor:pointer;">
       <td>
@@ -1086,7 +640,7 @@ function renderUsers(){
     </tr>
   `).join("");
 
-  document.getElementById("userEmpty").classList.toggle("d-none", list.length !== 0);
+  document.getElementById("userEmpty")?.classList.toggle("d-none", list.length !== 0);
 
   document.querySelectorAll("[data-user-row]").forEach(tr => {
     tr.addEventListener("click", () => selectUser(tr.getAttribute("data-user-row")));
@@ -1107,8 +661,17 @@ function selectUser(id){
   document.getElementById("userStatus").textContent = u.status;
 }
 
-["userRoleFilter","userStatusFilter"].forEach(id => document.getElementById(id).addEventListener("change", renderUsers));
-document.getElementById("userSearch").addEventListener("input", renderUsers);
+function initUsersTab(){
+  if (!document.getElementById("userRoleFilter")) return;
+  ["userRoleFilter","userStatusFilter"].forEach(id => document.getElementById(id)?.addEventListener("change", renderUsers));
+  document.getElementById("userSearch")?.addEventListener("input", renderUsers);
+
+  document.getElementById("btnUserInactive")?.addEventListener("click", () => changeUserStatus("INACTIVE"));
+  document.getElementById("btnUserSuspend")?.addEventListener("click", () => changeUserStatus("SUSPENDED"));
+  document.getElementById("btnUserActivate")?.addEventListener("click", () => changeUserStatus("ACTIVE"));
+
+  renderUsers();
+}
 
 function changeUserStatus(toStatus){
   if(!selectedUserId) return alert("회원을 선택하세요.");
@@ -1122,9 +685,6 @@ function changeUserStatus(toStatus){
   // TODO(백엔드): 상태 변경 API 호출 + 사유 전송
 }
 
-document.getElementById("btnUserInactive").addEventListener("click", () => changeUserStatus("INACTIVE"));
-document.getElementById("btnUserSuspend").addEventListener("click", () => changeUserStatus("SUSPENDED"));
-document.getElementById("btnUserActivate").addEventListener("click", () => changeUserStatus("ACTIVE"));
 
 /* =========================
    8) 문의/신고(좌 목록 + 우 처리)
@@ -1145,8 +705,9 @@ function filterTickets(){
 }
 
 function renderTickets(){
-  const list = filterTickets();
   const tbody = document.getElementById("ticketTbody");
+  if (!tbody) return;
+  const list = filterTickets();
   tbody.innerHTML = list.map(t => `
     <tr data-ticket-row="${t.id}" style="cursor:pointer;">
       <td class="fw-semibold">${t.title}</td>
@@ -1157,7 +718,7 @@ function renderTickets(){
     </tr>
   `).join("");
 
-  document.getElementById("ticketEmpty").classList.toggle("d-none", list.length !== 0);
+  document.getElementById("ticketEmpty")?.classList.toggle("d-none", list.length !== 0);
 
   document.querySelectorAll("[data-ticket-row]").forEach(tr => {
     tr.addEventListener("click", () => selectTicket(tr.getAttribute("data-ticket-row")));
@@ -1178,8 +739,25 @@ function selectTicket(id){
   document.getElementById("ticketReply").value = "";
 }
 
-["ticketStatusFilter","ticketCatFilter"].forEach(id => document.getElementById(id).addEventListener("change", renderTickets));
-document.getElementById("ticketSearch").addEventListener("input", renderTickets);
+function initTicketsTab(){
+  if (!document.getElementById("ticketStatusFilter")) return;
+  ["ticketStatusFilter","ticketCatFilter"].forEach(id => document.getElementById(id)?.addEventListener("change", renderTickets));
+  document.getElementById("ticketSearch")?.addEventListener("input", renderTickets);
+
+  document.getElementById("btnTicketProgress")?.addEventListener("click", () => changeTicketStatus("IN_PROGRESS"));
+  document.getElementById("btnTicketDone")?.addEventListener("click", () => changeTicketStatus("DONE"));
+
+  document.getElementById("btnTicketSave")?.addEventListener("click", () => {
+    if(!selectedTicketId) return alert("티켓을 선택하세요.");
+    const reply = document.getElementById("ticketReply").value.trim();
+    if(!reply) return alert("답변을 입력하세요.");
+    alert("답변 저장(시뮬레이션)\n\n" + reply);
+
+    // TODO(백엔드): reply 저장 API 호출(ticketId, reply)
+  });
+
+  renderTickets();
+}
 
 function changeTicketStatus(to){
   if(!selectedTicketId) return alert("티켓을 선택하세요.");
@@ -1191,30 +769,21 @@ function changeTicketStatus(to){
   // TODO(백엔드): 상태 변경 API 호출
 }
 
-document.getElementById("btnTicketProgress").addEventListener("click", () => changeTicketStatus("IN_PROGRESS"));
-document.getElementById("btnTicketDone").addEventListener("click", () => changeTicketStatus("DONE"));
+function initDashboardTab(){
+  renderDashboard();
+}
 
-document.getElementById("btnTicketSave").addEventListener("click", () => {
-  if(!selectedTicketId) return alert("티켓을 선택하세요.");
-  const reply = document.getElementById("ticketReply").value.trim();
-  if(!reply) return alert("답변을 입력하세요.");
-  alert("답변 저장(시뮬레이션)\n\n" + reply);
-
-  // TODO(백엔드): reply 저장 API 호출(ticketId, reply)
-});
+function initSettingsTab(){
+  // 설정 탭은 별도 초기화 없음
+}
 
 /* =========================
    9) 초기 렌더
    ========================= */
 renderKPI();
-renderDashboard();
-renderDocs();
-renderSettles();
-renderUsers();
-renderTickets();
 
 // 최초 탭
-const initial = (location.hash || "#dashboard").replace("#", "");
+const initial = new URLSearchParams(location.search).get("tab") || (location.hash || "#dashboard").replace("#", "");
 showTab(tabs.includes(initial) ? initial : "dashboard");
 
 // 페이지 로드 시 로그아웃 버튼 초기화
