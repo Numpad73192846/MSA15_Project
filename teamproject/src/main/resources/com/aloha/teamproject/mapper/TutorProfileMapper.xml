@@ -14,6 +14,9 @@
         <result property="bio" column="bio" />
         <result property="selfIntro" column="self_intro" />
         <result property="videoUrl" column="video_url" />
+        <result property="bankName" column="bank_name" />
+        <result property="accountNumber" column="account_number" />
+        <result property="accountHolder" column="account_holder" />
         <result property="verified" column="is_verified" />
         <result property="ratingAvg" column="rating_avg" />
         <result property="reviewCount" column="review_count" />
@@ -23,10 +26,14 @@
 
     <insert id="upsertProfile">
         INSERT INTO tutor_profile (
-            id, user_id, profile_img, headline, bio, self_intro, video_url, is_verified, rating_avg, review_count
+            id, user_id, profile_img, headline, bio, self_intro, video_url, 
+            bank_name, account_number, account_holder,
+            is_verified, rating_avg, review_count
         )
         VALUES (
-            #{id}, #{userId}, #{profileImg}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl}, #{verified}, #{ratingAvg}, #{reviewCount}
+            #{id}, #{userId}, #{profileImg}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl},
+            #{bankName}, #{accountNumber}, #{accountHolder},
+            #{verified}, #{ratingAvg}, #{reviewCount}
         )
         ON DUPLICATE KEY UPDATE
             profile_img = VALUES(profile_img),
@@ -34,6 +41,9 @@
             bio = VALUES(bio),
             self_intro = VALUES(self_intro),
             video_url = VALUES(video_url),
+            bank_name = VALUES(bank_name),
+            account_number = VALUES(account_number),
+            account_holder = VALUES(account_holder),
             updated_at = NOW();
     </insert>
 

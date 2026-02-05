@@ -29,6 +29,9 @@ public class TutorProfile {
     private String bio;
     private String selfIntro;
     private String videoUrl;
+    private String bankName;
+    private String accountNumber;
+    private String accountHolder;
     @Builder.Default
     private boolean verified = false;
     @Builder.Default
@@ -52,6 +55,9 @@ public class TutorProfile {
         private String bio;
         private String selfIntro;
         private String videoUrl;
+        private String bankName;
+        private String accountNumber;
+        private String accountHolder;
         private List<String> fieldIds;
     }
 }

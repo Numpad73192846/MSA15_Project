@@ -110,11 +110,15 @@
 
                             <h4 class="h6 fw-bold mb-3">수업 가능 시간</h4>
                             <div class="mb-3">
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">이전
-                                        주</button>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">다음
-                                        주</button>
+                                <div class="calendar-nav d-flex align-items-center gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPrevWeek">
+                                        <span class="d-none d-sm-inline">이전 주</span>
+                                        <span class="d-sm-none">◀</span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnNextWeek">
+                                        <span class="d-none d-sm-inline">다음 주</span>
+                                        <span class="d-sm-none">▶</span>
+                                    </button>
                                     <span class="fw-semibold ms-2" id="weekRangeLabel">2026.02.02 ~ 02.08</span>
                                 </div>
 

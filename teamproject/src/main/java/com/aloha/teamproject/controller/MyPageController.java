@@ -27,6 +27,12 @@ public class MyPageController {
         return "tutor/mypage";
     }
 
+    @GetMapping("/tutor/profile-edit")
+    public String tutorProfileEdit() {
+        log.info("[GET] - /tutor/profile-edit");
+        return "tutor/profile-edit";
+    }
+
     @GetMapping({"/member/mypage", "/mypage"})
     public String memberMyPage(Authentication authentication, Model model) {
         log.info("[GET] - /member/mypage");
