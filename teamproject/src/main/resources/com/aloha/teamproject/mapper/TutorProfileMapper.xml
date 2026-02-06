@@ -9,6 +9,7 @@
         <id property="no" column="no" />
         <result property="userId" column="user_id" />
         <result property="id" column="id" />
+        <result property="phone" column="phone" />
         <result property="profileImg" column="profile_img" />
         <result property="headline" column="headline" />
         <result property="bio" column="bio" />
@@ -26,16 +27,17 @@
 
     <insert id="upsertProfile">
         INSERT INTO tutor_profile (
-            id, user_id, profile_img, headline, bio, self_intro, video_url, 
+            id, user_id, phone, profile_img, headline, bio, self_intro, video_url, 
             bank_name, account_number, account_holder,
             is_verified, rating_avg, review_count
         )
         VALUES (
-            #{id}, #{userId}, #{profileImg}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl},
+            #{id}, #{userId}, #{phone}, #{profileImg}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl},
             #{bankName}, #{accountNumber}, #{accountHolder},
             #{verified}, #{ratingAvg}, #{reviewCount}
         )
         ON DUPLICATE KEY UPDATE
+            phone = VALUES(phone),
             profile_img = VALUES(profile_img),
             headline = VALUES(headline),
             bio = VALUES(bio),

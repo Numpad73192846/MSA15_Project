@@ -44,6 +44,7 @@ import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
+import com.aloha.teamproject.service.TutorSubjectService;
 import com.aloha.teamproject.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -63,6 +64,7 @@ public class TutorController {
     private final TutorMyPageService tutorMyPageService;
     private final TutorCareerService tutorCareerService;
     private final TutorListService tutorListService;
+    private final TutorSubjectService tutorSubjectService;
     private final UserService userService;
     private final SubjectService subjectService;
     private final LessonService lessonService;
@@ -202,6 +204,7 @@ public class TutorController {
             TutorProfile profile = TutorProfile.builder()
                                                 .userId(authentication.getName())                                               
                                                 .profileImg(profileImgPath) // 파일 경로
+                                                .phone(request.getBasicPhone())
                                                 .bankName(request.getBasicBankName())
                                                 .accountNumber(request.getBasicAccountNumber())
                                                 .accountHolder(request.getBasicAccountHolder())
@@ -223,26 +226,34 @@ public class TutorController {
             ));
             }
 
-            
-            for (LessonCardItem card : lessonCards) {
-                Subject subject = subjectService.selectByName(card.getSubject());
+            Set<String> subjectIds = new java.util.HashSet<>();
+            try {
+                subjectIds = lessonCards.stream()
+                    .map(card -> subjectService.selectByName(card.getSubject()))
+                    .filter(subject -> subject != null)
+                    .peek(subject -> {
+                        LessonCardItem card = lessonCards.stream().filter(c -> c.getSubject().equals(subject.getName())).findFirst().orElse(null);
+                        if (card != null) {
+                            Lesson lesson = Lesson.builder()
+                                .userId(authentication.getName())
+                                .title(card.getSubject() + "-" + card.getField())
+                                .price(card.getPrice())
+                                .fieldId(card.getFieldId())
+                                .subjectId(subject.getId())
+                                .build();
+                            lessonService.insert(lesson);
+                        }
+                    })
+                    .map(Subject::getId)
+                    .collect(Collectors.toSet());
+            } catch (Exception e) {
+                log.error("레슨 및 과목 저장 중 오류 발생", e);
+                e.printStackTrace();
+            }
 
-                if ( subject == null ) {
-                    log.warn("존재하지 않는 과목명: {}", card.getSubject());
-                    continue;
-                }
-
-                String subjectId = subject.getId();
-
-                Lesson lesson = Lesson.builder()
-                                      .userId(authentication.getName())
-                                      .title(card.getSubject() + "-" + card.getField())
-                                      .price(card.getPrice())
-                                      .fieldId(card.getFieldId())
-                                      .subjectId(subjectId)
-                                      .build();
-
-                lessonService.insert(lesson);
+            // tutor_subject 저장
+            if (!subjectIds.isEmpty()) {
+                tutorSubjectService.replaceSubjects(authentication.getName(), new java.util.ArrayList<>(subjectIds));
             }
 
 
@@ -259,7 +270,7 @@ public class TutorController {
             tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
             
-            tutorCareerService.insertBatch(careers);
+            tutorCareerService.replaceCareers(authentication.getName(), careers);
 
             userService.deleteAuth(authentication.getName(), "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
@@ -302,8 +313,8 @@ public class TutorController {
         try {
             String userId = authentication.getName();
 
-            // 1️⃣ Users 정보 수정 (이름 / 전화 / 비밀번호)
-            userService.updateMyInfo(userId, name, phone, password, passwordConfirm);
+            // 1️⃣ Users 정보 수정 (이름 / 비밀번호)
+            userService.updateMyInfo(userId, name, password, passwordConfirm);
 
             // 2️⃣ TutorProfile 정보 수정
             TutorProfile profile = tutorProfileService.selectByUserId(userId);
@@ -316,6 +327,7 @@ public class TutorController {
             profile.setBio(bio);
             profile.setSelfIntro(selfIntro);
             profile.setVideoUrl(videoUrl);
+            profile.setPhone(phone);
             profile.setBankName(basicBankName);
             profile.setAccountNumber(basicAccountNumber);
             profile.setAccountHolder(basicAccountHolder);

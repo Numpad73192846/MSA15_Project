@@ -523,6 +523,7 @@
 
                 // Step 2: 학력 및 경력
                 formData.append('career', step2Data.career || '');                
+                formData.append('careersJson', JSON.stringify(step2Data.careers || []));
 
                 (step2Data.academicCertificates || []).forEach(id =>
                     formData.append('academicCertificates', id)
@@ -530,9 +531,11 @@
                 (step2Data.educationCertificates || []).forEach(id =>
                     formData.append('educationCertificates', id)
                 );
+
                 
                 // Step 3
                 formData.append('lessonSubjects', step3Data.lessonSubjects || '');
+                formData.append('lessonCardsJson', JSON.stringify(step3Data.lessonCards || []));
                 (step3Data.fieldIds || []).forEach(id =>
                     formData.append('fieldIds', id)
                 );
