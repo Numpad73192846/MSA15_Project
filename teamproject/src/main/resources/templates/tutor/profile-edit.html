@@ -70,6 +70,12 @@
                                 <a class="list-group-item" data-section="documents">
                                     <i class="bi bi-file-earmark-arrow-up me-2"></i> 서류 업로드
                                 </a>
+                                <a class="list-group-item" data-section="lessons">
+                                    <i class="bi bi-book me-2"></i> 수업관리
+                                </a>
+                                <a class="list-group-item" data-section="schedule">
+                                   <i class="bi bi-calendar2-check me-2"></i> 스케줄 관리
+                                </a>
                                 <a class="list-group-item" data-section="security">
                                     <i class="bi bi-shield-lock me-2"></i> 보안
                                 </a>
@@ -137,7 +143,7 @@
                 return response;
             }
 
-            const sections = ["basic","profile","account","documents","security"];
+            const sections = ["basic","profile","account","documents","lessons","schedule","security"];
             const profileState = {
                 loginId: "",
                 name: "",
