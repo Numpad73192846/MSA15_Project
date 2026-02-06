@@ -79,4 +79,9 @@
         WHERE id = #{id}
     </update>
 
+    <!-- payBooking은 BookingService에서 Payment 테이블에 insert하는 방식으로 처리 -->
+    <select id="payBooking" resultType="int">
+        SELECT 1
+    </select>
+
 </mapper>

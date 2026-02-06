@@ -281,4 +281,54 @@ public class BookingController {
         private String message;
     }
 
+    /**
+     * 예약 결제 처리
+     */
+    @PostMapping("/{id}/pay")
+    public ApiResponse<Void> payBooking(
+            @PathVariable("id") String id,
+            @RequestBody PaymentRequest request,
+            Authentication authentication) {
+        log.info("[예약 결제 시작] bookingId: {}", id);
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("[예약 결제] 인증 실패");
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            log.info("[예약 결제] userId: {}, paymentMethod: {}, amount: {}", 
+                userId, request.getPaymentMethod(), request.getAmount());
+            
+            // 예약 조회
+            Booking booking = bookingService.selectById(id);
+            if (booking == null) {
+                log.warn("[예약 결제] 예약을 찾을 수 없음: {}", id);
+                return ApiResponse.error("예약을 찾을 수 없습니다.");
+            }
+            
+            // 본인 예약인지 확인
+            if (!userId.equals(booking.getUserId())) {
+                log.warn("[예약 결제] 권한 없음 - userId: {}, bookingUserId: {}", userId, booking.getUserId());
+                return ApiResponse.error("결제 권한이 없습니다.");
+            }
+            
+            // 결제 처리 (실제 결제 연동은 추후 구현)
+            // 여기서는 예약 상태를 PAID로 변경
+            bookingService.payBooking(id);
+            log.info("[예약 결제 성공] bookingId: {}", id);
+            
+            return ApiResponse.ok(SuccessCode.OK);
+        } catch (Exception e) {
+            log.error("[예약 결제 실패] bookingId: {}", id, e);
+            return ApiResponse.error("결제 처리에 실패했습니다.");
+        }
+    }
+
+    @lombok.Data
+    public static class PaymentRequest {
+        private String paymentMethod;
+        private Integer amount;
+    }
+
 }
