@@ -5,11 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
@@ -22,21 +24,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.apache.commons.io.FilenameUtils;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
-import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.dto.Lesson;
+import com.aloha.teamproject.dto.LessonCardItem;
+import com.aloha.teamproject.dto.Subject;
+import com.aloha.teamproject.dto.TutorCareer;
 import com.aloha.teamproject.dto.TutorDocument;
+import com.aloha.teamproject.dto.TutorList;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
 import com.aloha.teamproject.dto.UserAuth;
+import com.aloha.teamproject.service.LessonService;
+import com.aloha.teamproject.service.SubjectService;
+import com.aloha.teamproject.service.TutorCareerService;
 import com.aloha.teamproject.service.TutorDocumentService;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
 import com.aloha.teamproject.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +61,11 @@ public class TutorController {
     private final TutorDocumentService tutorDocumentService;
     private final TutorFieldService tutorFieldService;
     private final TutorMyPageService tutorMyPageService;
-    private final UserService userService;
+    private final TutorCareerService tutorCareerService;
     private final TutorListService tutorListService;
+    private final UserService userService;
+    private final SubjectService subjectService;
+    private final LessonService lessonService;
 
     private static final String DOC_UPLOAD_DIR = "uploads/tutors/documents/";
 
@@ -190,14 +202,64 @@ public class TutorController {
             TutorProfile profile = TutorProfile.builder()
                                                 .userId(authentication.getName())
                                                 .profileImg(profileImgPath) // 파일 경로
+                                                .bankName(request.getBasicBankName())
+                                                .accountNumber(request.getBasicAccountNumber())
+                                                .accountHolder(request.getBasicAccountHolder())
                                                 .headline(request.getHeadline())
                                                 .bio(request.getBio())
                                                 .selfIntro(request.getSelfIntro())
                                                 .videoUrl(request.getVideoUrl())
                                                 .build();
+            
+            ObjectMapper mapper = new ObjectMapper();
 
+            List<LessonCardItem> lessonCards;
+            if ( !StringUtils.hasText(request.getLessonCardsJson()) ) {
+                lessonCards = Collections.emptyList();
+            } else {
+                lessonCards = Arrays.asList(mapper.readValue(
+                request.getLessonCardsJson(), 
+                LessonCardItem[].class
+            ));
+            }
+
+            
+            for (LessonCardItem card : lessonCards) {
+                Subject subject = subjectService.selectByName(card.getSubject());
+
+                if ( subject == null ) {
+                    log.warn("존재하지 않는 과목명: {}", card.getSubject());
+                    continue;
+                }
+
+                String subjectId = subject.getId();
+
+                Lesson lesson = Lesson.builder()
+                                      .userId(authentication.getName())
+                                      .title(card.getSubject() + "-" + card.getField())
+                                      .price(card.getPrice())
+                                      .fieldId(card.getFieldId())
+                                      .subjectId(subjectId)
+                                      .build();
+
+                lessonService.insert(lesson);
+            }
+
+
+            List<TutorCareer.Request.CareerItem> careers;
+            if ( !StringUtils.hasText(request.getCareersJson()) ) {
+                careers = Collections.emptyList();
+            } else {
+                careers = Arrays.asList(mapper.readValue(
+                request.getCareersJson(), 
+                TutorCareer.Request.CareerItem[].class
+            ));
+            }
+            
             tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
+            
+            tutorCareerService.insertBatch(careers);
 
             userService.deleteAuth(authentication.getName(), "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
@@ -225,9 +287,9 @@ public class TutorController {
             @RequestParam(value = "bio", required = false) String bio,
             @RequestParam(value = "selfIntro", required = false) String selfIntro,
             @RequestParam(value = "videoUrl", required = false) String videoUrl,
-            @RequestParam(value = "bankName", required = false) String bankName,
-            @RequestParam(value = "accountNumber", required = false) String accountNumber,
-            @RequestParam(value = "accountHolder", required = false) String accountHolder,
+            @RequestParam(value = "basicBankName", required = false) String basicBankName,
+            @RequestParam(value = "basicAccountNumber", required = false) String basicAccountNumber,
+            @RequestParam(value = "basicAccountHolder", required = false) String basicAccountHolder,
             @RequestParam(value = "profileImg", required = false) MultipartFile profileImg
     ) throws Exception {
 
@@ -254,9 +316,9 @@ public class TutorController {
             profile.setBio(bio);
             profile.setSelfIntro(selfIntro);
             profile.setVideoUrl(videoUrl);
-            profile.setBankName(bankName);
-            profile.setAccountNumber(accountNumber);
-            profile.setAccountHolder(accountHolder);
+            profile.setBankName(basicBankName);
+            profile.setAccountNumber(basicAccountNumber);
+            profile.setAccountHolder(basicAccountHolder);
 
             // 프로필 이미지
             if (profileImg != null && !profileImg.isEmpty()) {

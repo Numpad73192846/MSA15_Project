@@ -20,6 +20,7 @@ public class Lesson {
     private String description;
     private String status;
     private BigDecimal price;
+    private String fieldId;
 
     @Data
     @Builder
@@ -30,6 +31,7 @@ public class Lesson {
         private String title;
         private String description;
         private BigDecimal price;
+        private String fieldId;
     }
 
     @Data

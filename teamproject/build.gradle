@@ -60,6 +60,8 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
 	implementation 'commons-io:commons-io:2.15.1'
+
+	implementation("com.openai:openai-java:4.18.0")
 }
 
 tasks.named('test') {

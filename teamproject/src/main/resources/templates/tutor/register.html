@@ -42,7 +42,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">은행명</label>
-                                        <select class="form-select" id="bankName" required>
+                                        <select class="form-select" id="basicBankName" required>
                                             <option value="">은행을 선택하세요</option>
                                             <option value="국민은행">국민은행</option>
                                             <option value="우리은행">우리은행</option>
@@ -62,11 +62,11 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">계좌번호</label>
-                                        <input type="text" class="form-control" id="accountNumber" placeholder="계좌번호 입력" required>
+                                        <input type="text" class="form-control" id="basicAccountNumber" placeholder="계좌번호 입력" required>
                                     </div>
                                     <div class="col-md-12">
                                         <label class="form-label">예금주명</label>
-                                        <input type="text" class="form-control" id="accountHolder" placeholder="예금주명 입력" required>
+                                        <input type="text" class="form-control" id="basicAccountHolder" placeholder="예금주명 입력" required>
                                     </div>
                                 </div>
                             </div>
@@ -144,9 +144,9 @@
 
                 basicName: document.getElementById('basicName'),
                 basicPhone: document.getElementById('basicPhone'),
-                bankName: document.getElementById('bankName'),
-                accountNumber: document.getElementById('accountNumber'),
-                accountHolder: document.getElementById('accountHolder'),
+                basicBankName: document.getElementById('basicBankName'),
+                basicAccountNumber: document.getElementById('basicAccountNumber'),
+                basicAccountHolder: document.getElementById('basicAccountHolder'),
                 headline: document.getElementById('headline'),
                 bio: document.getElementById('bio'),
                 selfIntro: document.getElementById('selfIntro'),
@@ -244,13 +244,6 @@
                     return;
                 }
 
-                // 튜터 권한 체크를 완화 (회원가입 진행 중일 수 있으므로)
-                // if (!isTutor(me.authList)) {
-                //     alert('튜터 권한이 필요합니다.');
-                //     location.href = '/';
-                //     return;
-                // }
-
                 // 사용자 이름 자동 채우기 (읽기 전용)
                 if (me.name) {
                     document.getElementById('basicName').value = me.name;
@@ -260,9 +253,9 @@
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
                 if (savedData.basicName) document.getElementById('basicName').value = savedData.basicName;
                 if (savedData.basicPhone) document.getElementById('basicPhone').value = savedData.basicPhone;
-                if (savedData.bankName) document.getElementById('bankName').value = savedData.bankName;
-                if (savedData.accountNumber) document.getElementById('accountNumber').value = savedData.accountNumber;
-                if (savedData.accountHolder) document.getElementById('accountHolder').value = savedData.accountHolder;
+                if (savedData.basicBankName) document.getElementById('basicBankName').value = savedData.basicBankName;
+                if (savedData.basicAccountNumber) document.getElementById('basicAccountNumber').value = savedData.basicAccountNumber;
+                if (savedData.basicAccountHolder) document.getElementById('basicAccountHolder').value = savedData.basicAccountHolder;
                 if (savedData.headline) document.getElementById('headline').value = savedData.headline;
                 if (savedData.bio) document.getElementById('bio').value = savedData.bio;
                 if (savedData.selfIntro) document.getElementById('selfIntro').value = savedData.selfIntro;
@@ -308,15 +301,15 @@
 
                 const basicName = EL.basicName.value.trim();
                 const basicPhone = EL.basicPhone.value.trim();
-                const bankName = EL.bankName.value.trim();
-                const accountNumber = EL.accountNumber.value.trim();
-                const accountHolder = EL.accountHolder.value.trim();
+                const basicBankName = EL.basicBankName.value.trim();
+                const basicAccountNumber = EL.basicAccountNumber.value.trim();
+                const basicAccountHolder = EL.basicAccountHolder.value.trim();
                 const headline = EL.headline.value.trim();
                 const bio = EL.bio.value.trim();
                 const selfIntro = EL.selfIntro.value.trim();
                 const videoUrl = EL.videoUrl.value.trim();
 
-                if (!basicName || !basicPhone || !bankName || !accountNumber || !accountHolder || !headline || !bio || !selfIntro) {
+                if (!basicName || !basicPhone || !basicBankName || !basicAccountNumber || !basicAccountHolder || !headline || !bio || !selfIntro) {
                     alert('필수 항목을 모두 입력해주세요.');
                     return;
                 }
@@ -324,9 +317,9 @@
                 const step1Data = {
                     basicName: basicName,
                     basicPhone: basicPhone,
-                    bankName: bankName,
-                    accountNumber: accountNumber,
-                    accountHolder: accountHolder,
+                    basicBankName: basicBankName,
+                    basicAccountNumber: basicAccountNumber,
+                    basicAccountHolder: basicAccountHolder,
                     headline: headline,
                     bio: bio,
                     selfIntro: selfIntro,

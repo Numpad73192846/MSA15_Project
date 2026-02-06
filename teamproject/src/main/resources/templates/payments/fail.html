@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main_layout}">
+<head>
+    <th:block layout:fragment="title">
+        <title>결제 실패 | 튜터 플랫폼</title>
+    </th:block>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="container my-5" style="max-width: 720px;">
+        <div class="text-center">
+            <h2 class="fw-bold text-danger">결제 실패</h2>
+            <p class="text-muted">결제가 취소되거나 실패했습니다.</p>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+                <div class="mb-2">결제 ID: <span id="paymentId"></span></div>
+                <div class="mb-2">에러 코드: <span id="code"></span></div>
+                <div class="mb-2">메시지: <span id="message"></span></div>
+                <div id="statusMsg" class="text-danger fw-semibold mt-3"></div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="/payments/checkout" class="btn btn-outline-primary">다시 시도</a>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="extra-scripts">
+    <script>
+        const params = new URLSearchParams(location.search);
+        const paymentId = params.get('paymentId');
+        const code = params.get('code');
+        const message = params.get('message');
+
+        document.getElementById('paymentId').textContent = paymentId || '-';
+        document.getElementById('code').textContent = code || '-';
+        document.getElementById('message').textContent = message || '-';
+
+        document.getElementById('statusMsg').textContent = '임시 화면(백엔드 연동 전)';
+    </script>
+</th:block>
+</body>
+</html>

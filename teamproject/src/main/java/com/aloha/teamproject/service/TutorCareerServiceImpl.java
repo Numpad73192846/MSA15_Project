@@ -24,6 +24,11 @@ public class TutorCareerServiceImpl extends BaseServiceImpl implements TutorCare
     }
 
     @Override
+    public int insertBatch(List<TutorCareer> careers) throws Exception {
+        return tutorCareerMapper.insertBatch(careers);
+    }
+
+    @Override
     @Transactional
     public void replaceCareers(String userId, List<TutorCareer.Request.CareerItem> careers) throws Exception {
         tutorCareerMapper.deleteByUserId(userId);

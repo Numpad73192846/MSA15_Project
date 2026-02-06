@@ -115,6 +115,7 @@
   z-index: 2;
   background: var(--c-bg);
   border-bottom: 1px solid var(--c-border);
+  padding-right: 12px;
 }
 
 .dayHead{
@@ -162,6 +163,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--c-bg);
+  scrollbar-gutter: stable;
 }
 
 .dayCon > li{
@@ -202,10 +204,19 @@
   transition: background-color .12s ease, border-color .12s ease;
 }
 
-/* hover는 담백하게 */
-.sch_time:not(.off):not(.booked) a:hover{
-  /* background-color: var(--c-soft); */
+/* hover */
+.sch_time:not(.off):not(.booked):not(.selected) a:hover{
+  background-color: var(--c-soft);
   border-color: #2563eb;
+  transform: scale(1.06);
+  transition: transform .12s ease;
+}
+
+.sch_time.selected a:hover{
+  background-color: #1d4eb8;
+  border-color: #d6dae0;
+  transform: scale(1.06);
+  transition: transform .12s ease;
 }
 
 /* disabled */

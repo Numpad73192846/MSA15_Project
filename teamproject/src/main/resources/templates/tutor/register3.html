@@ -6,22 +6,40 @@
         <link rel="stylesheet" href="/css/tutor-register-admin.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <style>
-            /* Step4 카드/툴바 정리 */
-            #scheduleToolbar{
-            padding: 10px 12px;
-            border: 1px solid #eef1f6;
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+            .section-block{
+                border: 1px solid #e5e7eb;
+                background: #f8fafc;
+                border-radius: 14px;
+                padding: 16px;
+            }
+            .section-title{
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-weight:700;
+                font-size:1rem;
+                margin-bottom:6px;
+            }
+            .section-title.main-title{
+                font-size:1.5rem;
             }
 
-            #btnApplyWeekTo9Weeks{
-            border-radius: 999px;
-            padding-left: 14px;
-            padding-right: 14px;
+            .section-sub.main-sub{
+                font-size:1rem;
             }
 
-
+            .section-title .dot{
+                width:8px;
+                height:8px;
+                border-radius:999px;
+                background:#2563eb;
+                display:inline-block;
+            }
+            .section-sub{
+                color:#6b7280;
+                font-size:.85rem;
+                margin-bottom:12px;
+            }
         </style>
      
     </th:block>
@@ -41,22 +59,22 @@
                 <div class="card-body p-4">
                     <form id="tutorProfileForm">
                         <div class="mb-4">
-                            <h5 class="fw-bold">수업 가능 시간대</h5>
-                            <p class="text-muted small mb-3">요일별 기본 시간대를 설정하고, 캘린더에서 수업 가능한 시간을 선택하세요.</p>
+                            <div class="section-title main-title">수업 가능 시간대</div>
+                            <div class="section-sub main-sub">요일별 기본 시간대를 설정하고, 캘린더에서 수업 가능한 시간을 선택하세요.</div>
 
                             <!-- 기본 시간대 설정 -->
-                            <div class="card border-0 bg-light mb-3">
-                                <div class="card-body p-3">
-                                    <h6 class="fw-bold mb-2">기본 수업 가능 시간대</h6>
-                                    <p class="text-muted small mb-3">요일별로 여러 구간을 추가할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</p>
-                                    <div id="baseTimeRangeEditor"></div>
-                                    <div class="text-muted small mt-2">설정된 시간대만 캘린더에 표시됩니다.</div>
-                                </div>
+                            <div class="section-block mb-3">
+                                <div class="section-title">기본 수업 가능 시간대</div>
+                                <div class="section-sub">요일별로 여러 구간을 추가할 수 있습니다. 예: 08:00~09:30, 20:00~23:30</div>
+                                <div id="baseTimeRangeEditor"></div>
+                                <div class="text-muted small mt-2">설정된 시간대만 캘린더에 표시됩니다.</div>
                             </div>
 
                             <!-- 주간 캘린더 -->
-                            <div class="mb-3">
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="scheduleToolbar">
+                            <div class="section-block mb-3" style="background:#fff;">
+                                <div class="section-title">주간 캘린더</div>
+                                <div class="section-sub">원하는 시간을 클릭해 선택/해제하세요.</div>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                                     <div class="tc-toolbar">
                                         <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
                                             <i class="bi bi-chevron-left"></i>
@@ -64,11 +82,6 @@
                                         <div class="tc-range" id="weekRangeLabel">2026.02.03 ~ 2026.02.09</div>
                                         <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
                                             <i class="bi bi-chevron-right"></i>
-                                        </button>
-                                    </div>
-                                    <div class="ms-auto">
-                                        <button type="button" class="btn btn-primary btn-sm" id="btnApplyWeekTo9Weeks">
-                                            9주 자동 적용
                                         </button>
                                     </div>
                                 </div>
@@ -98,10 +111,11 @@
                                     </div>
                                 </div>
 
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-hand-index"></i> 클릭하여 시간을 선택/해제하세요
-                                    </small>
+                                <div class="mt-4">
+                                    <button type="button" class="btn btn-outline-primary" id="btnApplyPattern">
+                                        <i class="bi bi-arrow-repeat"></i> 이번 주 설정을 9주까지 적용
+                                    </button>
+                                    <small class="text-muted ms-2">현재 주의 패턴을 앞으로 9주간 반복합니다</small>
                                 </div>
                             </div>
 
@@ -442,13 +456,13 @@
 
                 renderBaseTimeEditor();
 
-                document.getElementById('btnApplyWeekTo9Weeks').addEventListener('click', () => {
-                    if (!confirm('이번 주 설정을 앞으로 9주까지 적용하시겠습니까?\n(기존 설정은 덮어씌워집니다)')) {
+                document.getElementById('btnApplyPattern').addEventListener('click', () => {
+                    if (!confirm('현재 주의 패턴을 앞으로 9주간 반복 적용하시겠습니까?')) {
                         return;
                     }
                     calendar.applyWeekPattern(9);
                     document.getElementById('availableTime').value = JSON.stringify(calendar.getSelectedData());
-                    alert('9주까지 설정이 적용되었습니다.');
+                    alert('9주간의 스케줄이 적용되었습니다.');
                 });
             });
 
@@ -492,6 +506,9 @@
                 // Step 1: 기본 정보
                 formData.append('basicName', step1Data.basicName);
                 formData.append('basicPhone', step1Data.basicPhone);
+                formData.append('basicBankName', step1Data.basicBankName);
+                formData.append('basicAccountNumber', step1Data.basicAccountNumber);
+                formData.append('basicAccountHolder', step1Data.basicAccountHolder);
                 formData.append('headline', step1Data.headline);
                 formData.append('bio', step1Data.bio);
                 formData.append('selfIntro', step1Data.selfIntro);
@@ -513,7 +530,7 @@
                 (step2Data.educationCertificates || []).forEach(id =>
                     formData.append('educationCertificates', id)
                 );
-
+                
                 // Step 3
                 formData.append('lessonSubjects', step3Data.lessonSubjects || '');
                 (step3Data.fieldIds || []).forEach(id =>
