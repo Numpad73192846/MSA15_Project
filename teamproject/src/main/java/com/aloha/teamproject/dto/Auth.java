@@ -19,4 +19,11 @@ public class Auth {
     public static class RefreshTokenRequest {
         private String refreshToken;
     }
+
+    // OAuth2 설정 완료 후 활성화
+    // @Data
+    // public static class OAuthRoleRequest {
+    //     private String token;
+    //     private String role;
+    // }
 }

@@ -23,6 +23,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aloha.teamproject.security.JwtAuthenticationFilter;
+import com.aloha.teamproject.service.auth.CustomOAuth2UserService;
+import com.aloha.teamproject.security.handler.OAuth2AuthenticationSuccessHandler;
+import com.aloha.teamproject.security.handler.OAuth2AuthenticationFailureHandler;
 import com.aloha.teamproject.service.UserDetailServiceImpl;
 
 @Slf4j
@@ -33,6 +36,9 @@ public class SecurityConfig {
 
     private final UserDetailServiceImpl userDetailServiceImpl;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2FailureHandler;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -109,6 +115,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
                 .requestMatchers("/tutor/mypage", "/mypage", "/member/mypage").permitAll()
                 .requestMatchers("/tutor/schedule-edit").permitAll()
@@ -130,10 +137,21 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             );
 
-        // 세션 비활성화
+        // OAuth2 로그인 설정
+        http
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/auth/login")
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
+            );
+
+        // 세션 관리 (OAuth2 사용 시 IF_REQUIRED)
         http
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             );
 
         // JWT 인증 필터 설정

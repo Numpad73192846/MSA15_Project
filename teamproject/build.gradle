@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -44,11 +45,12 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-	// P6Spy 로깅 라이브러리
+	// P6Spy 로깅 ?�이브러�?
 	implementation 'p6spy:p6spy:3.9.1'
 
-	// PageHelper 페이징 처리 라이브 러리
+	// PageHelper ?�이�?처리 ?�이�??�리
 	implementation 'com.github.pagehelper:pagehelper-spring-boot-starter:2.1.1'
 
 	// Springdoc openapi
@@ -69,3 +71,4 @@ tasks.named('test') {
 tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs.add('-parameters')
 }
+

@@ -99,9 +99,56 @@ public class AuthApiController {
 			log.error("로그아웃 중 오류가 발생했습니다.", e);
 			return ApiResponse.error("로그아웃에 실패했습니다.");
 		}
-		
-
 	}
+
+	@PostMapping("/social-login")
+	public ApiResponse<Auth.TokenResponse> socialLogin(@RequestBody java.util.Map<String, String> request,
+			HttpServletRequest httpRequest,
+			HttpServletResponse response) {
+		
+		Auth.TokenResponse result;
+
+		try {
+			String provider = request.get("provider");
+			String role = request.get("role");
+			log.info("소셜 로그인 요청: provider={}, role={}", provider, role);
+			
+			result = loginService.socialLogin(provider, role);
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			setSessionAuthentication(httpRequest, result);
+			
+			return ApiResponse.ok(result, SuccessCode.OK);
+		} catch (AppException e) {
+			log.error("소셜 로그인 실패: {}", e.getMessage());
+			return ApiResponse.error(e.getErrorCode().getMessage());
+		} catch (Exception e) {
+			log.error("소셜 로그인 중 오류가 발생했습니다.", e);
+			return ApiResponse.error("소셜 로그인에 실패했습니다.");
+		}
+	}
+
+	// OAuth 역할 선택 API (OAuth2 설정 완료 후 활성화)
+	// @PostMapping("/oauth/role")
+	// public ApiResponse<Auth.TokenResponse> selectOAuthRole(@RequestBody Auth.OAuthRoleRequest request,
+	// 		HttpServletRequest httpRequest,
+	// 		HttpServletResponse response) {
+	// 	try {
+	// 		log.info("OAuth 역할 선택 요청: {}", request.getRole());
+			
+	// 		Auth.TokenResponse result = loginService.completeOAuthSignup(request.getToken(), request.getRole());
+			
+	// 		setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+	// 		setSessionAuthentication(httpRequest, result);
+			
+	// 		return ApiResponse.ok(result, SuccessCode.OK);
+	// 	} catch (AppException e) {
+	// 		log.error("OAuth 역할 선택 실패: {}", e.getMessage());
+	// 		return ApiResponse.error(e.getErrorCode().getMessage());
+	// 	} catch (Exception e) {
+	// 		log.error("OAuth 역할 선택 중 오류가 발생했습니다.", e);
+	// 		return ApiResponse.error("역할 선택에 실패했습니다.");
+	// 	}
+	// }
 
 	private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
 		ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
