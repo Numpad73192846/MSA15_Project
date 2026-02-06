@@ -49,7 +49,7 @@
     </select>
 
     <!-- 속담 추가 -->
-    <insert id="insert" parameterType="com.aloha.teamproject.dto.KoreanProverb">
+    <insert id="insert" parameterType="KoreanProverb">
         INSERT INTO korean_proverb (
             question, answer, option1, option2, option3, option4, 
             meaning, difficulty, is_active
@@ -60,7 +60,7 @@
     </insert>
 
     <!-- 속담 수정 -->
-    <update id="update" parameterType="com.aloha.teamproject.dto.KoreanProverb">
+    <update id="update" parameterType="KoreanProverb">
         UPDATE korean_proverb
         SET question = #{question},
             answer = #{answer},

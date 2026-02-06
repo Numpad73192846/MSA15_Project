@@ -188,7 +188,7 @@ public class TutorController {
             }
 
             TutorProfile profile = TutorProfile.builder()
-                                                .userId(authentication.getName())
+                                                .userId(authentication.getName())                                               
                                                 .profileImg(profileImgPath) // 파일 경로
                                                 .headline(request.getHeadline())
                                                 .bio(request.getBio())
