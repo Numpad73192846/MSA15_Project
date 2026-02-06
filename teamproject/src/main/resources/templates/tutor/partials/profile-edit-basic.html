@@ -3,7 +3,18 @@
     <div class="card-body">
       <div class="step-section-title">기본 정보</div>
       <div class="step-section-desc">이름, 연락처, 프로필 이미지를 수정하세요</div>
-
+      <div class="admin-box mb-3">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">이메일</label>
+            <input type="text" class="form-control" id="editEmail" name="email" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">닉네임</label>
+            <input type="text" class="form-control" id="editNickname" name="nickname" disabled>
+          </div>
+        </div>
+      </div>
       <div class="admin-box mb-3">
         <div class="row g-3">
           <div class="col-md-6">
@@ -29,7 +40,7 @@
                 <div class="fw-semibold">파일 업로드</div>
                 <div class="small text-muted">JPG, PNG 가능 · 최대 5MB</div>
               </div>
-              <label class="btn btn-outline-primary btn-sm mb-0">
+              <label for="editProfileImg" class="btn btn-outline-primary btn-sm mb-0">
                 파일 선택
                 <input type="file" class="d-none" id="editProfileImg" name="profileImg" accept="image/*">
               </label>
@@ -40,3 +51,10 @@
     </div>
   </div>
 </section>
+<!-- 섹션별 저장 버튼 -->
+<div class="d-flex justify-content-end gap-2">
+    <a href="/tutor/mypage" class="btn btn-outline-secondary px-4">취소</a>
+    <button type="button" class="btn btn-primary px-4" onclick="saveSection('basic')">
+        <i class="bi bi-check-lg me-1"></i> 기본 정보 저장
+    </button>
+</div>

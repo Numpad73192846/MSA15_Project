@@ -70,6 +70,12 @@
                                 <a class="list-group-item" data-section="documents">
                                     <i class="bi bi-file-earmark-arrow-up me-2"></i> 서류 업로드
                                 </a>
+                                <a class="list-group-item" data-section="lessons">
+                                    <i class="bi bi-book me-2"></i> 수업관리
+                                </a>
+                                <a class="list-group-item" data-section="schedule">
+                                   <i class="bi bi-calendar2-check me-2"></i> 스케줄 관리
+                                </a>
                                 <a class="list-group-item" data-section="security">
                                     <i class="bi bi-shield-lock me-2"></i> 보안
                                 </a>
@@ -84,12 +90,12 @@
                         <div id="profileEditContainer"></div>
 
                         <!-- 저장 버튼 -->
-                        <div class="d-flex justify-content-end gap-2">
+                        <!-- <div class="d-flex justify-content-end gap-2">
                             <a href="/tutor/mypage" class="btn btn-outline-secondary px-4">취소</a>
                             <button type="submit" class="btn btn-primary px-4">
                                 <i class="bi bi-check-lg me-1"></i> 저장
                             </button>
-                        </div>
+                        </div> -->
                     </form>
                 </main>
             </div>
@@ -137,9 +143,11 @@
                 return response;
             }
 
-            const sections = ["basic","profile","account","documents","security"];
+            const sections = ["basic","profile","account","documents","lessons","schedule","security"];
             const profileState = {
                 loginId: "",
+                email: "",
+                nickname: "",
                 name: "",
                 phone: "",
                 headline: "",
@@ -156,6 +164,8 @@
             };
 
             function collectSectionValues(){
+                if (document.getElementById('editEmail')) profileState.email = document.getElementById('editEmail').value || "";
+                if (document.getElementById('editNickname')) profileState.nickname = document.getElementById('editNickname').value || "";
                 if (document.getElementById('editName')) profileState.name = document.getElementById('editName').value || "";
                 if (document.getElementById('editPhone')) profileState.phone = document.getElementById('editPhone').value || "";
                 if (document.getElementById('editHeadline')) profileState.headline = document.getElementById('editHeadline').value || "";
@@ -172,22 +182,91 @@
                 if (profileImgInput && profileImgInput.files[0]) {
                     profileState.profileImgFile = profileImgInput.files[0];
                 }
+
+                // 수정할 것
+                // const el = document.getElementById('editPhone');
+                // if (el && el.value.trim() !== "") {
+                //     profileState.phone = el.value;
+                // }
             }
 
             function applyStateToSection(){
-                if (document.getElementById('editName')) document.getElementById('editName').value = profileState.name || "";
-                if (document.getElementById('editPhone')) document.getElementById('editPhone').value = profileState.phone || "";
-                if (document.getElementById('editHeadline')) document.getElementById('editHeadline').value = profileState.headline || "";
-                if (document.getElementById('editBio')) document.getElementById('editBio').value = profileState.bio || "";
-                if (document.getElementById('editSelfIntro')) document.getElementById('editSelfIntro').value = profileState.selfIntro || "";
-                if (document.getElementById('editVideoUrl')) document.getElementById('editVideoUrl').value = profileState.videoUrl || "";
-                if (document.getElementById('editBankName')) document.getElementById('editBankName').value = profileState.bankName || "";
-                if (document.getElementById('editAccountNumber')) document.getElementById('editAccountNumber').value = profileState.accountNumber || "";
-                if (document.getElementById('editAccountHolder')) document.getElementById('editAccountHolder').value = profileState.accountHolder || "";
-                if (document.getElementById('currentProfileImg') && profileState.profileImgUrl) {
-                    document.getElementById('currentProfileImg').innerHTML =
+                const elements = {
+                    editEmail: document.getElementById('editEmail'),
+                    editNickname: document.getElementById('editNickname'),
+                    editName: document.getElementById('editName'),
+                    editPhone: document.getElementById('editPhone'),
+                    editHeadline: document.getElementById('editHeadline'),
+                    editBio: document.getElementById('editBio'),
+                    editSelfIntro: document.getElementById('editSelfIntro'),
+                    editVideoUrl: document.getElementById('editVideoUrl'),
+                    editBankName: document.getElementById('editBankName'),
+                    editAccountNumber: document.getElementById('editAccountNumber'),
+                    editAccountHolder: document.getElementById('editAccountHolder'),
+                    currentProfileImg: document.getElementById('currentProfileImg')
+                };
+
+                // 안전하게 값 설정
+                if (elements.editEmail) elements.editEmail.value = profileState.email || "";
+                if (elements.editNickname) elements.editNickname.value = profileState.nickname || "";
+                if (elements.editName) elements.editName.value = profileState.name || "";
+                if (elements.editPhone) elements.editPhone.value = profileState.phone || "";
+                if (elements.editHeadline) elements.editHeadline.value = profileState.headline || "";
+                if (elements.editBio) elements.editBio.value = profileState.bio || "";
+                if (elements.editSelfIntro) elements.editSelfIntro.value = profileState.selfIntro || "";
+                if (elements.editVideoUrl) elements.editVideoUrl.value = profileState.videoUrl || "";
+                if (elements.editBankName) elements.editBankName.value = profileState.bankName || "";
+                if (elements.editAccountNumber) elements.editAccountNumber.value = profileState.accountNumber || "";
+                if (elements.editAccountHolder) elements.editAccountHolder.value = profileState.accountHolder || "";
+                
+                // 프로필 이미지 처리
+                if (elements.currentProfileImg && profileState.profileImgUrl) {
+                    elements.currentProfileImg.classList.remove('bg-primary');
+                    elements.currentProfileImg.innerHTML =
                         `<img src="${profileState.profileImgUrl}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
-                }
+                } else if (elements.currentProfileImg) {
+                    elements.currentProfileImg.classList.add('bg-primary');
+                    elements.currentProfileImg.innerHTML = `
+                        <span class="fs-1">👨‍🏫</span>
+                    `;
+                }                
+            }
+
+            // 프로필 이미지 변경 미리보기
+            function bindProfileImagePreview() {
+                const profileImgInput = document.getElementById('editProfileImg');
+                const currentProfileImg = document.getElementById('currentProfileImg');                
+                
+                if (!profileImgInput || !currentProfileImg) return;               
+
+                profileImgInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // 상태 저장 (submit 때 사용)
+                    profileState.profileImgFile = file;
+
+                    // 미리보기 URL 생성
+                    const previewUrl = URL.createObjectURL(file);
+
+                    // 🔥 currentProfileImg 안에 img가 있는지 확인
+                    const imgEl = currentProfileImg.querySelector('img');
+
+                    if (imgEl) {
+                        // ✅ 이미 이미지가 있으면 src만 교체
+                        imgEl.src = previewUrl;
+                    } else {
+                        // ✅ 이미지가 없으면 (이모지 상태)
+                        currentProfileImg.classList.remove('bg-primary');
+                        currentProfileImg.innerHTML = `
+                            <img
+                                src="${previewUrl}"
+                                class="rounded-circle w-100 h-100 object-fit-cover"
+                                alt="프로필 이미지 미리보기"
+                            >
+                        `;
+                    }
+                });
             }
 
             let currentSection = "basic";
@@ -241,21 +320,33 @@
                 });
 
                 const container = document.getElementById('profileEditContainer');
-                if (!container) return;
+                if (!container) return;                
 
                 try {
+                    console.log(`[showSection] 요청 URL: /tutor/profile-edit/partial/${safeKey}`);
                     const res = await fetch(`/tutor/profile-edit/partial/${safeKey}`);
-                    if (!res.ok) throw new Error('load fail');
-                    container.innerHTML = await res.text();
+                    console.log(`[showSection] 응답 상태: ${res.status} ${res.statusText}`);
+                    
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        console.error(`[showSection] 응답 내용: ${errorText}`);
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    
+                    const html = await res.text();
+                    console.log(`[showSection] HTML 로드 성공 (${html.length} chars)`);
+                    container.innerHTML = html;
                     applyStateToSection();
                     bindSectionHandlers(safeKey);
                     currentSection = safeKey;
                 } catch (e) {
+                    console.error('[showSection] 에러 발생:', e);
                     container.innerHTML = `
                       <div class="card edit-card shadow-sm">
                         <div class="card-body">
                           <div class="panel-title mb-1">불러오기 실패</div>
                           <div class="muted small">잠시 후 다시 시도해주세요.</div>
+                          <div class="text-danger small mt-2">에러: ${e.message}</div>
                         </div>
                       </div>
                     `;
@@ -263,6 +354,9 @@
             }
 
             function bindSectionHandlers(key){
+                if (key === "basic") {
+                    bindProfileImagePreview();
+                }
                 if (key === "documents") {
                     initDocumentSection();
                 }
@@ -304,7 +398,8 @@
             });
 
             // 페이지 로드 시 데이터 바인딩
-            document.addEventListener('DOMContentLoaded', async function() {
+            document.addEventListener('DOMContentLoaded', async function() {                
+
                 try {
                     const authed = await ensureAuth();
                     if (!authed) {
@@ -323,13 +418,21 @@
                             document.getElementById('sidebarName').textContent = profile.name || '튜터';
                             document.getElementById('sidebarLoginId').textContent = profile.email || '';
                             if (profile.profileImg) {
+                                document.getElementById('sidebarProfileImg').classList.remove('bg-primary');
                                 document.getElementById('sidebarProfileImg').innerHTML = 
                                     `<img src="${profile.profileImg}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
                                 profileState.profileImgUrl = profile.profileImg;
+                            }else {
+                                document.getElementById('sidebarProfileImg').classList.add('bg-primary');
+                                document.getElementById('sidebarProfileImg').innerHTML = `
+                                    <span class="fs-1">👨‍🏫</span>
+                                `;
                             }
 
                             // 상태 저장
                             profileState.loginId = profile.email || '';
+                            profileState.email = profile.email || '';
+                            profileState.nickname = profile.nickname || '';
                             profileState.name = profile.name || '';
                             profileState.phone = profile.phone || '';
                             profileState.headline = profile.headline || '';
@@ -348,53 +451,89 @@
                 }
             });
 
-            // 폼 제출
-            document.getElementById('profileEditForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-
+            // 섹션별 저장 함수
+            async function saveSection(sectionType) {
                 collectSectionValues();
-
-                // 비밀번호 확인
-                if (profileState.password && profileState.password !== profileState.passwordConfirm) {
-                    alert('비밀번호가 일치하지 않습니다.');
-                    return;
-                }
-
+                
                 const formData = new FormData();
-                formData.set('name', profileState.name || '');
-                formData.set('phone', profileState.phone || '');
-                formData.set('headline', profileState.headline || '');
-                formData.set('bio', profileState.bio || '');
-                formData.set('selfIntro', profileState.selfIntro || '');
-                formData.set('videoUrl', profileState.videoUrl || '');
-                formData.set('bankName', profileState.bankName || '');
-                formData.set('accountNumber', profileState.accountNumber || '');
-                formData.set('accountHolder', profileState.accountHolder || '');
-                if (profileState.password) formData.set('password', profileState.password);
-                if (profileState.passwordConfirm) formData.set('passwordConfirm', profileState.passwordConfirm);
-
-                if (profileState.profileImgFile) {
-                    formData.set('profileImg', profileState.profileImgFile);
+                
+                // 섹션별로 필요한 데이터만 추가
+                switch(sectionType) {
+                    case 'basic':
+                        formData.set('name', profileState.name || '');
+                        formData.set('phone', profileState.phone || '');
+                        if (profileState.profileImgFile) {
+                            formData.set('profileImg', profileState.profileImgFile);
+                        }
+                        break;
+                        
+                    case 'profile':
+                        formData.set('headline', profileState.headline || '');
+                        formData.set('bio', profileState.bio || '');
+                        formData.set('selfIntro', profileState.selfIntro || '');
+                        formData.set('videoUrl', profileState.videoUrl || '');
+                        break;
+                        
+                    case 'account':
+                        formData.set('bankName', profileState.bankName || '');
+                        formData.set('accountNumber', profileState.accountNumber || '');
+                        formData.set('accountHolder', profileState.accountHolder || '');
+                        break;
+                        
+                    case 'security':
+                        if (profileState.password) {
+                            if (profileState.password !== profileState.passwordConfirm) {
+                                alert('비밀번호가 일치하지 않습니다.');
+                                return;
+                            }
+                            formData.set('password', profileState.password);
+                            formData.set('passwordConfirm', profileState.passwordConfirm);
+                        }
+                        break;
+                        
+                    default:
+                        console.error('알 수 없는 섹션 타입:', sectionType);
+                        return;
                 }
-
+                
                 try {
                     const response = await fetchWithAuth('/api/tutors', {
                         method: 'PUT',
                         body: formData
                     });
-
+                    
                     const result = await response.json();
                     if (result.success) {
-                        alert('프로필이 수정되었습니다.');
-                        location.href = '/tutor/mypage';
+                        // 성공 메시지
+                        const sectionNames = {
+                            'basic': '기본 정보',
+                            'profile': '프로필',
+                            'account': '계좌 정보',
+                            'security': '보안 설정'
+                        };
+                        alert(`${sectionNames[sectionType] || '섹션'}이(가) 저장되었습니다.`);
+                        
+                        // 사이드바 프로필 이미지 업데이트 (basic 섹션 저장 시)
+                        if (sectionType === 'basic' && profileState.profileImgFile) {
+                            const previewUrl = URL.createObjectURL(profileState.profileImgFile);
+                            const sidebarProfileImg = document.getElementById('sidebarProfileImg');
+                            if (sidebarProfileImg) {
+                                sidebarProfileImg.classList.remove('bg-primary');
+                                sidebarProfileImg.innerHTML = `<img src="${previewUrl}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
+                            }
+                        } 
+                        
                     } else {
-                        alert(result.message || '프로필 수정에 실패했습니다.');
+                        alert(result.message || `${sectionType} 섹션 저장에 실패했습니다.`);
                     }
                 } catch (error) {
-                    console.error('프로필 수정 실패:', error);
-                    alert('프로필 수정 중 오류가 발생했습니다.');
+                    console.error('섹션 저장 실패:', error);
+                    alert('저장 중 오류가 발생했습니다.');
                 }
-            });
+            }
+
+            // 폼 제출 기능 제거 (섹션별 저장으로 대체)
+            // document.getElementById('profileEditForm').addEventListener('submit', async function(e) {
 
             async function initDocumentSection(){
                 const uploadBtn = document.getElementById('btnDocUpload');
