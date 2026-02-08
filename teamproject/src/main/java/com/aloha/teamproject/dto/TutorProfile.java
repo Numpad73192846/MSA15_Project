@@ -59,5 +59,6 @@ public class TutorProfile {
         private String accountNumber;
         private String accountHolder;
         private List<String> fieldIds;
+        private String phone;
     }
 }

@@ -162,7 +162,7 @@
                 profileImgFile: null,
                 profileImgUrl: ""
             };
-
+            
             function collectSectionValues(){
                 if (document.getElementById('editEmail')) profileState.email = document.getElementById('editEmail').value || "";
                 if (document.getElementById('editNickname')) profileState.nickname = document.getElementById('editNickname').value || "";
@@ -182,14 +182,8 @@
                 if (profileImgInput && profileImgInput.files[0]) {
                     profileState.profileImgFile = profileImgInput.files[0];
                 }
-
-                // 수정할 것
-                // const el = document.getElementById('editPhone');
-                // if (el && el.value.trim() !== "") {
-                //     profileState.phone = el.value;
-                // }
             }
-
+            
             function applyStateToSection(){
                 const elements = {
                     editEmail: document.getElementById('editEmail'),
@@ -230,7 +224,7 @@
                         <span class="fs-1">👨‍🏫</span>
                     `;
                 }                
-            }
+            }            
 
             // 프로필 이미지 변경 미리보기
             function bindProfileImagePreview() {
@@ -454,57 +448,35 @@
             // 섹션별 저장 함수
             async function saveSection(sectionType) {
                 collectSectionValues();
-                
                 const formData = new FormData();
-                
-                // 섹션별로 필요한 데이터만 추가
-                switch(sectionType) {
-                    case 'basic':
-                        formData.set('name', profileState.name || '');
-                        formData.set('phone', profileState.phone || '');
-                        if (profileState.profileImgFile) {
-                            formData.set('profileImg', profileState.profileImgFile);
-                        }
-                        break;
-                        
-                    case 'profile':
-                        formData.set('headline', profileState.headline || '');
-                        formData.set('bio', profileState.bio || '');
-                        formData.set('selfIntro', profileState.selfIntro || '');
-                        formData.set('videoUrl', profileState.videoUrl || '');
-                        break;
-                        
-                    case 'account':
-                        formData.set('bankName', profileState.bankName || '');
-                        formData.set('accountNumber', profileState.accountNumber || '');
-                        formData.set('accountHolder', profileState.accountHolder || '');
-                        break;
-                        
-                    case 'security':
-                        if (profileState.password) {
-                            if (profileState.password !== profileState.passwordConfirm) {
-                                alert('비밀번호가 일치하지 않습니다.');
-                                return;
-                            }
-                            formData.set('password', profileState.password);
-                            formData.set('passwordConfirm', profileState.passwordConfirm);
-                        }
-                        break;
-                        
-                    default:
-                        console.error('알 수 없는 섹션 타입:', sectionType);
-                        return;
+                // 모든 필드를 formData에 추가
+                formData.set('name', profileState.name || '');
+                formData.set('phone', profileState.phone || '');
+                formData.set('headline', profileState.headline || '');
+                formData.set('bio', profileState.bio || '');
+                formData.set('selfIntro', profileState.selfIntro || '');
+                formData.set('videoUrl', profileState.videoUrl || '');
+                formData.set('bankName', profileState.bankName || '');
+                formData.set('accountNumber', profileState.accountNumber || '');
+                formData.set('accountHolder', profileState.accountHolder || '');
+                if (profileState.profileImgFile) {
+                    formData.set('profileImg', profileState.profileImgFile);
                 }
-                
+                if (profileState.password) {
+                    if (profileState.password !== profileState.passwordConfirm) {
+                        alert('비밀번호가 일치하지 않습니다.');
+                        return;
+                    }
+                    formData.set('password', profileState.password);
+                    formData.set('passwordConfirm', profileState.passwordConfirm);
+                }
                 try {
                     const response = await fetchWithAuth('/api/tutors', {
                         method: 'PUT',
                         body: formData
                     });
-                    
                     const result = await response.json();
                     if (result.success) {
-                        // 성공 메시지
                         const sectionNames = {
                             'basic': '기본 정보',
                             'profile': '프로필',
@@ -512,8 +484,6 @@
                             'security': '보안 설정'
                         };
                         alert(`${sectionNames[sectionType] || '섹션'}이(가) 저장되었습니다.`);
-                        
-                        // 사이드바 프로필 이미지 업데이트 (basic 섹션 저장 시)
                         if (sectionType === 'basic' && profileState.profileImgFile) {
                             const previewUrl = URL.createObjectURL(profileState.profileImgFile);
                             const sidebarProfileImg = document.getElementById('sidebarProfileImg');
@@ -521,8 +491,7 @@
                                 sidebarProfileImg.classList.remove('bg-primary');
                                 sidebarProfileImg.innerHTML = `<img src="${previewUrl}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
                             }
-                        } 
-                        
+                        }
                     } else {
                         alert(result.message || `${sectionType} 섹션 저장에 실패했습니다.`);
                     }

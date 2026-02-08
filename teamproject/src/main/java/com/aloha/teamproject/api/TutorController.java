@@ -188,7 +188,8 @@ public class TutorController {
             }
 
             TutorProfile profile = TutorProfile.builder()
-                                                .userId(authentication.getName())                                               
+                                                .userId(authentication.getName())
+                                                .phone(request.getPhone())
                                                 .profileImg(profileImgPath) // 파일 경로
                                                 .headline(request.getHeadline())
                                                 .bio(request.getBio())
@@ -205,6 +206,7 @@ public class TutorController {
                                             .auth("ROLE_TUTOR")
                                             .build());
 
+            log.info("튜터 프로필 저장 완료. 연락처: {}", request.getPhone());
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
             log.error("/api/tutors/profile 저장 실패", e);
