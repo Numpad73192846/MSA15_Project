@@ -217,6 +217,21 @@
                 return JSON.parse(sessionStorage.getItem('tutorRegisterStep3') || '{}');
             }
 
+            async function loadSubjects() {
+                const response = await fetch('/api/subjects');
+                if (!response.ok) {
+                    console.error('Failed to load subjects');
+                    return;
+                }
+                const data = await response.json();
+                if (!data || data.success === false || !Array.isArray(data.data)) {
+                    console.error('Invalid subjects data');
+                    return;
+                }
+                const subjectNames = data.data.map((subject) => subject.name).filter(Boolean);
+                renderSubjectButtons(subjectNames);
+            }
+
             async function loadFields() {
                 const response = await fetch('/api/language-fields');
                 if (!response.ok) {
@@ -237,7 +252,7 @@
                     '영어', '한국어', '일본어', '중국어', '불어',
                     '스페인어', '독일어', '러시아어'
                 ];
-                renderSubjectButtons(subjectOptions);
+                await loadSubjects();
                 await loadFields();
 
                 // 이전에 저장된 데이터 불러오기

@@ -34,12 +34,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             HttpSession session = request.getSession();
             session.setAttribute("oauth2UserId", oauth2User.getUserId());
             session.setAttribute("oauth2UserNo", oauth2User.getNo());
-            getRedirectStrategy().sendRedirect(request, response, "/auth/login?needsRoleSelection=true");
+            getRedirectStrategy().sendRedirect(request, response, "/login?needsRoleSelection=true");
             return;
         }
 
         // 기존 사용자인 경우, 홈으로 리디렉션
         log.info("기존 사용자입니다. 홈으로 이동합니다.");
-        getRedirectStrategy().sendRedirect(request, response, "/");
+        getRedirectStrategy().sendRedirect(request, response, "/login?oauth2=success");
     }
 }

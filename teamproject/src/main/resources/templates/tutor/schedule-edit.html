@@ -150,9 +150,14 @@
             let baseTimeRanges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
             let calendar = null;
 
+            const AUTH_HEADERS = (() => {
+                const token = localStorage.getItem('accessToken');
+                return token ? { 'Authorization': `Bearer ${token}` } : null;
+            })();
+
             async function loadBaseTimeRanges() {
                 try {
-                    const response = await fetch('/api/tutors/me/time-ranges');
+                    const response = await fetch('/api/tutors/me/time-ranges', { headers: AUTH_HEADERS || {} });
                     if (!response.ok) throw new Error('Failed to load');
                     const result = await response.json();
                     
@@ -191,7 +196,7 @@
                     
                     const response = await fetch('/api/tutors/me/time-ranges', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', ...(AUTH_HEADERS || {}) },
                         body: JSON.stringify(timeRanges)
                     });
                     
@@ -319,7 +324,7 @@
                 try {
                     const { start, end } = getDateRangeForMaxWeeks(9);
                     
-                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+                    const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, { headers: AUTH_HEADERS || {} });
                     if (!response.ok) throw new Error('Failed to load');
                     
                     const result = await response.json();
@@ -377,6 +382,13 @@
                 renderBaseTimeEditor();
             }
 
+            document.addEventListener('DOMContentLoaded', () => {
+                if (!AUTH_HEADERS) {
+                    alert('???? ?????.');
+                    location.href = '/login';
+                    return;
+                }
+
             // Initialize on page load
             initCalendar();
 
@@ -408,7 +420,7 @@
                     
                     const response = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', ...(AUTH_HEADERS || {}) },
                         body: JSON.stringify(availabilities)
                     });
                     
@@ -421,6 +433,7 @@
                     console.error('저장 중 오류:', error);
                     alert('저장에 실패했습니다. 다시 시도해주세요.');
                 }
+            });
             });
         </script>
     </th:block>

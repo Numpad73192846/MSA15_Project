@@ -8,6 +8,7 @@
 	<resultMap id="ReviewMap" type="com.aloha.teamproject.dto.Review">
 		<id property="id" column="id"/>
 		<result property="bookingId" column="booking_id"/>
+		<result property="studentId" column="student_id"/>
 		<result property="rating" column="rating"/>
 		<result property="content" column="content"/>
 		<result property="studentName" column="student_name"/>
@@ -15,7 +16,7 @@
 	</resultMap>
 
 	<select id="selectReviewsByTutor" resultMap="ReviewMap">
-		SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, u.name AS student_name
+		SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, b.user_id AS student_id, u.name AS student_name
 		FROM review r
 		JOIN booking b ON r.booking_id = b.id
 		JOIN users u ON b.user_id = u.id
@@ -25,7 +26,7 @@
 	</select>
 
 	<select id="selectReviewByBookingId" resultMap="ReviewMap">
-		SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, u.name AS student_name
+		SELECT r.id, r.booking_id, r.rating, r.content, r.created_at, b.user_id AS student_id, u.name AS student_name
 		FROM review r
 		JOIN booking b ON r.booking_id = b.id
 		JOIN users u ON b.user_id = u.id

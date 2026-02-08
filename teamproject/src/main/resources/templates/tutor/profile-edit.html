@@ -285,7 +285,7 @@
                     return false;
                 }
 
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: profileState.loginId, password: currentPassword }),
@@ -309,6 +309,27 @@
                 document.getElementById('securityGate')?.classList.add('d-none');
                 document.getElementById('securityForm')?.classList.remove('d-none');
                 return true;
+            }
+
+            async function runEmbeddedScripts(root) {
+                const scripts = Array.from(root.querySelectorAll('script'));
+                for (const old of scripts) {
+                if (old.src) {
+                    if (document.querySelector(`script[src="${old.src}"]`)) continue;
+                    await new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = old.src;
+                    s.async = false;
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.body.appendChild(s);
+                    });
+                } else {
+                    const s = document.createElement('script');
+                    s.textContent = old.textContent;
+                    document.body.appendChild(s);
+                }
+                }
             }
 
             async function showSection(key){
@@ -336,6 +357,7 @@
                     const html = await res.text();
                     console.log(`[showSection] HTML 로드 성공 (${html.length} chars)`);
                     container.innerHTML = html;
+                    await runEmbeddedScripts(container);
                     applyStateToSection();
                     bindSectionHandlers(safeKey);
                     currentSection = safeKey;
@@ -350,6 +372,8 @@
                         </div>
                       </div>
                     `;
+
+
                 }
             }
 
@@ -403,7 +427,7 @@
                 try {
                     const authed = await ensureAuth();
                     if (!authed) {
-                        location.href = '/auth/login';
+                        location.href = '/login';
                         return;
                     }
 

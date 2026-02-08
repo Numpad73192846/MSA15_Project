@@ -224,7 +224,16 @@ class TutorCalendar {
             document.getElementById(this.options.containerId).classList.add('readonly');
         }
 
+        this.syncHeaderPadding();
         this.updateNavigationButtons();
+    }
+
+    syncHeaderPadding() {
+        const body = document.querySelector(`#${this.options.containerId} .dayCon`);
+        const wrap = document.getElementById(this.options.containerId);
+        if (!body || !wrap) return;
+        const scrollbarWidth = Math.max(0, body.offsetWidth - body.clientWidth);
+        wrap.style.setProperty('--tc-scrollbar-width', `${scrollbarWidth}px`);
     }
 
     toggleSlot(dateKey, time) {
@@ -329,6 +338,7 @@ class TutorCalendar {
         const btnPrev = document.getElementById('btnPrevWeek');
         const btnNext = document.getElementById('btnNextWeek');
         const body = document.querySelector(`#${this.options.containerId} .dayCon`);
+        window.addEventListener('resize', () => this.syncHeaderPadding());
 
         if (btnPrev) {
             btnPrev.addEventListener('click', () => {

@@ -49,7 +49,11 @@
 
     <update id="update">
         UPDATE lesson
-        SET title = #{title}, description = #{description}, price = #{price}, field_id = #{fieldId}
+        SET subject_id = #{subjectId},
+            title = #{title},
+            description = #{description},
+            price = #{price},
+            field_id = #{fieldId}
         WHERE id = #{id}
     </update>
 

@@ -294,7 +294,9 @@
             }
 
             document.addEventListener('DOMContentLoaded', () => {
-                if (location.hash === '#tabSignup') {
+                // 쿼리 파라미터(tab=signup)로 회원가입 탭 활성화
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('tab') === 'signup') {
                     const signupTab = document.querySelector('[data-bs-target="#tabSignup"]');
                     if (signupTab && window.bootstrap?.Tab) {
                         const tab = new bootstrap.Tab(signupTab);
@@ -398,49 +400,37 @@
         </div>
 
         <script>
-            let selectedSocialProvider = null;
-
             function loginWithGoogle() {
-                showSocialRoleSelectionModal('google');
+                location.href = '/oauth2/authorization/google';
             }
 
             function loginWithNaver() {
-                showSocialRoleSelectionModal('naver');
+                location.href = '/oauth2/authorization/naver';
             }
 
             function loginWithKakao() {
-                showSocialRoleSelectionModal('kakao');
+                location.href = '/oauth2/authorization/kakao';
             }
 
-            function showSocialRoleSelectionModal(provider) {
-                selectedSocialProvider = provider;
+            function showSocialRoleSelectionModal() {
                 const modal = new bootstrap.Modal(document.getElementById('roleSelectionModal'));
                 modal.show();
             }
 
             async function selectRole(role) {
-                if (!selectedSocialProvider) {
-                    alert('소셜 로그인 제공자가 선택되지 않았습니다.');
-                    return;
-                }
-
                 try {
-                    // 1. 소셜 로그인 (회원가입 + 로그인)
-                    const response = await fetch('/api/auth/social-login', {
+                    const response = await fetch('/api/auth/oauth/role', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ 
-                            provider: selectedSocialProvider,
-                            role: role
-                        })
+                        credentials: 'include',
+                        body: JSON.stringify({ role: role })
                     });
 
                     const result = await response.json();
 
                     if (result.success || result.status === 'OK') {
-                        // 2. 토큰 저장
                         if (result.data && typeof setAccessToken === 'function') {
                             setAccessToken(result.data.accessToken);
                             if (result.data.refreshToken) {
@@ -448,22 +438,54 @@
                             }
                         }
 
-                        // 3. 역할에 따라 리디렉션
                         const redirectUrl = (role === 'ROLE_TUTOR') ? '/tutor/register' : '/';
-                        alert(selectedSocialProvider.toUpperCase() + ' 계정으로 로그인되었습니다!');
                         window.location.href = redirectUrl;
                     } else {
-                        alert('로그인 실패: ' + (result.message || '알 수 없는 오류'));
+                        alert('Social login failed: ' + (result.message || 'Unknown error'));
                     }
                 } catch (error) {
-                    console.error('소셜 로그인 오류:', error);
-                    alert('로그인 중 오류가 발생했습니다.');
+                    console.error('Social login error:', error);
+                    alert('Social login error.');
                 } finally {
-                    selectedSocialProvider = null;
                     bootstrap.Modal.getInstance(document.getElementById('roleSelectionModal')).hide();
                 }
             }
+
+            async function handleOAuth2Success() {
+                try {
+                    const response = await fetch('/api/auth/oauth2/token', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    const result = await response.json();
+                    if (result.success || result.status === 'OK') {
+                        if (result.data && typeof setAccessToken === 'function') {
+                            setAccessToken(result.data.accessToken);
+                            if (result.data.refreshToken) {
+                                localStorage.setItem('refreshToken', result.data.refreshToken);
+                            }
+                        }
+                        window.location.href = '/';
+                    } else {
+                        alert('OAuth2 token issue failed: ' + (result.message || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('OAuth2 token issue error:', error);
+                    alert('OAuth2 token issue error.');
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('needsRoleSelection') === 'true') {
+                    showSocialRoleSelectionModal();
+                }
+                if (params.get('oauth2') === 'success') {
+                    handleOAuth2Success();
+                }
+            });
         </script>
+
     </div>
     <!-- fragment end -->
 </div>

@@ -40,7 +40,7 @@ public class LessonController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<Lesson> getLesson(@PathVariable String id) {
+    public ApiResponse<Lesson> getLesson(@PathVariable("id") String id) {
         try {
             Lesson lesson = lessonService.selectById(id);
             return ApiResponse.ok(lesson);
@@ -78,6 +78,7 @@ public class LessonController {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .price(request.getPrice())
+                .fieldId(request.getFieldId())
                 .build();
 
             lessonService.insert(lesson);
@@ -89,17 +90,27 @@ public class LessonController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> updateLesson(@PathVariable String id, @RequestBody Lesson.Request request, Authentication authentication) {
+    public ApiResponse<Void> updateLesson(@PathVariable("id") String id, @RequestBody Lesson.Request request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
+            Lesson existing = lessonService.selectById(id);
+            if (existing == null) {
+                return ApiResponse.error("수업을 찾을 수 없습니다.");
+            }
+            if (!authentication.getName().equals(existing.getUserId())) {
+                return ApiResponse.error("본인 수업만 수정할 수 있습니다.");
+            }
+
             Lesson lesson = Lesson.builder()
                 .id(id)
+                .subjectId(request.getSubjectId() != null ? request.getSubjectId() : existing.getSubjectId())
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .price(request.getPrice())
+                .fieldId(request.getFieldId() != null ? request.getFieldId() : existing.getFieldId())
                 .build();
 
             lessonService.update(lesson);
@@ -111,12 +122,20 @@ public class LessonController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteLesson(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Void> deleteLesson(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
+            Lesson existing = lessonService.selectById(id);
+            if (existing == null) {
+                return ApiResponse.error("수업을 찾을 수 없습니다.");
+            }
+            if (!authentication.getName().equals(existing.getUserId())) {
+                return ApiResponse.error("본인 수업만 삭제할 수 있습니다.");
+            }
+
             lessonService.delete(id);
             return ApiResponse.ok(SuccessCode.DELETED);
         } catch (Exception e) {

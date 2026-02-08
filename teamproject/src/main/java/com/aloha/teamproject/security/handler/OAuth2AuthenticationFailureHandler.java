@@ -19,6 +19,6 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         log.error("OAuth2 로그인 실패", exception);
-        response.sendRedirect("/auth/login?error=true&exception=" + exception.getMessage());
+        response.sendRedirect("/login?error=oauth2");
     }
 }

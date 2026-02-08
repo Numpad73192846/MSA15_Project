@@ -80,30 +80,29 @@ public class BookingServiceImpl extends BaseServiceImpl implements BookingServic
 
     @Override
     @Transactional
-    public int payBooking(String id) throws Exception {
-        // 예약 조회
+    public int payBooking(String id, BigDecimal amount, String provider) throws Exception {
         Booking booking = bookingMapper.selectById(id);
         if (booking == null) {
             throw new Exception("예약을 찾을 수 없습니다.");
         }
-        
-        // 이미 결제된 예약인지 확인
+
         Payment existingPayment = paymentMapper.selectByBookingId(id);
         if (existingPayment != null) {
             throw new Exception("이미 결제된 예약입니다.");
         }
-        
-        // 결제 정보 생성
+
         Payment payment = Payment.builder()
             .userId(booking.getUserId())
             .bookingId(id)
-            .amount(BigDecimal.ZERO) // 실제 금액은 API에서 전달받아야 함
-            .provider("CARD")
+            .amount(amount)
+            .provider(provider)
             .status("PAID")
             .paidAt(LocalDateTime.now())
             .build();
+        int result = paymentMapper.insert(payment);
+        bookingMapper.updatePaidAt(id);
+        return result;
         
-        return paymentMapper.insert(payment);
     }
 
 }

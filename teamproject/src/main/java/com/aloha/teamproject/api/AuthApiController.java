@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.Auth;
 import com.aloha.teamproject.dto.Users;
+import com.aloha.teamproject.model.CustomOAuth2User;
 import com.aloha.teamproject.service.LoginService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -124,6 +126,52 @@ public class AuthApiController {
 		} catch (Exception e) {
 			log.error("소셜 로그인 중 오류가 발생했습니다.", e);
 			return ApiResponse.error("소셜 로그인에 실패했습니다.");
+		}
+	}
+
+	@PostMapping("/oauth/role")
+	public ApiResponse<Auth.TokenResponse> selectOAuthRole(@RequestBody java.util.Map<String, String> request,
+			Authentication authentication,
+			HttpServletRequest httpRequest,
+			HttpServletResponse response) {
+		try {
+			String role = request.get("role");
+			if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+				return ApiResponse.error("OAuth2 authentication not found.");
+			}
+			CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
+			Auth.TokenResponse result = loginService.assignOAuthRole(oauth2User.getUserId(), role);
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			setSessionAuthentication(httpRequest, result);
+			return ApiResponse.ok(result, SuccessCode.OK);
+		} catch (AppException e) {
+			log.error("OAuth role selection failed: {}", e.getMessage());
+			return ApiResponse.error(e.getErrorCode().getMessage());
+		} catch (Exception e) {
+			log.error("OAuth role selection error", e);
+			return ApiResponse.error("OAuth role selection failed.");
+		}
+	}
+
+	@PostMapping("/oauth2/token")
+	public ApiResponse<Auth.TokenResponse> oauth2Token(Authentication authentication,
+			HttpServletRequest httpRequest,
+			HttpServletResponse response) {
+		try {
+			if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+				return ApiResponse.error("OAuth2 authentication not found.");
+			}
+			CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
+			Auth.TokenResponse result = loginService.issueTokensForUserId(oauth2User.getUserId());
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			setSessionAuthentication(httpRequest, result);
+			return ApiResponse.ok(result, SuccessCode.OK);
+		} catch (AppException e) {
+			log.error("OAuth2 token issue failed: {}", e.getMessage());
+			return ApiResponse.error(e.getErrorCode().getMessage());
+		} catch (Exception e) {
+			log.error("OAuth2 token issue error", e);
+			return ApiResponse.error("OAuth2 token issue failed.");
 		}
 	}
 

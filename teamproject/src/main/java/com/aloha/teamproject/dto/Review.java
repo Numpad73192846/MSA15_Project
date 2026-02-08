@@ -17,6 +17,7 @@ public class Review {
 	@Builder.Default
 	private String id = UUID.randomUUID().toString();
 	private String bookingId;
+	private String studentId;
 	private Integer rating;
 	private String content;
 	private String studentName;

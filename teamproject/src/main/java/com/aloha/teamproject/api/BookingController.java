@@ -1,6 +1,7 @@
 package com.aloha.teamproject.api;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -313,9 +314,14 @@ public class BookingController {
                 return ApiResponse.error("결제 권한이 없습니다.");
             }
             
-            // 결제 처리 (실제 결제 연동은 추후 구현)
-            // 여기서는 예약 상태를 PAID로 변경
-            bookingService.payBooking(id);
+            // 결제 처리 (비토스 결제는 내부 처리)
+            BigDecimal amount = request.getAmount() != null
+                ? BigDecimal.valueOf(request.getAmount())
+                : BigDecimal.ZERO;
+            String provider = request.getPaymentMethod() != null
+                ? request.getPaymentMethod().toUpperCase()
+                : "UNKNOWN";
+            bookingService.payBooking(id, amount, provider);
             log.info("[예약 결제 성공] bookingId: {}", id);
             
             return ApiResponse.ok(SuccessCode.OK);

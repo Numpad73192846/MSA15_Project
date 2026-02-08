@@ -186,15 +186,15 @@ public class TutorController {
         value = "/profile",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
+
     public ApiResponse<Void> profile(
         @ModelAttribute TutorProfile.Request request,
         Authentication authentication
-    ) {
+    ) throws Exception {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
-
-        try {           
+        try {
 
             String profileImgPath = null;
             if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
@@ -202,88 +202,75 @@ public class TutorController {
             }
 
             TutorProfile profile = TutorProfile.builder()
-                                                .userId(authentication.getName())                                               
-                                                .profileImg(profileImgPath) // 파일 경로
-                                                .phone(request.getBasicPhone())
-                                                .bankName(request.getBasicBankName())
-                                                .accountNumber(request.getBasicAccountNumber())
-                                                .accountHolder(request.getBasicAccountHolder())
-                                                .headline(request.getHeadline())
-                                                .bio(request.getBio())
-                                                .selfIntro(request.getSelfIntro())
-                                                .videoUrl(request.getVideoUrl())
-                                                .build();
-            
+                                               .userId(authentication.getName())
+                                               .profileImg(profileImgPath)
+                                               .phone(request.getBasicPhone())
+                                               .bankName(request.getBasicBankName())
+                                               .accountNumber(request.getBasicAccountNumber())
+                                               .accountHolder(request.getBasicAccountHolder())
+                                               .headline(request.getHeadline())
+                                               .bio(request.getBio())
+                                               .selfIntro(request.getSelfIntro())
+                                               .videoUrl(request.getVideoUrl())
+                                               .build();
+
             ObjectMapper mapper = new ObjectMapper();
 
             List<LessonCardItem> lessonCards;
-            if ( !StringUtils.hasText(request.getLessonCardsJson()) ) {
+            if (!StringUtils.hasText(request.getLessonCardsJson())) {
                 lessonCards = Collections.emptyList();
             } else {
                 lessonCards = Arrays.asList(mapper.readValue(
-                request.getLessonCardsJson(), 
-                LessonCardItem[].class
-            ));
+                    request.getLessonCardsJson(),
+                    LessonCardItem[].class
+                ));
             }
 
             Set<String> subjectIds = new java.util.HashSet<>();
-            try {
-                subjectIds = lessonCards.stream()
-                    .map(card -> subjectService.selectByName(card.getSubject()))
-                    .filter(subject -> subject != null)
-                    .peek(subject -> {
-                        LessonCardItem card = lessonCards.stream().filter(c -> c.getSubject().equals(subject.getName())).findFirst().orElse(null);
-                        if (card != null) {
-                            Lesson lesson = Lesson.builder()
-                                .userId(authentication.getName())
-                                .title(card.getSubject() + "-" + card.getField())
-                                .price(card.getPrice())
-                                .fieldId(card.getFieldId())
-                                .subjectId(subject.getId())
-                                .build();
-                            lessonService.insert(lesson);
-                        }
-                    })
-                    .map(Subject::getId)
-                    .collect(Collectors.toSet());
-            } catch (Exception e) {
-                log.error("레슨 및 과목 저장 중 오류 발생", e);
-                e.printStackTrace();
+            for (LessonCardItem card : lessonCards) {
+                Subject subject = subjectService.selectByName(card.getSubject());
+                if (subject != null) {
+                    Lesson lesson = Lesson.builder()
+                        .userId(authentication.getName())
+                        .title(card.getSubject() + "-" + card.getField())
+                        .price(card.getPrice())
+                        .fieldId(card.getFieldId())
+                        .subjectId(subject.getId())
+                        .build();
+                    lessonService.insert(lesson);
+                    subjectIds.add(subject.getId());
+                }
             }
-
-            // tutor_subject 저장
             if (!subjectIds.isEmpty()) {
                 tutorSubjectService.replaceSubjects(authentication.getName(), new java.util.ArrayList<>(subjectIds));
             }
 
-
             List<TutorCareer.Request.CareerItem> careers;
-            if ( !StringUtils.hasText(request.getCareersJson()) ) {
+            if (!StringUtils.hasText(request.getCareersJson())) {
                 careers = Collections.emptyList();
             } else {
                 careers = Arrays.asList(mapper.readValue(
-                request.getCareersJson(), 
-                TutorCareer.Request.CareerItem[].class
-            ));
+                    request.getCareersJson(),
+                    TutorCareer.Request.CareerItem[].class
+                ));
             }
-            
+
             tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
-            
             tutorCareerService.replaceCareers(authentication.getName(), careers);
 
             userService.deleteAuth(authentication.getName(), "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
-                                            .userId(authentication.getName())
-                                            .auth("ROLE_TUTOR")
-                                            .build());
+                .userId(authentication.getName())
+                .auth("ROLE_TUTOR")
+                .build());
 
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
             log.error("/api/tutors/profile 저장 실패", e);
             return ApiResponse.error("튜터 정보를 저장하지 못했습니다.");
         }
-    }  
+    }
     
     @PutMapping(
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE

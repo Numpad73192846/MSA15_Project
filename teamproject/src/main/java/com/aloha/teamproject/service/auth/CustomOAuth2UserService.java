@@ -65,14 +65,32 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         log.info("로그인 성공 또는 신규 사용자 생성 완료: {}", user.getUsername());
 
+        String resolvedRole = resolveRole(user);
+
         return new CustomOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority(user.getRole() != null ? user.getRole() : "ROLE_GUEST")),
+                Collections.singleton(new SimpleGrantedAuthority(resolvedRole)),
                 attributes,
                 userNameAttributeName,
                 user.getNo(),
                 user.getId(),
-                user.getRole()
+                resolvedRole
         );
+    }
+
+    private String resolveRole(Users user) {
+        if (user == null || user.getAuthList() == null || user.getAuthList().isEmpty()) {
+            return "ROLE_GUEST";
+        }
+        boolean hasTutor = user.getAuthList().stream().anyMatch(auth -> "ROLE_TUTOR".equals(auth.getAuth()));
+        if (hasTutor) {
+            return "ROLE_TUTOR";
+        }
+        boolean hasUser = user.getAuthList().stream().anyMatch(auth -> "ROLE_USER".equals(auth.getAuth()));
+        if (hasUser) {
+            return "ROLE_USER";
+        }
+        String fallback = user.getAuthList().get(0).getAuth();
+        return fallback != null ? fallback : "ROLE_GUEST";
     }
 
     private Users createUser(String email, String name) {

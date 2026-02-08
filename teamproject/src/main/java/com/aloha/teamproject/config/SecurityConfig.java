@@ -110,6 +110,7 @@ public class SecurityConfig {
             "/api/tutors/**",
             "/api/reviews/**",
             "/api/bookings/**",
+            "/api/payments/**",
             "/api/game/**"
             ))
             .authorizeHttpRequests(auth -> auth
@@ -118,6 +119,7 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
                 .requestMatchers("/tutor/mypage", "/mypage", "/member/mypage").permitAll()
+                .requestMatchers("/payments/**").permitAll()
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 .requestMatchers("/guide", "/guide/**", "/faq", "/contact", "/about", "/partnership").permitAll()
@@ -131,6 +133,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
                 .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
+                .requestMatchers("/api/payments/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/tutors/profile", "/api/tutors/me/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING")
                 .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
@@ -140,7 +143,7 @@ public class SecurityConfig {
         // OAuth2 로그인 설정
         http
             .oauth2Login(oauth2 -> oauth2
-                .loginPage("/auth/login")
+                .loginPage("/login")
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )

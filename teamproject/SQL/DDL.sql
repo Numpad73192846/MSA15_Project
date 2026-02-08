@@ -184,6 +184,7 @@ CREATE TABLE `booking` (
     `confirmed_at` DATETIME NULL,
     `canceled_at` DATETIME NULL,
     `done_at` DATETIME NULL,
+    `paid_at` DATETIME DEFAULT NULL,
     `memo` VARCHAR(255) NULL,
     PRIMARY KEY (`no`),
     INDEX `idx_user_id` (`user_id`),

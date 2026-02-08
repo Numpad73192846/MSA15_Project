@@ -134,6 +134,9 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	public Auth.TokenResponse socialLogin(String provider, String role) throws Exception {
 		requiredNotBlank(provider, ErrorCode.INVALID_REQUEST);
 		requiredNotBlank(role, ErrorCode.INVALID_REQUEST);
+		if ("ROLE_TUTOR".equals(role)) {
+			role = "ROLE_TUTOR_PENDING";
+		}
 		
 		// 소셜 로그인용 고정 계정 정보
 		String username = "social@" + provider.toLowerCase() + ".com";
@@ -194,6 +197,79 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 										  .tokenHash(refreshTokenHash)
 										  .expiresAt(new Date(System.currentTimeMillis() + refreshExpMs))
 										  .build();
+		refreshTokenService.insert(refreshTokenEntity);
+
+		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
+		authTokenResponse.setAccessToken(accessToken);
+		authTokenResponse.setRefreshToken(refreshToken);
+		authTokenResponse.setExpiresIn(accessExpMs);
+		authTokenResponse.setUserId(existing.getId());
+		authTokenResponse.setAuthList(authList);
+
+		return authTokenResponse;
+	}
+
+	@Override
+	public Auth.TokenResponse issueTokensForUserId(String userId) throws Exception {
+		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+
+		Users existing = userMapper.selectById(userId);
+		requireNotNull(existing, ErrorCode.USER_NOT_FOUND);
+
+		return buildTokenResponse(existing);
+	}
+
+	@Override
+	public Auth.TokenResponse assignOAuthRole(String userId, String role) throws Exception {
+		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+		requiredNotBlank(role, ErrorCode.INVALID_REQUEST);
+		require("ROLE_USER".equals(role) || "ROLE_TUTOR".equals(role), ErrorCode.INVALID_REQUEST);
+
+		String resolvedRole = "ROLE_TUTOR".equals(role) ? "ROLE_TUTOR_PENDING" : role;
+
+		Users existing = userMapper.selectById(userId);
+		requireNotNull(existing, ErrorCode.USER_NOT_FOUND);
+
+		List<String> authList = (existing.getAuthList() == null)
+				? List.of()
+				: existing.getAuthList().stream()
+							 .map(UserAuth::getAuth)
+							 .toList();
+
+		if (authList.contains("ROLE_GUEST")) {
+			userMapper.deleteAuth(userId, "ROLE_GUEST");
+		}
+		if (!authList.contains(resolvedRole)) {
+			UserAuth userAuth = UserAuth.builder()
+					.userId(userId)
+					.auth(resolvedRole)
+					.build();
+			int inserted = userMapper.insertAuth(userAuth);
+			require(inserted > 0, ErrorCode.INTERNAL_ERROR);
+		}
+
+		Users updated = userMapper.selectById(userId);
+		requireNotNull(updated, ErrorCode.USER_NOT_FOUND);
+
+		return buildTokenResponse(updated);
+	}
+
+	private Auth.TokenResponse buildTokenResponse(Users existing) throws Exception {
+		List<String> authList = (existing.getAuthList() == null)
+				? List.of()
+				: existing.getAuthList().stream()
+							 .map(UserAuth::getAuth)
+							 .toList();
+
+		String accessToken = jwtTokenProvider.createAccessToken(existing.getId(), authList);
+		String refreshToken = jwtTokenProvider.createRefreshToken(existing.getId());
+		String refreshTokenHash = sha256(refreshToken);
+
+		RefreshToken refreshTokenEntity = RefreshToken.builder()
+						  .userId(existing.getId())
+						  .tokenHash(refreshTokenHash)
+						  .expiresAt(new Date(System.currentTimeMillis() + refreshExpMs))
+						  .build();
 		refreshTokenService.insert(refreshTokenEntity);
 
 		Auth.TokenResponse authTokenResponse = new Auth.TokenResponse();
