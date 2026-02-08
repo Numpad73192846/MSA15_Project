@@ -29,4 +29,6 @@ public interface BookingMapper {
 
     public int completeBooking(String id) throws Exception;
 
+    public int payBooking(String id) throws Exception;
+
 }
