@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -149,16 +150,7 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 		
 		// 계정이 없으면 자동 생성
 		if (existing == null) {
-			// 닉네임 중복 체크 및 생성
-			String baseNickname = name;
-			String nickname = baseNickname;
-			int count = 1;
-			
-			// 닉네임이 중복되면 뒤에 숫자 추가
-			while (userMapper.selectByNickname(nickname) != null) {
-				nickname = baseNickname + count;
-				count++;
-			}
+			String nickname = resolveAvailableNickname(name);
 			
 			Users newUser = Users.builder()
 					.id("social_" + provider.toLowerCase() + "_" + System.currentTimeMillis())
@@ -299,16 +291,24 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	}
 
 	private String resolveAvailableNickname(String baseNickname) throws Exception {
-		String safeBase = (baseNickname == null || baseNickname.isBlank()) ? "social_user" : baseNickname;
-		String nickname = safeBase;
-		int suffix = 1;
-
-		while (userMapper.selectByNickname(nickname) != null) {
-			nickname = safeBase + suffix;
-			suffix++;
+		String safeBase = (baseNickname == null || baseNickname.isBlank()) ? "social_user" : baseNickname.trim();
+		if (userMapper.selectByNickname(safeBase) == null) {
+			return safeBase;
 		}
 
-		return nickname;
+		for (int i = 0; i < 1000; i++) {
+			int randomSuffix = ThreadLocalRandom.current().nextInt(1000, 10000);
+			String candidate = safeBase + randomSuffix;
+			if (userMapper.selectByNickname(candidate) == null) {
+				return candidate;
+			}
+		}
+
+		String fallback = safeBase + (System.currentTimeMillis() % 1_000_000);
+		if (userMapper.selectByNickname(fallback) == null) {
+			return fallback;
+		}
+		throw new IllegalStateException("Could not generate unique social nickname");
 	}
 
 	private String buildNicknameFromUsername(String username) {
