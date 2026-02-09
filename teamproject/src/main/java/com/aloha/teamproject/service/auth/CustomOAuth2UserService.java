@@ -2,6 +2,8 @@ package com.aloha.teamproject.service.auth;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -43,22 +45,23 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // 소셜 로그인 정보 추출
         String email = extractEmail(registrationId, attributes);
+        String userIdentifier = normalizeUserIdentifier(email, registrationId, oAuth2User.getName());
         String name = extractName(registrationId, attributes);
         
         Users user = null;
         try {
-            user = userMapper.selectByUsername(email);
+            user = userMapper.selectByUsername(userIdentifier);
         } catch (Exception e) {
             log.error("사용자 조회 실패", e);
         }
 
         if (user == null) {
             try {
-                user = createUser(email, name);
+                user = createUser(userIdentifier, name);
                 log.info("[OAuth2UserService] 생성할 사용자 정보: username={}, id={}", user.getUsername(), user.getId());
                 int joinResult = userMapper.join(user);
                 log.info("[OAuth2UserService] userMapper.join 결과: {}", joinResult);
-                user = userMapper.selectByUsername(email);
+                user = userMapper.selectByUsername(userIdentifier);
                 log.info("[OAuth2UserService] 회원 생성 후 조회 결과: {}", user != null ? user.getId() : null);
             } catch (Exception e) {
                 log.error("사용자 생성 실패", e);
@@ -96,14 +99,47 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return fallback != null ? fallback : "ROLE_GUEST";
     }
 
-    private Users createUser(String email, String name) {
+    private Users createUser(String userIdentifier, String name) throws Exception {
+        String displayName = (name == null || name.isBlank()) ? userIdentifier.split("@")[0] : name;
         Users newUser = new Users();
-        newUser.setUsername(email);
-        newUser.setName(name);
-        newUser.setNickname(name);
+        newUser.setId(UUID.randomUUID().toString());
+        newUser.setUsername(userIdentifier);
+        newUser.setName(displayName);
+        newUser.setNickname(resolveAvailableNickname(displayName));
         newUser.setRole("ROLE_GUEST");
         newUser.setPassword("OAUTH2_USER");
         return newUser;
+    }
+
+    private String resolveAvailableNickname(String baseNickname) throws Exception {
+        String safeBase = (baseNickname == null || baseNickname.isBlank()) ? "social_user" : baseNickname.trim();
+        if (userMapper.selectByNickname(safeBase) == null) {
+            return safeBase;
+        }
+
+        for (int i = 0; i < 1000; i++) {
+            int randomSuffix = ThreadLocalRandom.current().nextInt(1000, 10000);
+            String candidate = safeBase + randomSuffix;
+            if (userMapper.selectByNickname(candidate) == null) {
+                return candidate;
+            }
+        }
+
+        String fallback = safeBase + (System.currentTimeMillis() % 1_000_000);
+        if (userMapper.selectByNickname(fallback) == null) {
+            return fallback;
+        }
+        throw new IllegalStateException("Could not generate unique social nickname");
+    }
+
+    private String normalizeUserIdentifier(String email, String registrationId, String providerUserKey) {
+        if (email != null && !email.isBlank()) {
+            return email.trim().toLowerCase();
+        }
+        String safeProviderUserKey = (providerUserKey == null || providerUserKey.isBlank())
+                ? UUID.randomUUID().toString()
+                : providerUserKey.trim();
+        return registrationId + "_" + safeProviderUserKey + "@oauth.local";
     }
 
     private String extractEmail(String registrationId, Map<String, Object> attributes) {
@@ -111,10 +147,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             return (String) attributes.get("email");
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return (String) response.get("email");
+            return response != null ? (String) response.get("email") : null;
         } else if ("kakao".equals(registrationId)) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            return (String) kakaoAccount.get("email");
+            return kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
         }
         return null;
     }
@@ -124,10 +160,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             return (String) attributes.get("name");
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return (String) response.get("name");
+            return response != null ? (String) response.get("name") : null;
         } else if ("kakao".equals(registrationId)) {
             Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
-            return (String) properties.get("nickname");
+            return properties != null ? (String) properties.get("nickname") : null;
         }
         return null;
     }
