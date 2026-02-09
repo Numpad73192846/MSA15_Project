@@ -4,6 +4,8 @@
         "teamproject",
         "tuter"
     ],
+    "git.path": "D:\\Program Files\\Git\\cmd\\git.exe",
+    "git.terminalAuthentication": true,
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
 
