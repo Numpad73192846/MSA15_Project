@@ -68,6 +68,7 @@ public class TutorController {
     private final UserService userService;
     private final SubjectService subjectService;
     private final LessonService lessonService;
+    private final ObjectMapper objectMapper;
 
     private static final String DOC_UPLOAD_DIR = "uploads/tutors/documents/";
 
@@ -186,7 +187,6 @@ public class TutorController {
         value = "/profile",
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-
     public ApiResponse<Void> profile(
         @ModelAttribute TutorProfile.Request request,
         Authentication authentication
@@ -195,6 +195,12 @@ public class TutorController {
             return ApiResponse.error("로그인이 필요합니다.");
         }
         try {
+            String authName = authentication.getName();
+            String userId = resolveUserId(authName);
+            if (!StringUtils.hasText(userId)) {
+                log.error("/api/tutors/profile userId resolve failed. authName={}", authName);
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
 
             String profileImgPath = null;
             if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
@@ -202,7 +208,7 @@ public class TutorController {
             }
 
             TutorProfile profile = TutorProfile.builder()
-                                               .userId(authentication.getName())
+                                               .userId(userId)
                                                .profileImg(profileImgPath)
                                                .phone(request.getBasicPhone())
                                                .bankName(request.getBasicBankName())
@@ -214,13 +220,11 @@ public class TutorController {
                                                .videoUrl(request.getVideoUrl())
                                                .build();
 
-            ObjectMapper mapper = new ObjectMapper();
-
             List<LessonCardItem> lessonCards;
             if (!StringUtils.hasText(request.getLessonCardsJson())) {
                 lessonCards = Collections.emptyList();
             } else {
-                lessonCards = Arrays.asList(mapper.readValue(
+                lessonCards = Arrays.asList(objectMapper.readValue(
                     request.getLessonCardsJson(),
                     LessonCardItem[].class
                 ));
@@ -231,7 +235,7 @@ public class TutorController {
                 Subject subject = subjectService.selectByName(card.getSubject());
                 if (subject != null) {
                     Lesson lesson = Lesson.builder()
-                        .userId(authentication.getName())
+                        .userId(userId)
                         .title(card.getSubject() + "-" + card.getField())
                         .price(card.getPrice())
                         .fieldId(card.getFieldId())
@@ -242,26 +246,26 @@ public class TutorController {
                 }
             }
             if (!subjectIds.isEmpty()) {
-                tutorSubjectService.replaceSubjects(authentication.getName(), new java.util.ArrayList<>(subjectIds));
+                tutorSubjectService.replaceSubjects(userId, new java.util.ArrayList<>(subjectIds));
             }
 
             List<TutorCareer.Request.CareerItem> careers;
             if (!StringUtils.hasText(request.getCareersJson())) {
                 careers = Collections.emptyList();
             } else {
-                careers = Arrays.asList(mapper.readValue(
+                careers = Arrays.asList(objectMapper.readValue(
                     request.getCareersJson(),
                     TutorCareer.Request.CareerItem[].class
                 ));
             }
 
             tutorProfileService.upsertProfile(profile);
-            tutorFieldService.replaceFields(authentication.getName(), request.getFieldIds());
-            tutorCareerService.replaceCareers(authentication.getName(), careers);
+            tutorFieldService.replaceFields(userId, request.getFieldIds());
+            tutorCareerService.replaceCareers(userId, careers);
 
-            userService.deleteAuth(authentication.getName(), "ROLE_TUTOR_PENDING");
+            userService.deleteAuth(userId, "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
-                .userId(authentication.getName())
+                .userId(userId)
                 .auth("ROLE_TUTOR")
                 .build());
 
@@ -272,7 +276,22 @@ public class TutorController {
             return ApiResponse.error("튜터 정보를 저장하지 못했습니다.");
         }
     }
-    
+
+    private String resolveUserId(String authName) {
+        if (!StringUtils.hasText(authName)) {
+            return null;
+        }
+        try {
+            return userService.selectById(authName).getId();
+        } catch (Exception ignored) {
+            // fall through
+        }
+        try {
+            return userService.selectByUsername(authName).getId();
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
     @PutMapping(
         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )

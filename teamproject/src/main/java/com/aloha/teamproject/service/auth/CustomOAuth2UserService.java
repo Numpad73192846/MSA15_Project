@@ -55,8 +55,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         if (user == null) {
             try {
                 user = createUser(email, name);
-                userMapper.join(user);
+                log.info("[OAuth2UserService] 생성할 사용자 정보: username={}, id={}", user.getUsername(), user.getId());
+                int joinResult = userMapper.join(user);
+                log.info("[OAuth2UserService] userMapper.join 결과: {}", joinResult);
                 user = userMapper.selectByUsername(email);
+                log.info("[OAuth2UserService] 회원 생성 후 조회 결과: {}", user != null ? user.getId() : null);
             } catch (Exception e) {
                 log.error("사용자 생성 실패", e);
                 throw new OAuth2AuthenticationException("사용자 생성에 실패했습니다.");

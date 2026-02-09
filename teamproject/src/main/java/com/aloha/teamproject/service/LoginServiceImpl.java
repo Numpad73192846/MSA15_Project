@@ -4,10 +4,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aloha.teamproject.common.exception.ErrorCode;
 import com.aloha.teamproject.common.service.BaseServiceImpl;
@@ -220,15 +222,17 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 	}
 
 	@Override
-	public Auth.TokenResponse assignOAuthRole(String userId, String role) throws Exception {
-		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+	@Transactional
+	public Auth.TokenResponse assignOAuthRole(String userIdentifier, String role) throws Exception {
+		requiredNotBlank(userIdentifier, ErrorCode.INVALID_REQUEST);
 		requiredNotBlank(role, ErrorCode.INVALID_REQUEST);
 		require("ROLE_USER".equals(role) || "ROLE_TUTOR".equals(role), ErrorCode.INVALID_REQUEST);
 
 		String resolvedRole = "ROLE_TUTOR".equals(role) ? "ROLE_TUTOR_PENDING" : role;
 
-		Users existing = userMapper.selectById(userId);
+		Users existing = findOrCreateOAuthUser(userIdentifier);
 		requireNotNull(existing, ErrorCode.USER_NOT_FOUND);
+		String userId = existing.getId();
 
 		List<String> authList = (existing.getAuthList() == null)
 				? List.of()
@@ -252,6 +256,69 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 		requireNotNull(updated, ErrorCode.USER_NOT_FOUND);
 
 		return buildTokenResponse(updated);
+	}
+
+	private Users findOrCreateOAuthUser(String userIdentifier) throws Exception {
+		Users user = userMapper.selectById(userIdentifier);
+		if (user != null) {
+			return user;
+		}
+
+		user = userMapper.selectByUsername(userIdentifier);
+		if (user != null) {
+			return user;
+		}
+
+		if (!userIdentifier.contains("@")) {
+			return null;
+		}
+
+		return createOAuthUser(userIdentifier);
+	}
+
+	private Users createOAuthUser(String username) throws Exception {
+		requiredNotBlank(username, ErrorCode.INVALID_REQUEST);
+		require(username.contains("@"), ErrorCode.INVALID_REQUEST);
+
+		String baseNickname = buildNicknameFromUsername(username);
+		String nickname = resolveAvailableNickname(baseNickname);
+
+		Users newUser = Users.builder()
+				.id(UUID.randomUUID().toString())
+				.username(username)
+				.password(passwordEncoder.encode("oauth2-" + UUID.randomUUID()))
+				.name(baseNickname)
+				.nickname(nickname)
+				.status("ACTIVE")
+				.build();
+
+		int inserted = userMapper.join(newUser);
+		require(inserted > 0, ErrorCode.INTERNAL_ERROR);
+
+		return userMapper.selectById(newUser.getId());
+	}
+
+	private String resolveAvailableNickname(String baseNickname) throws Exception {
+		String safeBase = (baseNickname == null || baseNickname.isBlank()) ? "social_user" : baseNickname;
+		String nickname = safeBase;
+		int suffix = 1;
+
+		while (userMapper.selectByNickname(nickname) != null) {
+			nickname = safeBase + suffix;
+			suffix++;
+		}
+
+		return nickname;
+	}
+
+	private String buildNicknameFromUsername(String username) {
+		int atIndex = username.indexOf('@');
+		String localPart = atIndex > 0 ? username.substring(0, atIndex) : username;
+		String normalized = localPart.replaceAll("[^a-zA-Z0-9_\\-\\.]", "");
+		if (normalized.isBlank()) {
+			return "social_user";
+		}
+		return normalized.length() > 20 ? normalized.substring(0, 20) : normalized;
 	}
 
 	private Auth.TokenResponse buildTokenResponse(Users existing) throws Exception {

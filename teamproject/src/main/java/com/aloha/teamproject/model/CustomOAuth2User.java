@@ -23,4 +23,12 @@ public class CustomOAuth2User extends DefaultOAuth2User {
         this.userId = userId;
         this.role = role;
     }
+
+    @Override
+    public String getName() {
+        if (this.userId != null && !this.userId.isEmpty()) {
+            return this.userId;
+        }
+        return super.getName();
+    }
 }

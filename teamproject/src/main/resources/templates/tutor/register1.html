@@ -326,8 +326,8 @@
                     const badge = document.createElement('div');
                     badge.className = 'mt-3 admin-chip';
                     badge.innerHTML = `
-                        <span class="label">${careerItem.company}</span>
-                        <span class="sub">${careerItem.job} · ${careerItem.position} · ${careerItem.startYear}~${endLabel}</span>
+                        <span class="label">${careerItem.companyName}</span>
+                        <span class="sub">${careerItem.jobCategory} · ${careerItem.jobRole} · ${careerItem.startYear}~${endLabel}</span>
                         <button type="button" class="icon-btn danger" aria-label="삭제"><i class="bi bi-x"></i></button>
                     `;
                     badge.querySelector('button').addEventListener('click', () => {
@@ -364,20 +364,20 @@
                 });
 
                 document.getElementById('btnAddCareer')?.addEventListener('click', () => {
-                    const company = document.getElementById('careerCompany').value.trim();
-                    const job = document.getElementById('careerJob').value.trim();
-                    const position = document.getElementById('careerPosition').value.trim();
+                    const companyName = document.getElementById('careerCompany').value.trim();
+                    const jobCategory = document.getElementById('careerJob').value.trim();
+                    const jobRole = document.getElementById('careerPosition').value.trim();
                     const startYear = document.getElementById('careerStartYear').value.trim();
                     const endYear = document.getElementById('careerEndYear').value.trim();
 
-                    if (!company || !job || !position || !startYear) {
+                    if (!companyName || !jobCategory || !jobRole || !startYear) {
                         alert('회사명, 직종, 직위, 입사연도를 입력해주세요.');
                         return;
                     }
 
                     const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
                     const careers = Array.isArray(saved.careers) ? saved.careers : [];
-                    careers.push({ company, job, position, startYear, endYear });
+                    careers.push({ companyName, jobCategory, jobRole, startYear, endYear });
                     saved.careers = careers;
                     sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(saved));
                     renderCareerCards(careers);

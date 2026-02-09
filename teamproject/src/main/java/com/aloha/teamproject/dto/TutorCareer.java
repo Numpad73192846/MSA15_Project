@@ -19,8 +19,8 @@ public class TutorCareer {
     private String companyName;
     private String jobCategory;
     private String jobRole;
-    private LocalDate startYear;
-    private LocalDate endYear;
+    private Integer startYear;
+    private Integer endYear;
 
     @Data
     @Builder
@@ -36,8 +36,8 @@ public class TutorCareer {
             private String companyName;
             private String jobCategory;
             private String jobRole;
-            private LocalDate startYear;
-            private LocalDate endYear;
+            private Integer startYear;
+            private Integer endYear;
         }
     }
 }

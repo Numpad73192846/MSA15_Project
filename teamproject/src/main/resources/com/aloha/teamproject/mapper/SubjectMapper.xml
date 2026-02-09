@@ -30,8 +30,7 @@
 
     <select id="selectByName" resultMap="SubjectMap">
         SELECT * FROM subject
-        JOIN subject_group sg ON subject.group_id = sg.id
-        WHERE sg.name = #{name}
+        WHERE name = #{name}
         ORDER BY seq_in_group LIMIT 1
     </select>
 
