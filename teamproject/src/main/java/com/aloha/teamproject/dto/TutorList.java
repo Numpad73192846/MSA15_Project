@@ -24,5 +24,10 @@ public class TutorList {
     private String subjects;
     private BigDecimal price;
     private String experience;
+    private String educationSchools;
+    private String educationDegrees;
+    private String educationDocuments;
+    private String degreeDocuments;
+    private String certificates;
 
 }

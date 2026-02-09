@@ -80,6 +80,7 @@ public class UserController {
 			memberMyPage.setUpcomingBookings(memberMyPageService.selectUpcomingBookings(userId));
 			memberMyPage.setPastBookings(memberMyPageService.selectPastBookings(userId));
 			memberMyPage.setStudentReviews(memberMyPageService.selectStudentReviews(userId));
+			memberMyPage.setTutorMessages(memberMyPageService.selectTutorMessages(userId));
 			
 			return ApiResponse.ok(memberMyPage);
 		} catch (Exception e) {

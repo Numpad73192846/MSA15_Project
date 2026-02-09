@@ -29,6 +29,7 @@ public class TutorProfile {
     private String bio;
     private String selfIntro;
     private String videoUrl;
+    private String defaultZoomUrl;
     private String bankName;
     private String accountNumber;
     private String accountHolder;
@@ -60,6 +61,9 @@ public class TutorProfile {
         private String basicAccountNumber;
         private String basicAccountHolder;
         private String careersJson;
+        private String educationsJson;
+        private String degreesJson;
+        private String certificateTextsJson;
         private String lessonCardsJson;
         private List<String> fieldIds;
     }

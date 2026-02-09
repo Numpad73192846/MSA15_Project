@@ -15,5 +15,6 @@ public class MemberMyPage {
 	private List<StudentBooking> upcomingBookings;
 	private List<StudentBooking> pastBookings;
 	private List<StudentReview> studentReviews;
+	private List<TutorMessage> tutorMessages;
 
 }

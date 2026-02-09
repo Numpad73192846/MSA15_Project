@@ -9,6 +9,7 @@ import com.aloha.teamproject.dto.MemberMyPage;
 import com.aloha.teamproject.dto.MemberStats;
 import com.aloha.teamproject.dto.StudentBooking;
 import com.aloha.teamproject.dto.StudentReview;
+import com.aloha.teamproject.dto.TutorMessage;
 
 @Mapper
 public interface MemberMyPageMapper {
@@ -22,5 +23,7 @@ public interface MemberMyPageMapper {
 	public List<StudentBooking> selectPastBookings(@Param("userId") String userId) throws Exception;
 
 	public List<StudentReview> selectStudentReviews(@Param("userId") String userId) throws Exception;
+
+	public List<TutorMessage> selectTutorMessages(@Param("userId") String userId) throws Exception;
 	
 }

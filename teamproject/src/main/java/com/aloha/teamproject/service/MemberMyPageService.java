@@ -6,6 +6,7 @@ import com.aloha.teamproject.dto.MemberMyPage;
 import com.aloha.teamproject.dto.MemberStats;
 import com.aloha.teamproject.dto.StudentBooking;
 import com.aloha.teamproject.dto.StudentReview;
+import com.aloha.teamproject.dto.TutorMessage;
 
 public interface MemberMyPageService {
 	
@@ -18,5 +19,7 @@ public interface MemberMyPageService {
 	public List<StudentBooking> selectPastBookings(String userId) throws Exception;
 
 	public List<StudentReview> selectStudentReviews(String userId) throws Exception;
+
+	public List<TutorMessage> selectTutorMessages(String userId) throws Exception;
 
 }
