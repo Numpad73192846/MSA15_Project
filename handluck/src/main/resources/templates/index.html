@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI 손금 분석 서비스 - 당신의 손금으로 운세를 확인하세요. 내 손 안에 손금">
+    <meta name="keywords" content="손금, 운세, AI 손금, 손금 풀이, 손금 분석">
+    <title>내 손 안에 손금 | AI 손금 분석 서비스</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="stars" id="stars"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav>
+            <ul class="nav-links">
+                <li><a href="/">홈</a></li>
+                <li><a href="/upload" class="nav-highlight">손금 보는 방법</a></li>
+                <li><a href="#features">서비스</a></li>
+                <li><a href="#contact">문의</a></li>
+            </ul>
+        </nav>
+        <!-- Auth Buttons -->
+        <div class="auth-buttons">
+            <!-- 비로그인 상태 -->
+            <a href="/login" sec:authorize="!isAuthenticated()" class="auth-btn login-btn">로그인</a>
+            <!-- 로그인 상태 -->
+            <div sec:authorize="isAuthenticated()" class="user-menu">
+                <span class="user-name" sec:authentication="name">사용자</span>
+                <a href="/logout" class="auth-btn logout-btn">로그아웃</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container" id="home">
+        <!-- Hero Section -->
+        <section class="hero">
+            <!-- Hand Image with Animation -->
+            <div class="hand-container">
+                <div class="hand-glow"></div>
+                <div class="hand-circle"></div>
+                <img th:src="@{/img/hand.svg}" alt="손금 이미지" class="hand-image">
+            </div>
+
+            <!-- Main Title -->
+            <h1 class="main-title">
+                <span class="highlight">내 손 안에 손금</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="subtitle">
+                AI가 분석하는 정확한 손금 풀이<br>
+                당신의 손금 속에 숨겨진 운명을 확인하세요
+            </p>
+
+            <!-- CTA Button -->
+            <a href="/upload" class="cta-button" id="start-button">
+                <span>🖐️</span>
+                <span>손금 보기 시작하기</span>
+            </a>
+
+            <!-- Price Badge -->
+            <div class="price-badge">
+                <span>✨단돈✨</span>
+                <span class="price">400원</span>
+                <span>으로 시작하기</span>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" id="features">
+            <div class="feature-card">
+                <span class="feature-icon">📸</span>
+                <h3 class="feature-title">간편한 촬영</h3>
+                <p class="feature-desc">스마트폰으로 손바닥을 찍기만 하면 준비 완료</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📜</span>
+                <h3 class="feature-title">상세 리포트</h3>
+                <p class="feature-desc">생명선, 감정선, 두뇌선까지 상세한 해석 제공</p>
+            </div>
+        </section>
+
+        <!-- Trust Section -->
+        <section class="trust-section">
+            <p class="trust-text">이미 많은 분들이 경험했습니다</p>
+            <div class="trust-badges">
+                <div class="trust-item">
+                    <span class="trust-number">50만+</span>
+                    <span class="trust-label">누적 사용자</span>
+                </div>
+                <div class="trust-item">
+                    <span class="trust-number">4.8</span>
+                    <span class="trust-label">평점 (5점 만점)</span>
+                </div>
+                <div class="trust-item">
+                    <span class="trust-number">95%</span>
+                    <span class="trust-label">만족도</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 내 손 안에 손금. All rights reserved.</p>
+        <p>
+            <a href="/terms">이용약관</a> ·
+            <a href="/privacy">개인정보처리방침</a>
+        </p>
+    </footer>
+
+    <!-- JavaScript for Stars Animation -->
+    <script>
+        // Create stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (2 + Math.random() * 2) + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            createStars();
+        });
+    </script>
+</body>
+
+</html>

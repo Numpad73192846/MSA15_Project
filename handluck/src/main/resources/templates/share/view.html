@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO & 공유 최적화 Meta Tags -->
+    <meta name="description"
+        th:content="'🔮 ' + ${reading.user.nickname} + '님의 손금 결과! 행운점수 ' + ${reading.luckScore} + '점 - ' + ${reading.summary}">
+    <meta property="og:title" content="내 손금 결과를 확인해보세요! 🔮">
+    <meta property="og:description" th:content="${reading.summary}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" th:content="${shareUrl}">
+    <meta property="og:image" th:content="@{/img/og-share.png}">
+
+    <!-- 카카오톡 공유용 -->
+    <meta property="og:site_name" content="내 손 안에 손금">
+
+    <title th:text="${reading.user.nickname} + '님의 손금 결과 | 내 손 안에 손금'">손금 결과 | 내 손 안에 손금</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/share.css}">
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="stars" id="stars"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="logo">🔮 손금</a>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container share-container">
+        <section class="share-section">
+            <!-- 결과 카드 -->
+            <div class="result-card">
+                <!-- 사용자 정보 -->
+                <div class="result-header">
+                    <div class="result-icon">🔮</div>
+                    <h1 class="result-title">
+                        <span th:text="${reading.user.nickname}">사용자</span>님의 손금 결과
+                    </h1>
+                    <p class="result-date" th:text="${#temporals.format(reading.createdAt, 'yyyy년 MM월 dd일')}">2026년 2월
+                        9일</p>
+                </div>
+
+                <!-- 행운 점수 (하이라이트) -->
+                <div class="luck-score-section">
+                    <div class="luck-score-circle">
+                        <span class="luck-score" th:text="${reading.luckScore}">85</span>
+                        <span class="luck-label">점</span>
+                    </div>
+                    <p class="luck-description">행운 점수</p>
+                </div>
+
+                <!-- 한줄 요약 (티저) -->
+                <div class="summary-section">
+                    <p class="summary-text" th:text="${reading.summary}">
+                        강한 생명력과 뛰어난 분석력을 가진 당신, 올해 큰 행운이 찾아올 것입니다!
+                    </p>
+                </div>
+
+                <!-- 블러 처리된 상세 내용 (보고 싶게 만들기) -->
+                <div class="blurred-content">
+                    <div class="blurred-overlay">
+                        <div class="blurred-text">
+                            <h3>📜 상세 분석 결과</h3>
+                            <div class="fake-lines">
+                                <div class="fake-line" style="width: 90%"></div>
+                                <div class="fake-line" style="width: 75%"></div>
+                                <div class="fake-line" style="width: 85%"></div>
+                                <div class="fake-line" style="width: 60%"></div>
+                                <div class="fake-line" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="unlock-prompt">
+                            <span class="lock-icon">🔒</span>
+                            <p>상세 분석 결과를 보려면<br>나도 손금을 봐야 해요!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 분석 항목 미리보기 -->
+                <div class="preview-items">
+                    <div class="preview-item">
+                        <span class="preview-icon">❤️</span>
+                        <span class="preview-label">생명선</span>
+                        <span class="preview-status">분석 완료</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-icon">🧠</span>
+                        <span class="preview-label">두뇌선</span>
+                        <span class="preview-status">분석 완료</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-icon">💕</span>
+                        <span class="preview-label">감정선</span>
+                        <span class="preview-status">분석 완료</span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="preview-icon">⭐</span>
+                        <span class="preview-label">운명선</span>
+                        <span class="preview-status">분석 완료</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA 섹션 -->
+            <div class="cta-section">
+                <p class="cta-text">나도 내 손금이 궁금하다면?</p>
+                <a href="/upload" class="cta-button cta-main">
+                    <span>🖐️</span>
+                    <span>나도 손금 보기</span>
+                </a>
+                <div class="price-info">
+                    <span class="price-badge-small">
+                        <span>단돈</span>
+                        <span class="price" th:text="${price} + '원'">400원</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 공유 통계 -->
+            <div class="share-stats">
+                <span class="stat-item">
+                    <span class="stat-icon">👀</span>
+                    <span th:text="${reading.viewCount} + '명이 봤어요'">0명이 봤어요</span>
+                </span>
+            </div>
+
+            <!-- 다시 공유하기 버튼 -->
+            <div class="reshare-section">
+                <p class="reshare-text">친구에게도 알려주세요!</p>
+                <div class="share-buttons">
+                    <button class="share-btn kakao-share" onclick="shareKakao()">
+                        <span>💬</span> 카카오톡
+                    </button>
+                    <button class="share-btn copy-link" onclick="copyLink()">
+                        <span>🔗</span> 링크 복사
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 내 손 안에 손금. All rights reserved.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script th:inline="javascript">
+        const shareUrl = /*[[${shareUrl}]]*/ '';
+        const shareCode = /*[[${reading.shareCode}]]*/ '';
+        const userName = /*[[${reading.user.nickname}]]*/ '';
+        const luckScore = /*[[${reading.luckScore}]]*/ 0;
+        const summary = /*[[${reading.summary}]]*/ '';
+
+        // 별 애니메이션
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (2 + Math.random() * 2) + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 링크 복사
+        function copyLink() {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('링크가 복사되었습니다! 📋');
+                trackShare();
+            });
+        }
+
+        // 카카오톡 공유 (카카오 SDK 필요)
+        function shareKakao() {
+            if (typeof Kakao !== 'undefined' && Kakao.isInitialized()) {
+                Kakao.Share.sendDefault({
+                    objectType: 'feed',
+                    content: {
+                        title: '🔮 ' + userName + '님의 손금 결과',
+                        description: '행운점수 ' + luckScore + '점! ' + summary,
+                        imageUrl: 'https://handluck.com/img/og-share.png',
+                        link: {
+                            mobileWebUrl: shareUrl,
+                            webUrl: shareUrl,
+                        },
+                    },
+                    buttons: [
+                        {
+                            title: '나도 손금 보기',
+                            link: {
+                                mobileWebUrl: shareUrl,
+                                webUrl: shareUrl,
+                            },
+                        },
+                    ],
+                });
+                trackShare();
+            } else {
+                // 카카오 SDK 미설정시 일반 공유
+                copyLink();
+            }
+        }
+
+        // 공유 추적
+        function trackShare() {
+            fetch('/api/share/' + shareCode + '/track', { method: 'POST' });
+        }
+
+        document.addEventListener('DOMContentLoaded', createStars);
+    </script>
+</body>
+
+</html>

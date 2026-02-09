@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결과를 찾을 수 없습니다 | 내 손 안에 손금</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+
+<body>
+    <div class="bg-animation">
+        <div class="stars" id="stars"></div>
+    </div>
+
+    <header class="header">
+        <a href="/" class="logo">🔮 손금</a>
+    </header>
+
+    <main class="main-container">
+        <section class="hero" style="text-align: center;">
+            <div style="font-size: 5rem; margin-bottom: 24px;">😢</div>
+            <h1 class="main-title">결과를 찾을 수 없습니다</h1>
+            <p class="subtitle">
+                요청하신 손금 결과가 존재하지 않거나<br>
+                링크가 만료되었습니다.
+            </p>
+            <a href="/" class="cta-button" style="margin-top: 32px;">
+                <span>🏠</span>
+                <span>홈으로 돌아가기</span>
+            </a>
+        </section>
+    </main>
+
+    <script>
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', createStars);
+    </script>
+</body>
+
+</html>

@@ -9,6 +9,16 @@
             "projectName": "teamproject",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-HandluckApplication<handluck>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.cho.handluck.HandluckApplication",
+            "projectName": "handluck",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
