@@ -14,6 +14,8 @@ public interface SubjectMapper {
 
     public Subject selectById(String id) throws Exception;
 
+    public Subject selectByName(String name) throws Exception;
+
     public List<Subject> selectByGroupId(String groupId) throws Exception;
 
     public int insert(Subject subject) throws Exception;

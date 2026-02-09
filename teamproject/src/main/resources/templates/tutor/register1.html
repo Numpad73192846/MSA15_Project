@@ -5,6 +5,11 @@
     <th:block layout:fragment="extra-css">
         <link rel="stylesheet" href="/css/tutor-register-admin.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <style>
+            #careerCardList:empty {
+                display: none;
+            }
+        </style>
     </th:block>
     <th:block layout:fragment="title">
         <title>튜터 회원가입 (2/4) | 튜터 플랫폼</title>
@@ -91,40 +96,38 @@
                             </div>
                             <p class="text-muted small mb-2">최근 경력부터 추가해 주세요. 퇴사연도는 재직 중이면 비워두세요.</p>
                             <div class="card border rounded-3 p-3 bg-light">
-                                <div class="card-body">
-                                    <div class="row g-2">
-                                        <div class="col-md-6">
-                                            <label class="form-label small text-muted">회사명</label>
-                                            <input type="text" class="form-control" id="careerCompany" placeholder="예) ABC학원">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small text-muted">직종</label>
-                                            <input type="text" class="form-control" id="careerJob" placeholder="예) 영어강사">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small text-muted">직위</label>
-                                            <input type="text" class="form-control" id="careerPosition" placeholder="예) 팀장">
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small text-muted">입사연도</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="careerStartYear" min="1950" max="2100" placeholder="2020">
-                                                <span class="input-group-text">년</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label small text-muted">퇴사연도 (선택)</label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="careerEndYear" min="1950" max="2100" placeholder="2023">
-                                                <span class="input-group-text">년</span>
-                                            </div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted">회사명</label>
+                                        <input type="text" class="form-control" id="careerCompany" placeholder="예) ABC학원">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted">직종</label>
+                                        <input type="text" class="form-control" id="careerJob" placeholder="예) 영어강사">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-muted">직위</label>
+                                        <input type="text" class="form-control" id="careerPosition" placeholder="예) 팀장">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted">입사연도</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="careerStartYear" min="1950" max="2100" placeholder="2020">
+                                            <span class="input-group-text">년</span>
                                         </div>
                                     </div>
-                                    <div class="d-flex justify-content-end mt-3">
-                                        <button type="button" class="btn btn-outline-primary" id="btnAddCareer">경력 추가</button>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-muted">퇴사연도 (선택)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="careerEndYear" min="1950" max="2100" placeholder="2023">
+                                            <span class="input-group-text">년</span>
+                                        </div>
                                     </div>
-                                    <div class="d-flex flex-wrap gap-2 mt-3" id="careerCardList"></div>
                                 </div>
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" class="btn btn-outline-primary" id="btnAddCareer">경력 추가</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2" id="careerCardList"></div>
                             </div>
                         </div>
                         <div class="d-flex gap-2 step-nav">
@@ -321,7 +324,7 @@
                 careers.forEach((careerItem, index) => {
                     const endLabel = careerItem.endYear ? careerItem.endYear : '재직중';
                     const badge = document.createElement('div');
-                    badge.className = 'admin-chip';
+                    badge.className = 'mt-3 admin-chip';
                     badge.innerHTML = `
                         <span class="label">${careerItem.company}</span>
                         <span class="sub">${careerItem.job} · ${careerItem.position} · ${careerItem.startYear}~${endLabel}</span>

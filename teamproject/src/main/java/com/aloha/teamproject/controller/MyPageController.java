@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.dto.Users;
+import com.aloha.teamproject.config.TossPaymentsProperties;
 import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MyPageController {
 
     private final UserService userService;
+    private final TossPaymentsProperties tossPaymentsProperties;
 
     @GetMapping("/tutor/mypage")
     public String tutorMyPage() {
@@ -48,6 +50,7 @@ public class MyPageController {
         log.info("[GET] - /member/mypage");
         Users user = resolveUser(authentication);
         model.addAttribute("user", user);
+        model.addAttribute("tossClientKey", tossPaymentsProperties.getClientKey());
         return "member/mypage";
     }
 

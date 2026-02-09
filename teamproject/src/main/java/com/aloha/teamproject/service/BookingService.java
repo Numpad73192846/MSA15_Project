@@ -26,4 +26,6 @@ public interface BookingService {
 
     public int completeBooking(String id) throws Exception;
 
+    public int payBooking(String id, java.math.BigDecimal amount, String provider) throws Exception;
+
 }

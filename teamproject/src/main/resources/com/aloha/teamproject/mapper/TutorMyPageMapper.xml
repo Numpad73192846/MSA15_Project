@@ -6,7 +6,7 @@
 <mapper namespace="com.aloha.teamproject.mapper.TutorMyPageMapper">
 
 	<select id="selectTutorProfileByUserId" resultType="TutorProfile">
-		SELECT u.id AS userId, u.name, u.username AS email, u.nickname, u.phone, tp.profile_img AS profileImg, tp.bio, tp.headline,
+		SELECT u.id AS userId, u.name, u.username AS email, u.nickname, tp.phone, tp.profile_img AS profileImg, tp.bio, tp.headline,
 		       tp.self_intro AS selfIntro, tp.video_url AS videoUrl, tp.rating_avg AS ratingAvg, tp.review_count AS reviewCount
 		FROM tutor_profile tp
 		JOIN users u ON tp.user_id = u.id

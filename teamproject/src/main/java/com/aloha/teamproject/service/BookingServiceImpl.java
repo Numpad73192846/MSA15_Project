@@ -1,5 +1,7 @@
 package com.aloha.teamproject.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -7,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.aloha.teamproject.common.service.BaseServiceImpl;
 import com.aloha.teamproject.dto.Booking;
+import com.aloha.teamproject.dto.Payment;
 import com.aloha.teamproject.mapper.BookingMapper;
+import com.aloha.teamproject.mapper.PaymentMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class BookingServiceImpl extends BaseServiceImpl implements BookingService {
 
     private final BookingMapper bookingMapper;
+    private final PaymentMapper paymentMapper;
 
     @Override
     public List<Booking> selectAll() throws Exception {
@@ -71,6 +76,33 @@ public class BookingServiceImpl extends BaseServiceImpl implements BookingServic
     @Transactional
     public int completeBooking(String id) throws Exception {
         return bookingMapper.completeBooking(id);
+    }
+
+    @Override
+    @Transactional
+    public int payBooking(String id, BigDecimal amount, String provider) throws Exception {
+        Booking booking = bookingMapper.selectById(id);
+        if (booking == null) {
+            throw new Exception("예약을 찾을 수 없습니다.");
+        }
+
+        Payment existingPayment = paymentMapper.selectByBookingId(id);
+        if (existingPayment != null) {
+            throw new Exception("이미 결제된 예약입니다.");
+        }
+
+        Payment payment = Payment.builder()
+            .userId(booking.getUserId())
+            .bookingId(id)
+            .amount(amount)
+            .provider(provider)
+            .status("PAID")
+            .paidAt(LocalDateTime.now())
+            .build();
+        int result = paymentMapper.insert(payment);
+        bookingMapper.updatePaidAt(id);
+        return result;
+        
     }
 
 }

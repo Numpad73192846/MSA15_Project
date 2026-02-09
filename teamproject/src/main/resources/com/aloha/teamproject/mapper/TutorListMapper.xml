@@ -65,6 +65,7 @@
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -115,6 +116,7 @@
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
         WHERE tp.id = #{userId}
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
     </select>
 
     <select id="selectTutorsBySubject" resultMap="TutorListMap">
@@ -138,6 +140,7 @@
         LEFT JOIN language_field lf ON l.field_id = lf.id
         LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND sg.name = #{subject}
         GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
@@ -164,6 +167,7 @@
         LEFT JOIN language_field lf ON l.field_id = lf.id
         LEFT JOIN tutor_career tc ON tp.user_id = tc.user_id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND l.price &gt;= #{minPrice} 
           AND l.price &lt;= #{maxPrice}
         GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
@@ -217,6 +221,7 @@
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
+          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND (u.name LIKE CONCAT('%', #{searchTerm}, '%') 
                OR tp.bio LIKE CONCAT('%', #{searchTerm}, '%'))
         ORDER BY rating_avg DESC, review_count DESC

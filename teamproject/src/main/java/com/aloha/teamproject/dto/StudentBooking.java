@@ -18,6 +18,8 @@ public class StudentBooking {
 	private LocalDateTime endAt;
 	private String status;
 	private BigDecimal price;
+	private LocalDateTime paidAt;
+	private String reviewId;
 	
 	// 뷰에서 사용할 편의 필드
 	public String getLessonDate() {

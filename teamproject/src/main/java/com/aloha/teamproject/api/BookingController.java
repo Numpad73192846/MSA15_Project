@@ -1,6 +1,7 @@
 package com.aloha.teamproject.api;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -279,6 +280,61 @@ public class BookingController {
         private String time;
         private String subject;
         private String message;
+    }
+
+    /**
+     * 예약 결제 처리
+     */
+    @PostMapping("/{id}/pay")
+    public ApiResponse<Void> payBooking(
+            @PathVariable("id") String id,
+            @RequestBody PaymentRequest request,
+            Authentication authentication) {
+        log.info("[예약 결제 시작] bookingId: {}", id);
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("[예약 결제] 인증 실패");
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            log.info("[예약 결제] userId: {}, paymentMethod: {}, amount: {}", 
+                userId, request.getPaymentMethod(), request.getAmount());
+            
+            // 예약 조회
+            Booking booking = bookingService.selectById(id);
+            if (booking == null) {
+                log.warn("[예약 결제] 예약을 찾을 수 없음: {}", id);
+                return ApiResponse.error("예약을 찾을 수 없습니다.");
+            }
+            
+            // 본인 예약인지 확인
+            if (!userId.equals(booking.getUserId())) {
+                log.warn("[예약 결제] 권한 없음 - userId: {}, bookingUserId: {}", userId, booking.getUserId());
+                return ApiResponse.error("결제 권한이 없습니다.");
+            }
+            
+            // 결제 처리 (비토스 결제는 내부 처리)
+            BigDecimal amount = request.getAmount() != null
+                ? BigDecimal.valueOf(request.getAmount())
+                : BigDecimal.ZERO;
+            String provider = request.getPaymentMethod() != null
+                ? request.getPaymentMethod().toUpperCase()
+                : "UNKNOWN";
+            bookingService.payBooking(id, amount, provider);
+            log.info("[예약 결제 성공] bookingId: {}", id);
+            
+            return ApiResponse.ok(SuccessCode.OK);
+        } catch (Exception e) {
+            log.error("[예약 결제 실패] bookingId: {}", id, e);
+            return ApiResponse.error("결제 처리에 실패했습니다.");
+        }
+    }
+
+    @lombok.Data
+    public static class PaymentRequest {
+        private String paymentMethod;
+        private Integer amount;
     }
 
 }

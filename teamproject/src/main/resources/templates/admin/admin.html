@@ -315,7 +315,10 @@ async function showTab(key){
     a.classList.toggle("active", a.getAttribute("data-tab") === safeKey);
   });
 
-  location.hash = safeKey;
+  const url = new URL(window.location.href);
+  url.searchParams.set("tab", safeKey);
+  url.hash = "";
+  history.replaceState(null, "", url.toString());
 
   if (!tabContainer) return;
   try {
@@ -783,7 +786,7 @@ function initSettingsTab(){
 renderKPI();
 
 // 최초 탭
-const initial = new URLSearchParams(location.search).get("tab") || (location.hash || "#dashboard").replace("#", "");
+const initial = new URLSearchParams(location.search).get("tab") || "dashboard";
 showTab(tabs.includes(initial) ? initial : "dashboard");
 
 // 페이지 로드 시 로그아웃 버튼 초기화

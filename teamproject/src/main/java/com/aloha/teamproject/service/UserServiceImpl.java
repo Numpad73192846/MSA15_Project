@@ -147,7 +147,7 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
 	@Override
 	@Transactional
-	public boolean updateMyInfo(String userId, String name, String phone, String password, String passwordConfirm) throws Exception {
+	public boolean updateMyInfo(String userId, String name, String password, String passwordConfirm) throws Exception {
 		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
 		
 		// 비밀번호 변경 시 확인
@@ -162,9 +162,6 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		// 수정할 정보 설정
 		if (name != null && !name.isEmpty()) {
 			user.setName(name);
-		}
-		if (phone != null && !phone.isEmpty()) {
-			user.setPhone(phone);
 		}
 		if (password != null && !password.isEmpty()) {
 			String encodedPassword = passwordEncoder.encode(password);

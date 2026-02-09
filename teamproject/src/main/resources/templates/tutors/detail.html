@@ -37,10 +37,6 @@
                                                 <span class="me-1">⭐</span>
                                                 <span class="fw-semibold">아직 리뷰가 없습니다</span>
                                             </div>
-                                            <div class="text-muted mb-2" th:if="${reviewCount == 0}">
-                                                <span class="me-1">⭐</span>
-                                                <span class="fw-semibold">아직 리뷰가 없습니다</span>
-                                            </div>
                                         </div>
                                     </div>
 
@@ -74,11 +70,11 @@
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-4">
                                 수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)
-                                <button type="button" class="btn btn-sm btn-primary float-end" onclick="openReviewModal()">리뷰 작성</button>
+                                <button type="button" class="btn btn-sm btn-primary float-end" id="btnOpenReviewModal" onclick="openReviewModal()">리뷰 작성</button>
                             </h3>
                             
                             <div th:each="r : ${reviews}" class="mb-3">
-                                <div class="card border review-item" th:attr="data-review-id=${r.id}">
+                                <div class="card border review-item" th:attr="data-review-id=${r.id},data-student-id=${r.studentId},data-booking-id=${r.bookingId},data-rating=${r.rating},data-content=${r.content}">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -95,6 +91,10 @@
                                         <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
                                         <div class="small text-muted">
                                             <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
+                                        </div>
+                                        <div class="review-actions mt-2 gap-2 d-none">
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-edit-review">수정</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete-review">삭제</button>
                                         </div>
                                     </div>
                                 </div>
@@ -215,8 +215,9 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">선택된 시간</label>
-                                    <input type="text" class="form-control bg-white" id="displaySelectedTime"
-                                        placeholder="캘린더에서 시간을 선택해주세요" readonly>
+                                    <textarea class="form-control bg-white" id="displaySelectedTime" rows="3"
+                                        placeholder="캘린더에서 시간을 선택해주세요" readonly></textarea>
+                                    <div class="form-text">여러 시간을 선택할 수 있습니다.</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">과목 *</label>
@@ -231,7 +232,7 @@
                                         placeholder="추가로 전달할 내용을 입력하세요"></textarea>
                                 </div>
                                 <button id="bookingSubmit" type="submit" class="btn btn-primary w-100"
-                                    disabled>예약하기</button>
+                                    th:disabled="${canBook == null or !canBook}">예약하기</button>
                             </form>
 
                         </div>
@@ -316,14 +317,30 @@
                     }
                 }
 
+                let currentUserId = null;
+
+                function setRatingValue(value) {
+                    const reviewRating = document.getElementById('reviewRating');
+                    if (!reviewRating) return;
+                    reviewRating.value = value || '';
+                    document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
+                    if (value) {
+                        const btn = document.querySelector(`.rating-btn[data-rating="${value}"]`);
+                        if (btn) btn.classList.add('active');
+                    }
+                }
+
                 async function openReviewModal(preselectBookingId = '') {
                     const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
                     document.getElementById('reviewModalTitle').textContent = '리뷰 작성';
                     document.getElementById('reviewId').value = '';
                     document.getElementById('bookingId').value = preselectBookingId || '';
-                    document.getElementById('reviewRating').value = '';
+                    setRatingValue('');
                     document.getElementById('reviewComment').value = '';
-                    document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('active'));
+                    const bookingSelect = document.getElementById('bookingSelect');
+                    if (bookingSelect) {
+                        bookingSelect.disabled = false;
+                    }
                     
                     // 현재 튜터와의 과거 예약 목록 로드
                     const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
@@ -332,7 +349,7 @@
                             const token = localStorage.getItem('accessToken');
                             if (!token) {
                                 alert('로그인이 필요합니다.');
-                                location.href = '/auth/login';
+                                location.href = '/login';
                                 return;
                             }
 
@@ -348,7 +365,7 @@
                                 const bookingResult = await bookingResponse.json();
                                 if (bookingResult.success && bookingResult.data) {
                                     const bookingSelect = document.getElementById('bookingSelect');
-                                    const eligibleBookings = bookingResult.data.filter(booking => booking.status === 'COMPLETED');
+                                    const eligibleBookings = bookingResult.data.filter(booking => booking.status === 'COMPLETED' && !booking.reviewId);
                                     bookingSelect.innerHTML = '<option value="">수업 선택 (필수)</option>';
                                     if (eligibleBookings.length === 0) {
                                         bookingSelect.innerHTML = '<option value="">완료된 수업이 없습니다.</option>';
@@ -375,11 +392,53 @@
                     reviewModal.show();
                 }
 
+                function openReviewEditModal(reviewItem) {
+                    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                    const reviewId = reviewItem.dataset.reviewId;
+                    const bookingId = reviewItem.dataset.bookingId;
+                    const rating = reviewItem.dataset.rating;
+                    const content = reviewItem.dataset.content || reviewItem.querySelector('p')?.textContent || '';
+
+                    document.getElementById('reviewModalTitle').textContent = '리뷰 수정';
+                    document.getElementById('reviewId').value = reviewId || '';
+                    document.getElementById('bookingId').value = bookingId || '';
+                    document.getElementById('reviewComment').value = content;
+                    setRatingValue(rating);
+
+                    const bookingSelect = document.getElementById('bookingSelect');
+                    if (bookingSelect) {
+                        bookingSelect.innerHTML = bookingId
+                            ? `<option value="${bookingId}">선택된 수업</option>`
+                            : '<option value="">선택된 수업</option>';
+                        bookingSelect.value = bookingId || '';
+                        bookingSelect.disabled = true;
+                    }
+
+                    reviewModal.show();
+                }
+
                 document.addEventListener('DOMContentLoaded', async () => {
                     const params = new URLSearchParams(window.location.search);
+                    const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
+                    const reviewWriteBtn = document.getElementById('btnOpenReviewModal');
+                    const token = localStorage.getItem('accessToken');
+                    if (reviewWriteBtn) reviewWriteBtn.style.display = 'none';
+                    try {
+                        const response = await fetch('/api/users/me', {
+                            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                        });
+                        const userResult = await response.json();
+                        if (userResult.success && userResult.data) {
+                            currentUserId = userResult.data.id;
+                            if (reviewWriteBtn) reviewWriteBtn.style.display = 'inline-block';
+                        }
+                    } catch (e) {
+                        console.warn('Failed to load user', e);
+                    }
                     if (params.get('review') === '1') {
                         const bookingIdParam = params.get('bookingId') || '';
                         await openReviewModal(bookingIdParam);
+                        history.replaceState({}, '', window.location.pathname);
                     }
                     // 예약 폼 제출 처리
                     const bookingForm = document.getElementById('bookingForm');
@@ -388,12 +447,11 @@
                             e.preventDefault();
                             
                             const tutorId = bookingForm.dataset.tutorId;
-                            const date = document.getElementById('selectedDate').value;
-                            const time = document.getElementById('selectedTime').value;
                             const subject = bookingForm.querySelector('select[name="subject"]').value;
                             const message = bookingForm.querySelector('textarea[name="message"]').value;
+                            const selectedData = tutorCalendar?.getSelectedData() || [];
                             
-                            if (!date || !time) {
+                            if (selectedData.length === 0) {
                                 alert('시간을 선택해주세요.');
                                 return;
                             }
@@ -405,47 +463,67 @@
                             const token = localStorage.getItem('accessToken');
                             if (!token) {
                                 alert('로그인이 필요합니다.');
-                                location.href = '/auth/login';
+                                location.href = '/login';
                                 return;
                             }
                             
+                            const submitBtn = document.getElementById('bookingSubmit');
+                            if (submitBtn) {
+                                submitBtn.disabled = true;
+                                submitBtn.textContent = '예약 처리 중...';
+                            }
+
+                            let successCount = 0;
+                            let failCount = 0;
+                            const sorted = [...selectedData].sort((a, b) => {
+                                if (a.date === b.date) return a.time.localeCompare(b.time);
+                                return a.date.localeCompare(b.date);
+                            });
+
                             try {
-                                const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': `Bearer ${token}`
-                                    },
-                                    body: JSON.stringify({
-                                        date: date,
-                                        time: time,
-                                        subject: subject,
-                                        message: message
-                                    })
-                                });
-                                
-                                const result = await response.json();
-                                
-                                if (result.success) {
-                                    alert('예약이 완료되었습니다.');
+                                for (const item of sorted) {
+                                    const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({
+                                            date: item.date,
+                                            time: item.time,
+                                            subject: subject,
+                                            message: message
+                                        })
+                                    });
+                                    const result = await response.json();
+                                    if (result.success) successCount += 1;
+                                    else failCount += 1;
+                                }
+
+                                if (successCount > 0 && failCount === 0) {
+                                    alert('예약 요청이 완료되었습니다. 튜터의 승인을 기다려주세요.');
+                                    location.reload();
+                                } else if (successCount > 0) {
+                                    alert(`일부 예약만 완료되었습니다. 성공: ${successCount}, 실패: ${failCount}`);
                                     location.reload();
                                 } else {
-                                    alert('예약에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
+                                    alert('예약에 실패했습니다. 다시 시도해주세요.');
                                 }
                             } catch (error) {
                                 console.error('예약 실패:', error);
                                 alert('예약 처리 중 오류가 발생했습니다.');
+                            } finally {
+                                if (submitBtn) {
+                                    submitBtn.disabled = false;
+                                    submitBtn.textContent = '예약하기';
+                                }
                             }
                         });
                     }
 
                     document.querySelectorAll('.rating-btn').forEach(btn => {
                         btn.addEventListener('click', () => {
-                            const reviewRating = document.getElementById('reviewRating');
-                            if (!reviewRating) return;
-                            reviewRating.value = btn.dataset.rating;
-                            document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
-                            btn.classList.add('active');
+                            setRatingValue(btn.dataset.rating);
                         });
                     });
 
@@ -477,7 +555,7 @@
 
                             if ( !token ) {
                                 alert('로그인이 필요합니다.');
-                                location.href = '/auth/login';
+                                location.href = '/login';
                                 return;
                             }
 
@@ -498,6 +576,9 @@
 
                             if (result.success) {
                                 alert('리뷰가 저장되었습니다.');
+                                const modalEl = document.getElementById('reviewModal');
+                                const modalInstance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+                                if (modalInstance) modalInstance.hide();
                                 location.reload();
                             } else {
                                 alert('리뷰 저장에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
@@ -505,23 +586,72 @@
                         });
                     }
 
-                    const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
+                    document.querySelectorAll('.review-item').forEach(item => {
+                        const actions = item.querySelector('.review-actions');
+                        if (!actions) return;
+                        const isOwner = !!currentUserId && item.dataset.studentId === currentUserId;
+                        actions.classList.toggle('d-none', !isOwner);
+                        actions.classList.toggle('d-flex', isOwner);
+                    });
+
+                    document.addEventListener('click', async (e) => {
+                        const editBtn = e.target.closest('.btn-edit-review');
+                        if (editBtn) {
+                            const reviewItem = editBtn.closest('.review-item');
+                            if (reviewItem) openReviewEditModal(reviewItem);
+                            return;
+                        }
+                        const deleteBtn = e.target.closest('.btn-delete-review');
+                        if (deleteBtn) {
+                            const reviewItem = deleteBtn.closest('.review-item');
+                            const reviewId = reviewItem?.dataset?.reviewId;
+                            if (!reviewId) return;
+                            if (!confirm('리뷰를 삭제할까요?')) return;
+
+                            try {
+                                const res = await fetch(`/api/reviews/${reviewId}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+                                const result = await res.json();
+                                if (result.success) {
+                                    alert('리뷰가 삭제되었습니다.');
+                                    location.reload();
+                                } else {
+                                    alert(result.message || '리뷰 삭제에 실패했습니다.');
+                                }
+                            } catch (err) {
+                                console.error('리뷰 삭제 실패', err);
+                                alert('리뷰 삭제 중 오류가 발생했습니다.');
+                            }
+                        }
+                    });
+
                     const availableSlots = tutorId ? await loadTutorAvailability(tutorId) : [];
 
-                    new TutorCalendar({
+                    const tutorCalendar = new TutorCalendar({
                         containerId: 'tutorScheduleCalendar',
                         mode: 'edit',
-                        singleSlotPerDay: true,
+                        singleSlotPerDay: false,
                         baseTimeRanges: FULL_DAY_RANGES,
                         renderOnlyInRange: true,
                         timeStepMinutes: 30,
                         availableSlots: availableSlots,
                         availableSlotsOnly: true,
-                        onSlotClick: (dateKey, time) => {
-                            document.getElementById('selectedDate').value = dateKey;
-                            document.getElementById('selectedTime').value = time;
-                            document.getElementById('displaySelectedTime').value = `${dateKey} ${time}`;
-                            document.getElementById('bookingSubmit').disabled = false;
+                        onSlotClick: (dateKey, time, selectedData) => {
+                            const sorted = [...selectedData].sort((a, b) => {
+                                if (a.date === b.date) return a.time.localeCompare(b.time);
+                                return a.date.localeCompare(b.date);
+                            });
+                            const first = sorted[0];
+                            document.getElementById('selectedDate').value = first ? first.date : '';
+                            document.getElementById('selectedTime').value = first ? first.time : '';
+                            document.getElementById('displaySelectedTime').value = sorted.length
+                                ? sorted.map(item => `${item.date} ${item.time}`).join('\n')
+                                : '';
+                            document.getElementById('bookingSubmit').disabled = sorted.length === 0;
                         }
                     });
                 });

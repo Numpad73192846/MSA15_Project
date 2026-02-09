@@ -193,14 +193,255 @@
             </div>
         </div>
 
+        <!-- Payment Modal -->
+        <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header border-0 bg-light">
+                        <div>
+                            <h5 class="modal-title fw-bold mb-1">결제하기</h5>
+                            <p class="text-muted small mb-0">수업료 결제를 진행해주세요</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 예약 정보 요약 -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                         style="width:48px;height:48px;font-size:18px;" id="paymentTutorInitial">김</div>
+                                    <div>
+                                        <div class="fw-bold" id="paymentTutorName">튜터명</div>
+                                        <div class="small text-muted" id="paymentSubject">영어</div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 small">
+                                    <div class="col-6">
+                                        <div class="text-muted">수업 일시</div>
+                                        <div class="fw-semibold" id="paymentDateTime">2026-02-06 14:00</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted">수업 시간</div>
+                                        <div class="fw-semibold">30분</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 결제 수단 선택 -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">결제 수단</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="card" class="form-check-input" checked>
+                                    <div class="payment-method-content">
+                                        <span class="me-2">💳</span>
+                                        <span>신용/체크카드</span>
+                                    </div>
+                                </label>
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="kakao" class="form-check-input">
+                                    <div class="payment-method-content">
+                                        <span class="me-2">💬</span>
+                                        <span>카카오페이</span>
+                                    </div>
+                                </label>
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="toss" class="form-check-input">
+                                    <div class="payment-method-content">
+                                        <span class="me-2">📱</span>
+                                        <span>토스페이</span>
+                                    </div>
+                                </label>
+                                <label class="payment-method-item">
+                                    <input type="radio" name="paymentMethod" value="bank" class="form-check-input">
+                                    <div class="payment-method-content">
+                                        <span class="me-2">🏦</span>
+                                        <span>계좌이체</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 결제 금액 -->
+                        <div class="border-top pt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">수업료</span>
+                                <span id="paymentLessonFee">35,000원</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">플랫폼 수수료</span>
+                                <span>0원</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5 mt-3 pt-2 border-top">
+                                <span>총 결제금액</span>
+                                <span class="text-primary" id="paymentTotalAmount">35,000원</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary px-4" id="btnConfirmPayment">
+                            🔒 결제하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .payment-method-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: #fff;
+            }
+            .payment-method-item:hover {
+                border-color: #2563eb;
+                background: #f8fafc;
+            }
+            .payment-method-item:has(input:checked) {
+                border-color: #2563eb;
+                background: #eff6ff;
+            }
+            .payment-method-item input {
+                margin: 0;
+            }
+            .payment-method-content {
+                display: flex;
+                align-items: center;
+            }
+        </style>
+
+        <script th:inline="javascript">
+            window.tossClientKey = /*[[${tossClientKey}]]*/ '';
+        </script>
+        <script src="https://js.tosspayments.com/v2/standard"></script>
+
         <script>
+            // 결제 모달 열기 함수
+            let pendingPayment = null;
+            let memberUserId = null;
+            
+            function openPaymentModal(bookingId, tutorName, subject, lessonDate, startTime, price) {
+                pendingPayment = { bookingId, tutorName, subject, lessonDate, startTime, price };
+                
+                document.getElementById('paymentTutorInitial').textContent = tutorName ? tutorName.charAt(0) : '튜';
+                document.getElementById('paymentTutorName').textContent = tutorName || '튜터';
+                document.getElementById('paymentSubject').textContent = subject;
+                document.getElementById('paymentDateTime').textContent = `${lessonDate} ${startTime}`;
+                
+                const formattedPrice = new Intl.NumberFormat('ko-KR').format(price);
+                document.getElementById('paymentLessonFee').textContent = `${formattedPrice}원`;
+                document.getElementById('paymentTotalAmount').textContent = `${formattedPrice}원`;
+                
+                const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+                paymentModal.show();
+            }
+
+            async function startTossPayment(methodKey) {
+                if (!window.TossPayments) {
+                    throw new Error('TossPayments SDK not loaded.');
+                }
+                if (!window.tossClientKey) {
+                    throw new Error('Toss client key is missing.');
+                }
+
+                const orderId = `${pendingPayment.bookingId}_${Date.now()}`;
+                const amountValue = Number(pendingPayment.price);
+                const orderName = `${pendingPayment.subject} lesson`;
+                const successUrl = `${window.location.origin}/payments/toss/success`;
+                const failUrl = `${window.location.origin}/payments/toss/fail`;
+                const customerName = document.getElementById('memberName')?.textContent || 'Member';
+                const customerEmail = document.getElementById('memberEmail')?.textContent?.trim();
+
+                const tossPayments = TossPayments(window.tossClientKey);
+                const payment = tossPayments.payment({
+                    customerKey: memberUserId || 'guest'
+                });
+
+                const request = {
+                    amount: {
+                        currency: "KRW",
+                        value: amountValue
+                    },
+                    orderId: orderId,
+                    orderName: orderName,
+                    successUrl: successUrl,
+                    failUrl: failUrl,
+                    customerName: customerName
+                };
+
+                if (customerEmail) {
+                    request.customerEmail = customerEmail;
+                }
+
+                if (methodKey === 'bank') {
+                    request.method = 'TRANSFER';
+                } else if (methodKey === 'kakao') {
+                    request.method = 'CARD';
+                    request.card = { flowMode: 'DIRECT', easyPay: 'KAKAOPAY' };
+                } else if (methodKey === 'toss') {
+                    request.method = 'CARD';
+                    request.card = { flowMode: 'DIRECT', easyPay: 'TOSSPAY' };
+                } else {
+                    request.method = 'CARD';
+                    request.card = { flowMode: 'DEFAULT' };
+                }
+
+                await payment.requestPayment(request);
+            }
+
+            // 결제 확인 버튼 클릭
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('btnConfirmPayment')?.addEventListener('click', async () => {
+                    if (!pendingPayment) {
+                        alert('결제 정보가 없습니다.');
+                        return;
+                    }
+
+                    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                    const btnConfirm = document.getElementById('btnConfirmPayment');
+                    const token = localStorage.getItem('accessToken');
+                    
+                    if (!token) {
+                        alert('로그인이 필요합니다.');
+                        location.href = '/login';
+                        return;
+                    }
+                    
+                    // 버튼 비활성화 및 로딩 표시
+                    btnConfirm.disabled = true;
+                    btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리중...';
+
+
+                    try {
+                        await startTossPayment(paymentMethod);
+                        return;
+                    } catch (error) {
+                        console.error('결제 실패:', error);
+                        alert('결제 처리 중 오류가 발생했습니다.');
+                    } finally {
+                        // 버튼 복원
+                        btnConfirm.disabled = false;
+                        btnConfirm.innerHTML = '<i class="bi bi-lock-fill me-1"></i> 결제하기';
+                    }
+                });
+            });
+            
             // 수업 취소 함수
             async function cancelBooking(bookingId) {
                 if (!confirm('수업을 취소하시겠습니까?')) return;
                 const token = localStorage.getItem('accessToken');
                 if (!token) {
                     alert('로그인이 필요합니다.');
-                    location.href = '/auth/login';
+                    location.href = '/login';
                     return;
                 }
                 
@@ -230,7 +471,7 @@
                 try {
                     const token = localStorage.getItem('accessToken');
                     if (!token) {
-                        location.href = '/auth/login';
+                        location.href = '/login';
                         return;
                     }
                     const response = await fetch('/api/users/me/mypage', {
@@ -241,6 +482,7 @@
                     const result = await response.json();
                     if (result.success && result.data) {
                         const mypage = result.data;
+                        memberUserId = mypage.userId;
                         
                         // 프로필 정보 바인딩
                         document.getElementById('memberName').textContent = mypage.name || '회원';
@@ -268,10 +510,17 @@
                                     const item = document.createElement('div');
                                     item.className = 'booking-item p-3 border rounded';
                                     const statusBadge = booking.status === 'CONFIRMED' ? 'bg-success' : 'bg-warning text-dark';
-                                    const statusText = booking.status === 'CONFIRMED' ? '확정' : 
-                                                      booking.status === 'PENDING' ? '대기중' : '취소됨';
+                                    const statusText = booking.status === 'CONFIRMED' ? '승인됨' : 
+                                                      booking.status === 'PENDING' ? '승인대기' : '취소됨';
                                     const cancelBtn = booking.status === 'PENDING' 
                                         ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${booking.bookingId}')">취소</button>` 
+                                        : '';
+                                    const isPaid = Boolean(booking.paidAt);
+                                    const paymentBtn = booking.status === 'CONFIRMED' && !isPaid
+                                        ? `<button class="btn btn-sm btn-primary" onclick="openPaymentModal('${booking.bookingId}', '${booking.tutorName}', '${booking.subject}', '${booking.lessonDate}', '${booking.startTime}', ${booking.price})">결제하기</button>` 
+                                        : '';
+                                    const paidBadge = isPaid
+                                        ? '<span class="badge bg-success">결제완료</span>'
                                         : '';
                                     item.innerHTML = `
                                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -285,8 +534,10 @@
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="badge bg-light text-dark">${booking.subject}</span>
-                                            <div class="d-flex gap-2">
+                                            <div class="d-flex gap-2 align-items-center">
                                                 <span class="fw-semibold text-primary">${new Intl.NumberFormat('ko-KR').format(booking.price)}원</span>
+                                                ${paidBadge}
+                                                ${paymentBtn}
                                                 ${cancelBtn}
                                             </div>
                                         </div>
@@ -305,8 +556,12 @@
                                     const item = document.createElement('div');
                                     item.className = 'booking-item p-3 border rounded opacity-75';
                                     const isCompleted = booking.status === 'COMPLETED';
-                                    const reviewBtn = isCompleted
+                                    const hasReview = Boolean(booking.reviewId);
+                                    const reviewBtn = isCompleted && !hasReview
                                         ? `<a class="btn btn-sm btn-outline-primary" href="/tutors/${booking.tutorProfileId}?review=1&bookingId=${booking.bookingId}">리뷰 작성</a>`
+                                        : '';
+                                    const reviewDoneBadge = hasReview
+                                        ? '<span class="badge bg-light text-success">리뷰작성완료</span>'
                                         : '';
                                     item.innerHTML = `
                                         <div class="d-flex justify-content-between align-items-start mb-2">
@@ -320,6 +575,7 @@
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="badge bg-light text-dark">${booking.subject}</span>
+                                            ${reviewDoneBadge}
                                             ${reviewBtn}
                                         </div>
                                     `;

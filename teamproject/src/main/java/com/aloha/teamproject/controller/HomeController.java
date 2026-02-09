@@ -17,8 +17,8 @@ public class HomeController {
     }
 
     @GetMapping("/join")
-    public String join() {
-        return "redirect:/login#tabSignup";
+	public String join() {
+		return "redirect:/login?tab=signup";
     }
 
     @GetMapping("/tutor/schedule-edit")

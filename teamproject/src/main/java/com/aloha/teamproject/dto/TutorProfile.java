@@ -51,13 +51,16 @@ public class TutorProfile {
     @Data
     public static class Request {      
         private MultipartFile profileImg;
+        private String basicPhone;
         private String headline;
         private String bio;
         private String selfIntro;
         private String videoUrl;
-        private String bankName;
-        private String accountNumber;
-        private String accountHolder;
+        private String basicBankName;
+        private String basicAccountNumber;
+        private String basicAccountHolder;
+        private String careersJson;
+        private String lessonCardsJson;
         private List<String> fieldIds;
         private String phone;
     }

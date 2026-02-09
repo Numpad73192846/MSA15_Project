@@ -11,7 +11,6 @@
 		<result property="password" column="password" />
 		<result property="name" column="name" />
 		<result property="nickname" column="nickname" />
-		<result property="phone" column="phone" />
 		<result property="status" column="status" />
 		<result property="createdAt" column="created_at" />
 		<result property="updatedAt" column="updated_at" />
@@ -84,7 +83,6 @@
 			password = #{password},
 			name = #{name},
 			nickname = #{nickname},
-			phone = #{phone},
 			status = #{status},
 			updated_at = NOW()
 		WHERE no = #{no}

@@ -23,6 +23,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aloha.teamproject.security.JwtAuthenticationFilter;
+import com.aloha.teamproject.service.auth.CustomOAuth2UserService;
+import com.aloha.teamproject.security.handler.OAuth2AuthenticationSuccessHandler;
+import com.aloha.teamproject.security.handler.OAuth2AuthenticationFailureHandler;
 import com.aloha.teamproject.service.UserDetailServiceImpl;
 
 @Slf4j
@@ -33,6 +36,9 @@ public class SecurityConfig {
 
     private final UserDetailServiceImpl userDetailServiceImpl;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2FailureHandler;
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -104,13 +110,16 @@ public class SecurityConfig {
             "/api/tutors/**",
             "/api/reviews/**",
             "/api/bookings/**",
+            "/api/payments/**",
             "/api/game/**"
             ))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
                 .requestMatchers("/tutor/mypage", "/mypage", "/member/mypage").permitAll()
+                .requestMatchers("/payments/**").permitAll()
                 .requestMatchers("/tutor/schedule-edit").permitAll()
                 .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
                 .requestMatchers("/guide", "/guide/**", "/faq", "/contact", "/about", "/partnership").permitAll()
@@ -124,16 +133,28 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
                 .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
+                .requestMatchers("/api/payments/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/tutors/profile", "/api/tutors/me/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING")
                 .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
                 .anyRequest().authenticated()
             );
 
-        // 세션 비활성화
+        // OAuth2 로그인 설정
+        http
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/login")
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
+            );
+
+        // 세션 관리 (OAuth2 사용 시 IF_REQUIRED)
         http
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             );
 
         // JWT 인증 필터 설정

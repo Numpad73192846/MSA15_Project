@@ -22,7 +22,7 @@ public interface UserService extends BaseCrudService<Users> {
 	boolean isUsernameAvailable(String username) throws Exception;
 	boolean isNicknameAvailable(String nickname) throws Exception;
 
-	// 회원 정보 수정 (이름, 전화번호, 비밀번호)
-	boolean updateMyInfo(String userId, String name, String phone, String password, String passwordConfirm) throws Exception;
+	// 회원 정보 수정 (이름, 비밀번호)
+	boolean updateMyInfo(String userId, String name, String password, String passwordConfirm) throws Exception;
 
 }

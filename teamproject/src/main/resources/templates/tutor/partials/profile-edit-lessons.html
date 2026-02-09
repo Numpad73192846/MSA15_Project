@@ -5,18 +5,328 @@
       <div class="step-section-desc">과목 및 수업분야 정보를 수정하세요</div>
 
       <div class="admin-box">
-        <div class="alert alert-info small mb-3">
-          <i class="bi bi-info-circle me-1"></i> 수업 관리 기능은 준비 중입니다.
+        <div class="mb-4">
+          <h5 class="fw-bold">수업 구성 (과목 + 분야 + 수업료)</h5>
+          <div class="mb-3">
+            <label class="form-label small text-muted">과목</label>
+            <div id="lessonSubjectButtons" class="d-flex flex-wrap gap-2"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-muted">일반 분야</label>
+            <div id="lessonGeneralFieldButtons" class="d-flex flex-wrap gap-2"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-muted">분야별</label>
+            <div id="lessonDomainFieldButtons" class="d-flex flex-wrap gap-2"></div>
+            <small class="text-muted d-block mt-2">일반 분야/분야별 중 하나만 선택됩니다</small>
+          </div>
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+              <label class="form-label small text-muted">수업료(원)</label>
+              <input type="number" class="form-control" id="lessonPriceInput" min="0" step="1000" placeholder="예: 30000">
+            </div>
+            <div class="col-md-6 d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-outline-primary" id="btnLessonSave">수업 추가</button>
+              <button type="button" class="btn btn-outline-secondary d-none" id="btnLessonCancelEdit">수정 취소</button>
+            </div>
+          </div>
+          <div class="mt-3">
+            <label class="form-label small text-muted">설명 (선택)</label>
+            <textarea class="form-control" id="lessonDescriptionInput" rows="2" placeholder="수업 설명을 입력하세요"></textarea>
+          </div>
+          <small class="text-muted d-block mt-2">추가된 수업은 실제 노출/결제 항목으로 사용됩니다</small>
         </div>
-        <p class="text-muted">현재 수업 관리 기능은 개발 진행 중입니다. 곧 제공될 예정입니다.</p>
+
+        <div id="lessonList" class="d-flex flex-column gap-2"></div>
       </div>
     </div>
   </div>
 </section>
-<!-- 섹션별 저장 버튼 -->
+
+<script>
+  const lessonState = {
+    subjects: [],
+    fields: [],
+    subjectMap: new Map(),
+    fieldMap: new Map(),
+    selectedSubjectId: '',
+    selectedSubjectName: '',
+    selectedFieldId: '',
+    selectedFieldName: '',
+    selectedFieldType: '',
+    editingLessonId: ''
+  };
+
+  const lessonFetch = (url, options = {}) => {
+    if (typeof fetchWithAuth === 'function') {
+      return fetchWithAuth(url, options);
+    }
+    return fetch(url, options);
+  };
+
+  function setActiveButton(container, targetBtn) {
+    if (!container) return;
+    container.querySelectorAll('button').forEach(btn => {
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-outline-primary');
+    });
+    if (targetBtn) {
+      targetBtn.classList.add('btn-primary');
+      targetBtn.classList.remove('btn-outline-primary');
+    }
+  }
+
+  function resetLessonForm() {
+    lessonState.selectedSubjectId = '';
+    lessonState.selectedSubjectName = '';
+    lessonState.selectedFieldId = '';
+    lessonState.selectedFieldName = '';
+    lessonState.selectedFieldType = '';
+    lessonState.editingLessonId = '';
+    document.getElementById('lessonPriceInput').value = '';
+    document.getElementById('lessonDescriptionInput').value = '';
+    setActiveButton(document.getElementById('lessonSubjectButtons'), null);
+    setActiveButton(document.getElementById('lessonGeneralFieldButtons'), null);
+    setActiveButton(document.getElementById('lessonDomainFieldButtons'), null);
+    document.getElementById('btnLessonSave').textContent = '수업 추가';
+    document.getElementById('btnLessonCancelEdit').classList.add('d-none');
+  }
+
+  function renderSubjectButtons(subjects) {
+    const container = document.getElementById('lessonSubjectButtons');
+    if (!container) return;
+    container.innerHTML = '';
+    subjects.forEach(subject => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-outline-primary rounded-pill';
+      btn.textContent = subject.name;
+      btn.dataset.subjectId = subject.id;
+      btn.dataset.subjectName = subject.name;
+      btn.addEventListener('click', () => {
+        lessonState.selectedSubjectId = subject.id;
+        lessonState.selectedSubjectName = subject.name;
+        setActiveButton(container, btn);
+      });
+      container.appendChild(btn);
+    });
+  }
+
+  function renderFieldButtons(fields) {
+    const generalContainer = document.getElementById('lessonGeneralFieldButtons');
+    const domainContainer = document.getElementById('lessonDomainFieldButtons');
+    if (!generalContainer || !domainContainer) return;
+
+    generalContainer.innerHTML = '';
+    domainContainer.innerHTML = '';
+    fields.forEach(field => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-outline-primary rounded-pill';
+      btn.textContent = field.name;
+      btn.dataset.fieldId = String(field.id);
+      btn.dataset.fieldType = field.category === 'DOMAIN' ? 'DOMAIN' : 'GENERAL';
+
+      btn.addEventListener('click', () => {
+        lessonState.selectedFieldId = String(field.id);
+        lessonState.selectedFieldName = field.name;
+        lessonState.selectedFieldType = btn.dataset.fieldType;
+        if (lessonState.selectedFieldType === 'DOMAIN') {
+          setActiveButton(domainContainer, btn);
+          setActiveButton(generalContainer, null);
+        } else {
+          setActiveButton(generalContainer, btn);
+          setActiveButton(domainContainer, null);
+        }
+      });
+
+      if (field.category === 'DOMAIN') {
+        domainContainer.appendChild(btn);
+      } else {
+        generalContainer.appendChild(btn);
+      }
+    });
+  }
+
+  function selectSubjectById(subjectId) {
+    const container = document.getElementById('lessonSubjectButtons');
+    if (!container) return;
+    const btn = container.querySelector(`button[data-subject-id="${subjectId}"]`);
+    if (btn) {
+      lessonState.selectedSubjectId = btn.dataset.subjectId;
+      lessonState.selectedSubjectName = btn.dataset.subjectName;
+      setActiveButton(container, btn);
+    }
+  }
+
+  function selectFieldById(fieldId) {
+    const btn = document.querySelector(`#lessonGeneralFieldButtons button[data-field-id="${fieldId}"], #lessonDomainFieldButtons button[data-field-id="${fieldId}"]`);
+    if (btn) {
+      lessonState.selectedFieldId = btn.dataset.fieldId;
+      lessonState.selectedFieldName = btn.textContent;
+      lessonState.selectedFieldType = btn.dataset.fieldType;
+      const container = btn.closest('#lessonGeneralFieldButtons') || btn.closest('#lessonDomainFieldButtons');
+      setActiveButton(container, btn);
+      if (container && container.id === 'lessonDomainFieldButtons') {
+        setActiveButton(document.getElementById('lessonGeneralFieldButtons'), null);
+      } else {
+        setActiveButton(document.getElementById('lessonDomainFieldButtons'), null);
+      }
+    }
+  }
+
+  async function loadSubjects() {
+    try {
+      const response = await lessonFetch('/api/subjects');
+      const result = await response.json();
+      if (result && result.success && Array.isArray(result.data)) {
+        lessonState.subjects = result.data;
+        lessonState.subjectMap = new Map(result.data.map(s => [s.id, s.name]));
+        renderSubjectButtons(result.data);
+      }
+    } catch (e) {
+      console.warn('Failed to load subjects', e);
+    }
+  }
+
+  async function loadFields() {
+    try {
+      const response = await lessonFetch('/api/language-fields');
+      const result = await response.json();
+      if (result && result.success && Array.isArray(result.data)) {
+        lessonState.fields = result.data;
+        lessonState.fieldMap = new Map(result.data.map(f => [String(f.id), f.name]));
+        renderFieldButtons(result.data);
+      }
+    } catch (e) {
+      console.warn('Failed to load fields', e);
+    }
+  }
+
+  async function loadLessons() {
+    const response = await lessonFetch('/api/lessons/my');
+    const result = await response.json();
+    const container = document.getElementById('lessonList');
+    container.innerHTML = '';
+
+    if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+      result.data.forEach(lesson => {
+        const subjectName = lessonState.subjectMap.get(lesson.subjectId) || lesson.subjectId || '';
+        const fieldName = lessonState.fieldMap.get(String(lesson.fieldId)) || lesson.fieldId || '';
+        const priceText = lesson.price ? new Intl.NumberFormat('ko-KR').format(lesson.price) : '-';
+
+        const item = document.createElement('div');
+        item.className = 'border rounded p-3';
+        item.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">${subjectName}${fieldName ? `-${fieldName}` : ''}</div>
+              <div class="text-muted small">${lesson.description || ''}</div>
+              <div class="text-muted">가격 ${priceText}원</div>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-2">수정</button>
+              <button class="btn btn-sm btn-outline-danger">삭제</button>
+            </div>
+          </div>
+        `;
+
+        const [editBtn, deleteBtn] = item.querySelectorAll('button');
+        editBtn.addEventListener('click', () => {
+          lessonState.editingLessonId = lesson.id;
+          document.getElementById('lessonPriceInput').value = lesson.price || '';
+          document.getElementById('lessonDescriptionInput').value = lesson.description || '';
+          selectSubjectById(lesson.subjectId);
+          selectFieldById(String(lesson.fieldId || ''));
+          document.getElementById('btnLessonSave').textContent = '수업 수정';
+          document.getElementById('btnLessonCancelEdit').classList.remove('d-none');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        deleteBtn.addEventListener('click', async () => {
+          if (!confirm('정말 삭제하시겠습니까?')) return;
+          const delRes = await lessonFetch(`/api/lessons/${lesson.id}`, { method: 'DELETE' });
+          const delJson = await delRes.json();
+          if (delJson.success) {
+            loadLessons();
+          } else {
+            alert(delJson.message || '삭제에 실패했습니다.');
+          }
+        });
+
+        container.appendChild(item);
+      });
+    } else {
+      container.innerHTML = '<div class="text-muted">등록된 수업이 없습니다.</div>';
+    }
+  }
+
+  async function saveLesson() {
+    const subjectId = lessonState.selectedSubjectId;
+    const subjectName = lessonState.selectedSubjectName;
+    const fieldId = lessonState.selectedFieldId;
+    const fieldName = lessonState.selectedFieldName;
+    const priceRaw = document.getElementById('lessonPriceInput').value || '';
+    const description = document.getElementById('lessonDescriptionInput').value || '';
+    const price = Number(priceRaw);
+
+    if (!subjectId || !fieldId) {
+      alert('과목과 분야를 선택해주세요.');
+      return;
+    }
+    if (!priceRaw || Number.isNaN(price) || price <= 0) {
+      alert('수업료를 입력해주세요.');
+      return;
+    }
+
+    const payload = {
+      subjectId,
+      fieldId,
+      title: `${subjectName}${fieldName ? `-${fieldName}` : ''}`,
+      description,
+      price
+    };
+
+    let url = '/api/lessons';
+    let method = 'POST';
+    if (lessonState.editingLessonId) {
+      url = `/api/lessons/${lessonState.editingLessonId}`;
+      method = 'PUT';
+    }
+
+    const response = await lessonFetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      resetLessonForm();
+      loadLessons();
+    } else {
+      alert(result.message || '저장에 실패했습니다.');
+    }
+  }
+
+  function bindLessonEvents() {
+    document.getElementById('btnLessonSave')?.addEventListener('click', saveLesson);
+    document.getElementById('btnLessonCancelEdit')?.addEventListener('click', () => {
+      resetLessonForm();
+    });
+  }
+
+  async function initLessonSection() {
+    await loadSubjects();
+    await loadFields();
+    bindLessonEvents();
+    await loadLessons();
+  }
+
+  initLessonSection();
+</script>
+
 <div class="d-flex justify-content-end gap-2">
-    <a href="/tutor/mypage" class="btn btn-outline-secondary px-4">취소</a>
-    <button type="button" class="btn btn-primary px-4" onclick="saveSection('lessons')">
-      <i class="bi bi-check-lg me-1"></i> 수업관리 저장
-    </button>
+  <button type="button" class="btn btn-outline-secondary px-4" onclick="showSection('documents')">이전</button>
+  <button type="button" class="btn btn-primary px-4" onclick="showSection('schedule')">다음</button>
 </div>

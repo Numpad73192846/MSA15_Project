@@ -29,6 +29,11 @@ public class SubjectServiceImpl extends BaseServiceImpl implements SubjectServic
     }
 
     @Override
+    public Subject selectByName(String name) throws Exception {
+        return subjectMapper.selectByName(name);
+    }
+
+    @Override
     public List<Subject> selectByGroupId(String groupId) throws Exception {
         return subjectMapper.selectByGroupId(groupId);
     }

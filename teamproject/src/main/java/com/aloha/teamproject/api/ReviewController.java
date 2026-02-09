@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
+import com.aloha.teamproject.dto.Booking;
 import com.aloha.teamproject.dto.Review;
+import com.aloha.teamproject.service.BookingService;
 import com.aloha.teamproject.service.ReviewService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final BookingService bookingService;
 
     @GetMapping
     public ApiResponse<List<Review>> getAllReviews() {
@@ -40,7 +43,7 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<Review> getReview(@PathVariable String id) {
+    public ApiResponse<Review> getReview(@PathVariable("id") String id) {
         try {
             Review review = reviewService.selectById(id);
             return ApiResponse.ok(review);
@@ -68,6 +71,19 @@ public class ReviewController {
         }
 
         try {
+            String userId = authentication.getName();
+            Booking booking = bookingService.selectById(request.getBookingId());
+            if (booking == null) {
+                return ApiResponse.error("예약을 찾을 수 없습니다.");
+            }
+            if (!userId.equals(booking.getUserId())) {
+                return ApiResponse.error("리뷰 작성 권한이 없습니다.");
+            }
+            Review existing = reviewService.selectReviewByBookingId(request.getBookingId());
+            if (existing != null) {
+                return ApiResponse.error("이미 리뷰가 작성된 예약입니다.");
+            }
+
             Review review = Review.builder()
                 .bookingId(request.getBookingId())
                 .rating(request.getRating())
@@ -83,12 +99,25 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> updateReview(@PathVariable String id, @RequestBody Review.Request request, Authentication authentication) {
+    public ApiResponse<Void> updateReview(@PathVariable("id") String id, @RequestBody Review.Request request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
+            String userId = authentication.getName();
+            Review existing = reviewService.selectById(id);
+            if (existing == null) {
+                return ApiResponse.error("리뷰를 찾을 수 없습니다.");
+            }
+            Booking booking = bookingService.selectById(existing.getBookingId());
+            if (booking == null) {
+                return ApiResponse.error("예약을 찾을 수 없습니다.");
+            }
+            if (!userId.equals(booking.getUserId())) {
+                return ApiResponse.error("리뷰 수정 권한이 없습니다.");
+            }
+
             Review review = Review.builder()
                 .id(id)
                 .rating(request.getRating())
@@ -104,12 +133,25 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> deleteReview(@PathVariable String id, Authentication authentication) {
+    public ApiResponse<Void> deleteReview(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
 
         try {
+            String userId = authentication.getName();
+            Review existing = reviewService.selectById(id);
+            if (existing == null) {
+                return ApiResponse.error("리뷰를 찾을 수 없습니다.");
+            }
+            Booking booking = bookingService.selectById(existing.getBookingId());
+            if (booking == null) {
+                return ApiResponse.error("예약을 찾을 수 없습니다.");
+            }
+            if (!userId.equals(booking.getUserId())) {
+                return ApiResponse.error("리뷰 삭제 권한이 없습니다.");
+            }
+
             reviewService.delete(id);
             return ApiResponse.ok(SuccessCode.DELETED);
         } catch (Exception e) {

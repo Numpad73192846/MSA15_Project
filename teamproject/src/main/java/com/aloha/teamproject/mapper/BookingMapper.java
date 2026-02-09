@@ -29,4 +29,6 @@ public interface BookingMapper {
 
     public int completeBooking(String id) throws Exception;
 
+    public int updatePaidAt(String id); // 결제시 paid_at 업데이트
+
 }

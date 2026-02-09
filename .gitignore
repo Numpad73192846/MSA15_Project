@@ -38,3 +38,4 @@ out/
 .windsurf/
 **/temp_*.html
 **/PROJECT_ANALYSIS.json
+teamproject/src/main/resources/application-local.properties
