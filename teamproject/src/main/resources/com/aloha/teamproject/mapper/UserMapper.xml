@@ -31,8 +31,8 @@
 	</resultMap>
 
 	<insert id="join">
-		INSERT INTO users ( id, username, password, name, nickname, phone )
-		VALUES ( #{id}, #{username}, #{password}, #{name}, #{nickname}, #{phone} )
+		INSERT INTO users ( id, username, password, name, nickname )
+		VALUES ( #{id}, #{username}, #{password}, #{name}, #{nickname} )
     </insert>
 
 	<insert id="insertAuth">

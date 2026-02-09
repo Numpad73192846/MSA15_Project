@@ -521,7 +521,7 @@
                     formData.append('profileImg', profileImgFile);
                 }
 
-                // Step 2: 학력 및 경력
+                // Step 2: 근무 경력
                 formData.append('career', step2Data.career || '');
                 const normalizeCareerYear = (value) => {
                     if (value === null || value === undefined) return null;
@@ -539,11 +539,16 @@
                 }));
                 formData.append('careersJson', JSON.stringify(careersPayload));
 
-                (step2Data.academicCertificates || []).forEach(id =>
-                    formData.append('academicCertificates', id)
+
+                // 학력증명서, 학위증명서, 자격증 파일 첨부
+                (step2Data.docEducation || []).forEach(fileObj =>
+                    formData.append('docEducation', fileObj.data)
                 );
-                (step2Data.educationCertificates || []).forEach(id =>
-                    formData.append('educationCertificates', id)
+                (step2Data.docDegree || []).forEach(fileObj =>
+                    formData.append('docDegree', fileObj.data)
+                );
+                (step2Data.docCertificate || []).forEach(fileObj =>
+                    formData.append('docCertificate', fileObj.data)
                 );
 
                 

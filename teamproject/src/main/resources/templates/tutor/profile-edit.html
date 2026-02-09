@@ -182,12 +182,6 @@
                 if (profileImgInput && profileImgInput.files[0]) {
                     profileState.profileImgFile = profileImgInput.files[0];
                 }
-
-                // 수정할 것
-                // const el = document.getElementById('editPhone');
-                // if (el && el.value.trim() !== "") {
-                //     profileState.phone = el.value;
-                // }
             }
 
             function applyStateToSection(){
@@ -215,7 +209,13 @@
                 if (elements.editBio) elements.editBio.value = profileState.bio || "";
                 if (elements.editSelfIntro) elements.editSelfIntro.value = profileState.selfIntro || "";
                 if (elements.editVideoUrl) elements.editVideoUrl.value = profileState.videoUrl || "";
-                if (elements.editBankName) elements.editBankName.value = profileState.bankName || "";
+                if (elements.editBankName) {
+                    elements.editBankName.value = profileState.bankName || "";
+                    // select option selected 처리 (동적 렌더링 대응)
+                    Array.from(elements.editBankName.options).forEach(opt => {
+                        opt.selected = (opt.value === profileState.bankName);
+                    });
+                }
                 if (elements.editAccountNumber) elements.editAccountNumber.value = profileState.accountNumber || "";
                 if (elements.editAccountHolder) elements.editAccountHolder.value = profileState.accountHolder || "";
                 
@@ -332,7 +332,7 @@
                     document.body.appendChild(s);
                 }
                 }
-            }
+            }            
 
             async function showSection(key){
                 const safeKey = sections.includes(key) ? key : "basic";
@@ -498,12 +498,28 @@
                         formData.set('bio', profileState.bio || '');
                         formData.set('selfIntro', profileState.selfIntro || '');
                         formData.set('videoUrl', profileState.videoUrl || '');
-                        break;
-                        
+                        break;                        
+                    
                     case 'account':
                         formData.set('bankName', profileState.bankName || '');
                         formData.set('accountNumber', profileState.accountNumber || '');
                         formData.set('accountHolder', profileState.accountHolder || '');
+                        break;
+
+                    case 'documents':
+                        // 파일 업로드: 학력증명서, 학위증명서, 자격증
+                        const eduFiles = document.getElementById('editDocEducation')?.files || [];
+                        const degFiles = document.getElementById('editDocDegree')?.files || [];
+                        const certFiles = document.getElementById('editDocCertificate')?.files || [];
+                        for (const file of eduFiles) {
+                            formData.append('docEducation', file);
+                        }
+                        for (const file of degFiles) {
+                            formData.append('docDegree', file);
+                        }
+                        for (const file of certFiles) {
+                            formData.append('docCertificate', file);
+                        }
                         break;
                         
                     case 'security':
@@ -535,6 +551,7 @@
                             'basic': '기본 정보',
                             'profile': '프로필',
                             'account': '계좌 정보',
+                            'documents': '서류 정보',
                             'security': '보안 설정'
                         };
                         alert(`${sectionNames[sectionType] || '섹션'}이(가) 저장되었습니다.`);
@@ -558,39 +575,93 @@
                 }
             }
 
-            // 폼 제출 기능 제거 (섹션별 저장으로 대체)
-            // document.getElementById('profileEditForm').addEventListener('submit', async function(e) {
-
-            async function initDocumentSection(){
-                const uploadBtn = document.getElementById('btnDocUpload');
-                if (!uploadBtn) return;
-
-                uploadBtn.addEventListener('click', async () => {
-                    const educationFiles = document.getElementById('editDocEducation')?.files || [];
-                    const degreeFiles = document.getElementById('editDocDegree')?.files || [];
-                    const certificateFiles = document.getElementById('editDocCertificate')?.files || [];
-
-                    try {
-                        await uploadDocs('EDUCATION', educationFiles);
-                        await uploadDocs('DEGREE', degreeFiles);
-                        await uploadDocs('CERTIFICATE', certificateFiles);
-                        await loadDocumentList();
-                        alert('서류 업로드가 완료되었습니다.');
-                    } catch (e) {
-                        console.error(e);
-                        alert('서류 업로드 중 오류가 발생했습니다.');
-                    }
-                });
-
-                await loadDocumentList();
+            // 파일 용량 표시
+            function formatFileSize(bytes) {
+                if (!bytes && bytes !== 0) return '';
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
             }
 
-            async function uploadDocs(docType, files){
+            // 내 서류 목록 렌더링
+            function renderDocumentList(docs) {
+                // 학력, 학위, 자격증별로 분리
+                const typeMap = { EDUCATION: [], DEGREE: [], CERTIFICATE: [] };
+                docs.forEach(d => {
+                    if (typeMap[d.docType]) typeMap[d.docType].push(d);
+                });
+                // 각 리스트 렌더링
+                [
+                    { type: 'EDUCATION', listId: 'editDocEducationList', cardId: 'editDocEducationListCard' },
+                    { type: 'DEGREE', listId: 'editDocDegreeList', cardId: 'editDocDegreeListCard' },
+                    { type: 'CERTIFICATE', listId: 'editDocCertificateList', cardId: 'editDocCertificateListCard' }
+                ].forEach(({type, listId, cardId}) => {
+                    const container = document.getElementById(listId);
+                    const card = document.getElementById(cardId);
+                    if (!container || !card) return;
+                    container.innerHTML = '';
+                    const files = typeMap[type];
+                    if (!files || files.length === 0) {
+                        card.style.display = 'none';
+                        return;
+                    }
+                    card.style.display = 'block';
+                    // 템플릿 가져오기
+                    const template = card.querySelector('.file-item-template li');
+                    if (!template) return;
+                    files.forEach((f, idx) => {
+                        const clone = template.cloneNode(true);
+                        const fileNameSpan = clone.querySelector('.file-name');
+                        const fileSizeSpan = clone.querySelector('.file-size');
+                        if (fileNameSpan) fileNameSpan.textContent = f.originalName || f.name || '';
+                        if (fileSizeSpan) fileSizeSpan.textContent = f.size ? '(' + formatFileSize(f.size) + ')' : '';
+                        // 삭제 버튼
+                        const deleteBtn = clone.querySelector('.delete-btn');
+                        if (deleteBtn) {
+                            deleteBtn.addEventListener('click', () => deleteDocument(f.id));
+                        }
+                        // 미리보기(이미지)
+                        if (f.filePath && /\.(jpg|jpeg|png)$/i.test(f.filePath)) {
+                            const img = document.createElement('img');
+                            img.src = f.filePath;
+                            img.alt = '미리보기';
+                            img.style.maxHeight = '40px';
+                            img.style.marginRight = '8px';
+                            fileNameSpan?.prepend(img);
+                        }
+                        container.appendChild(clone);
+                    });
+                });
+            }
+
+            // 서류 목록 불러오기
+            async function loadDocumentList() {
+                const res = await fetchWithAuth('/api/tutors/documents');
+                if (!res.ok) return;
+                const result = await res.json();
+                const docs = (result && result.data) || [];
+                renderDocumentList(docs);
+            }
+
+            // 서류 삭제
+            async function deleteDocument(docId) {
+                if (!confirm('정말 삭제하시겠습니까?')) return;
+                const res = await fetchWithAuth(`/api/tutors/documents/${docId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    await loadDocumentList();
+                } else {
+                    alert('삭제 실패');
+                }
+            }
+
+            // 파일 업로드
+            async function uploadDocs(docType, files) {
                 for (const file of files) {
                     const fd = new FormData();
                     fd.set('docType', docType);
                     fd.set('file', file);
-
                     const res = await fetchWithAuth('/api/tutors/documents', {
                         method: 'POST',
                         body: fd
@@ -599,23 +670,175 @@
                 }
             }
 
-            async function loadDocumentList(){
-                const listEl = document.getElementById('docList');
-                if (!listEl) return;
+            async function initDocumentSection() {
+                // 파일 배열 전역 관리 (섹션별 유지)
+                window.educationFiles = window.educationFiles || [];
+                window.degreeFiles = window.degreeFiles || [];
+                window.certificateFiles = window.certificateFiles || [];
 
-                const res = await fetchWithAuth('/api/tutors/documents');
-                if (!res.ok) return;
-                const result = await res.json();
-                const docs = (result && result.data) || [];
+                function renderSelectedFiles(type) {
+                    let files = [];
+                    let listId = '', cardId = '';
+                    if (type === 'EDUCATION') {
+                        files = window.educationFiles;
+                        listId = 'editDocEducationList';
+                        cardId = 'editDocEducationListCard';
+                    } else if (type === 'DEGREE') {
+                        files = window.degreeFiles;
+                        listId = 'editDocDegreeList';
+                        cardId = 'editDocDegreeListCard';
+                    } else if (type === 'CERTIFICATE') {
+                        files = window.certificateFiles;
+                        listId = 'editDocCertificateList';
+                        cardId = 'editDocCertificateListCard';
+                    }
+                    const container = document.getElementById(listId);
+                    const card = document.getElementById(cardId);
+                    if (!container || !card) return;
+                    container.innerHTML = '';
+                    if (!files || files.length === 0) {
+                        card.style.display = 'none';
+                        return;
+                    }
+                    card.style.display = 'block';
+                    const template = card.querySelector('.file-item-template li');
+                    if (!template) return;
+                    files.forEach((f) => {
+                        const clone = template.cloneNode(true);
+                        const fileNameSpan = clone.querySelector('.file-name');
+                        const fileSizeSpan = clone.querySelector('.file-size');
+                        if (fileNameSpan) fileNameSpan.textContent = f.name || f.originalName || '';
+                        if (fileSizeSpan) fileSizeSpan.textContent = '(' + formatFileSize(f.size) + ')';
+                        // 삭제 버튼
+                        const deleteBtn = clone.querySelector('.delete-btn');
+                        if (deleteBtn) {
+                            deleteBtn.addEventListener('click', () => {
+                                if (type === 'EDUCATION') {
+                                    window.educationFiles = window.educationFiles.filter(file => file !== f);
+                                    renderSelectedFiles('EDUCATION');
+                                } else if (type === 'DEGREE') {
+                                    window.degreeFiles = window.degreeFiles.filter(file => file !== f);
+                                    renderSelectedFiles('DEGREE');
+                                } else if (type === 'CERTIFICATE') {
+                                    window.certificateFiles = window.certificateFiles.filter(file => file !== f);
+                                    renderSelectedFiles('CERTIFICATE');
+                                }
+                            });
+                        }
+                        // 수정 버튼(선택한 파일로 교체)
+                        const editBtn = clone.querySelector('.edit-btn');
+                        if (editBtn) {
+                            editBtn.addEventListener('click', () => {
+                                let input = null;
+                                if (type === 'EDUCATION') input = document.getElementById('editDocEducation');
+                                else if (type === 'DEGREE') input = document.getElementById('editDocDegree');
+                                else if (type === 'CERTIFICATE') input = document.getElementById('editDocCertificate');
+                                if (input) {
+                                    input.onchange = (e) => {
+                                        const newFile = e.target.files[0];
+                                        if (newFile) {
+                                            if (type === 'EDUCATION') {
+                                                window.educationFiles = window.educationFiles.map(file => file === f ? newFile : file);
+                                                renderSelectedFiles('EDUCATION');
+                                            } else if (type === 'DEGREE') {
+                                                window.degreeFiles = window.degreeFiles.map(file => file === f ? newFile : file);
+                                                renderSelectedFiles('DEGREE');
+                                            } else if (type === 'CERTIFICATE') {
+                                                window.certificateFiles = window.certificateFiles.map(file => file === f ? newFile : file);
+                                                renderSelectedFiles('CERTIFICATE');
+                                            }
+                                        }
+                                        input.value = '';
+                                        input.onchange = null;
+                                    };
+                                    input.click();
+                                }
+                            });
+                        }
+                        container.appendChild(clone);
+                    });
+                }
 
-                listEl.innerHTML = docs.map(d => `
-                  <tr>
-                    <td>${({EDUCATION:'학력', DEGREE:'학위', CERTIFICATE:'자격증'}[d.docType] || d.docType)}</td>
-                    <td>${d.originalName || '-'}</td>
-                    <td class="muted">${d.createdAt ? d.createdAt.substring(0,10) : ''}</td>
-                    <td>${d.reviewedAt ? '검토 완료' : '대기'}</td>
-                  </tr>
-                `).join('');
+                const educationInput = document.getElementById('editDocEducation');
+                const degreeInput = document.getElementById('editDocDegree');
+                const certificateInput = document.getElementById('editDocCertificate');
+                if (educationInput) {
+                    educationInput.addEventListener('change', (e) => {
+                        window.educationFiles = Array.from(e.target.files);
+                        renderSelectedFiles('EDUCATION');
+                    });
+                }
+                if (degreeInput) {
+                    degreeInput.addEventListener('change', (e) => {
+                        window.degreeFiles = Array.from(e.target.files);
+                        renderSelectedFiles('DEGREE');
+                    });
+                }
+                if (certificateInput) {
+                    certificateInput.addEventListener('change', (e) => {
+                        window.certificateFiles = Array.from(e.target.files);
+                        renderSelectedFiles('CERTIFICATE');
+                    });
+                }
+
+                const uploadBtn = document.getElementById('btnDocUpload');
+                if (uploadBtn) {
+                    uploadBtn.addEventListener('click', async () => {
+                        try {
+                            await uploadDocs('EDUCATION', window.educationFiles);
+                            await uploadDocs('DEGREE', window.degreeFiles);
+                            await uploadDocs('CERTIFICATE', window.certificateFiles);
+                            // 업로드 후 미리보기 리셋
+                            window.educationFiles = [];
+                            window.degreeFiles = [];
+                            window.certificateFiles = [];
+                            renderSelectedFiles('EDUCATION');
+                            renderSelectedFiles('DEGREE');
+                            renderSelectedFiles('CERTIFICATE');
+                            // 내 서류 목록 테이블(docList)에만 남김
+                            const res = await fetchWithAuth('/api/tutors/documents');
+                            if (res.ok) {
+                                const result = await res.json();
+                                const docs = (result && result.data) || [];
+                                renderDocTable(docs);
+                            }
+                            alert('서류 업로드가 완료되었습니다.');
+                        } catch (e) {
+                            console.error(e);
+                            alert('서류 업로드 중 오류가 발생했습니다.');
+                        }
+                    });
+                }
+
+                // 내 서류 목록 테이블 렌더링 함수
+                function renderDocTable(docs) {
+                    const listEl = document.getElementById('docList');
+                    if (!listEl) return;
+                    listEl.innerHTML = docs.map(d => `
+                        <tr>
+                            <td>${({EDUCATION:'학력', DEGREE:'학위', CERTIFICATE:'자격증'}[d.docType] || d.docType)}</td>
+                            <td>${d.originalName || '-'}</td>
+                            <td class="muted">${d.createdAt ? d.createdAt.substring(0,10) : ''}</td>
+                            <td>${d.reviewedAt ? '검토 완료' : '대기'}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // documents 섹션 로드 시 docList 렌더링 및 미리보기 렌더링
+                (async function(){
+                    try {
+                        const res = await fetchWithAuth('/api/tutors/documents');
+                        if (!res.ok) return;
+                        const result = await res.json();
+                        const docs = (result && result.data) || [];
+                        renderDocTable(docs);
+                    } catch (e) {
+                        // 에러 무시
+                    }
+                    renderSelectedFiles('EDUCATION');
+                    renderSelectedFiles('DEGREE');
+                    renderSelectedFiles('CERTIFICATE');
+                })();
             }
 
             // 최초 섹션

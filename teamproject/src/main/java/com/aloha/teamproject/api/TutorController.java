@@ -305,9 +305,9 @@ public class TutorController {
             @RequestParam(value = "bio", required = false) String bio,
             @RequestParam(value = "selfIntro", required = false) String selfIntro,
             @RequestParam(value = "videoUrl", required = false) String videoUrl,
-            @RequestParam(value = "basicBankName", required = false) String basicBankName,
-            @RequestParam(value = "basicAccountNumber", required = false) String basicAccountNumber,
-            @RequestParam(value = "basicAccountHolder", required = false) String basicAccountHolder,
+            @RequestParam(value = "bankName", required = false) String bankName,
+            @RequestParam(value = "accountNumber", required = false) String accountNumber,
+            @RequestParam(value = "accountHolder", required = false) String accountHolder,
             @RequestParam(value = "profileImg", required = false) MultipartFile profileImg
     ) throws Exception {
 
@@ -330,14 +330,15 @@ public class TutorController {
                 profile.setUserId(userId);
             }
 
-            profile.setHeadline(headline);
-            profile.setBio(bio);
-            profile.setSelfIntro(selfIntro);
-            profile.setVideoUrl(videoUrl);
-            profile.setPhone(phone);
-            profile.setBankName(basicBankName);
-            profile.setAccountNumber(basicAccountNumber);
-            profile.setAccountHolder(basicAccountHolder);
+            // 전달된 값만 덮어쓰기, null은 기존 값 유지
+            if (headline != null) profile.setHeadline(headline);
+            if (bio != null) profile.setBio(bio);
+            if (selfIntro != null) profile.setSelfIntro(selfIntro);
+            if (videoUrl != null) profile.setVideoUrl(videoUrl);
+            if (phone != null) profile.setPhone(phone);
+            if (bankName != null) profile.setBankName(bankName);
+            if (accountNumber != null) profile.setAccountNumber(accountNumber);
+            if (accountHolder != null) profile.setAccountHolder(accountHolder);
 
             // 프로필 이미지
             if (profileImg != null && !profileImg.isEmpty()) {
