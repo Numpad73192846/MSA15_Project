@@ -74,6 +74,10 @@ CREATE TABLE `tutor_profile` (
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
 
+ALTER TABLE tutor_profile
+ADD COLUMN phone VARCHAR(20) NULL AFTER profile_img; 
+
+
 CREATE TABLE `persistent_logins` (
     `series` VARCHAR(64) NOT NULL,
     `id` VARCHAR(64) NOT NULL UNIQUE,

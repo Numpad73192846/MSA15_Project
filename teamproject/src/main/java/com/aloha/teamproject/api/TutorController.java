@@ -265,7 +265,7 @@ public class TutorController {
                 .auth("ROLE_TUTOR")
                 .build());
 
-            log.info("튜터 프로필 저장 완료. 연락처: {}", request.getPhone());
+            log.info("튜터 프로필 저장 완료. 연락처: {}", request.getBasicPhone());
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
             log.error("/api/tutors/profile 저장 실패", e);
