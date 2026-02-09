@@ -18,8 +18,8 @@ public class TutorEducation {
     private String userId;
     private String schoolName;
     private String degree;
-    private LocalDate startYear;
-    private LocalDate graduatedYear;
+    private Integer startYear;
+    private Integer graduatedYear;
 
     @Data
     @Builder
@@ -34,8 +34,8 @@ public class TutorEducation {
         public static class EducationItem {
             private String schoolName;
             private String degree;
-            private LocalDate startYear;
-            private LocalDate graduatedYear;
+            private Integer startYear;
+            private Integer graduatedYear;
         }
     }
 }
