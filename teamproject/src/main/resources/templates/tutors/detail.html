@@ -60,9 +60,19 @@
 
                             <hr>
                             <h4 class="h6 fw-bold">강의 스타일</h4>
-                            <div class="text-muted">- 학생 수준에 맞춘 맞춤형 커리큘럼</div>
-                            <div class="text-muted">- 이론과 실습의 균형잡힌 학습</div>
-                            <div class="text-muted">- 수업 후 복습 자료 제공</div>
+                            <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
+                                th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
+                                <div class="text-muted"
+                                    th:each="line : ${lines}"
+                                    th:if="${!#strings.isEmpty(#strings.trim(line))}"
+                                    th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
+                                    - 학생 수준에 맞춘 맞춤형 커리큘럼
+                                </div>
+                            </div>
+
+                            <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
+                                - 강의 스타일 정보가 아직 등록되지 않았습니다.
+                            </div>
                         </div>
                     </div>
 
