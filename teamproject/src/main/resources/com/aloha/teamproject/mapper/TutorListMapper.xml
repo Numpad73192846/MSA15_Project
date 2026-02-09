@@ -10,6 +10,7 @@
         <result property="userId" column="user_id"/>
         <result property="name" column="name"/>
         <result property="bio" column="bio"/>
+        <result property="selfIntro" column="self_intro"/>
         <result property="ratingAvg" column="rating_avg"/>
         <result property="reviewCount" column="review_count"/>
         <result property="profileImg" column="profile_img"/>
@@ -24,6 +25,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             tp.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
@@ -75,6 +77,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             tp.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
@@ -125,6 +128,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             tp.profile_img,
@@ -142,7 +146,7 @@
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND sg.name = #{subject}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -152,6 +156,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             tp.profile_img,
@@ -170,7 +175,7 @@
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND l.price &gt;= #{minPrice} 
           AND l.price &lt;= #{maxPrice}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -180,6 +185,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             tp.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 

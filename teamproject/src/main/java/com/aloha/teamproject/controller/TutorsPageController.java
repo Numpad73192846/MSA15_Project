@@ -76,6 +76,7 @@ public class TutorsPageController {
             tutorMap.put("reviewCount", tutor.getReviewCount() != null ? tutor.getReviewCount() : 0);
             tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects() : "");
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
+            tutorMap.put("selfIntro", tutor.getSelfIntro() != null ? tutor.getSelfIntro() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
             tutorMap.put("price", tutor.getPrice() != null ? tutor.getPrice() : 0);
             tutorMap.put("availability", "평일 저녁, 주말");
