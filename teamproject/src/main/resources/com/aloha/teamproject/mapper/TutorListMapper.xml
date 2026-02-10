@@ -125,14 +125,14 @@
                 (SELECT GROUP_CONCAT(DISTINCT te.school_name ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
                  FROM tutor_education te
                  WHERE te.user_id = tp.user_id
-                   AND te.school_name <> '학위 정보'),
+                   AND te.school_name != '학위 정보'),
                 ''
             ) AS education_schools,
             COALESCE(
                 (SELECT GROUP_CONCAT(DISTINCT te.degree ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
                  FROM tutor_education te
                  WHERE te.user_id = tp.user_id
-                   AND te.degree <> '학위 미기입력'),
+                   AND te.degree != '학위 미기입력'),
                 ''
             ) AS education_degrees,
             COALESCE(
@@ -162,7 +162,7 @@
                     )
                  FROM tutor_document td
                  WHERE td.user_id = tp.user_id
-                   AND td.doc_type IN ('CERTIFICATE', 'CERTIFICATE_TEXT')),
+                   AND td.doc_type = 'CERTIFICATE_TEXT'),
                 ''
             ) AS certificates
         FROM tutor_profile tp

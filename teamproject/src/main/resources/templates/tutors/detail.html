@@ -200,16 +200,6 @@
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">학력 증명서</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.educationDocuments)}"
-                                            th:utext="${#strings.replace(tutor.educationDocuments, ' | ', '<br/>')}">
-                                            졸업증명서.pdf
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.educationDocuments)}">
-                                            등록된 학력 증명서가 없습니다.
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
                                         <div class="small fw-semibold text-muted mb-1">학위</div>
                                         <div th:if="${!#strings.isEmpty(tutor.educationDegrees)}"
                                             th:utext="${#strings.replace(tutor.educationDegrees, ' | ', '<br/>')}">
@@ -217,16 +207,6 @@
                                         </div>
                                         <div class="text-muted" th:if="${#strings.isEmpty(tutor.educationDegrees)}">
                                             등록된 학위 정보가 없습니다.
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small fw-semibold text-muted mb-1">학위 증명서</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.degreeDocuments)}"
-                                            th:utext="${#strings.replace(tutor.degreeDocuments, ' | ', '<br/>')}">
-                                            학위증명서.pdf
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.degreeDocuments)}">
-                                            등록된 학위 증명서가 없습니다.
                                         </div>
                                     </div>
                                 </div>

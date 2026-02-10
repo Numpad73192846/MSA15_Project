@@ -358,7 +358,7 @@ CREATE TABLE tutor_time_range (
     id VARCHAR(64) NOT NULL,
     start_at TIME NOT NULL,
     end_at TIME NOT NULL,
-    day_of_week ENUM('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN') NOT NULL,
+    day_of_week ENUM('월', '화', '수', '목', '금', '토', '일') NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (no),
@@ -421,6 +421,7 @@ CREATE TABLE korean_proverb (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (no),
     KEY idx_korean_proverb_difficulty_active (difficulty, is_active)
+<<<<<<< HEAD
 );
 <<<<<<< HEAD
 
@@ -723,3 +724,6 @@ CREATE TABLE `refresh_token` (
 
 =======
 >>>>>>> 61fdc8838653fa98f36a74e6995bdfc0e18d1a60
+=======
+);
+>>>>>>> 6f23887a9fe6e2f79fdc8510c60d189fc28fdb00
