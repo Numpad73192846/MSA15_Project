@@ -16,6 +16,7 @@ public class TutorList {
     private String id;
     private String userId;
     private String name;
+    private String nickname;
     private String bio;
     private String selfIntro;
     private BigDecimal ratingAvg;

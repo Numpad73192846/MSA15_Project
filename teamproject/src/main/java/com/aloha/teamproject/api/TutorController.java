@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,7 +33,6 @@ import com.aloha.teamproject.dto.Lesson;
 import com.aloha.teamproject.dto.LessonCardItem;
 import com.aloha.teamproject.dto.Subject;
 import com.aloha.teamproject.dto.TutorCareer;
-import com.aloha.teamproject.dto.TutorEducation;
 import com.aloha.teamproject.dto.TutorDocument;
 import com.aloha.teamproject.dto.TutorList;
 import com.aloha.teamproject.dto.TutorMyPage;
@@ -44,14 +42,12 @@ import com.aloha.teamproject.service.LessonService;
 import com.aloha.teamproject.service.SubjectService;
 import com.aloha.teamproject.service.TutorCareerService;
 import com.aloha.teamproject.service.TutorDocumentService;
-import com.aloha.teamproject.service.TutorEducationService;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
 import com.aloha.teamproject.service.TutorSubjectService;
 import com.aloha.teamproject.service.UserService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -64,9 +60,10 @@ import lombok.Data;
 @RequestMapping("/api/tutors")
 public class TutorController {
 
+    private final PasswordEncoder passwordEncoder;
+
     private final TutorProfileService tutorProfileService;
     private final TutorDocumentService tutorDocumentService;
-    private final TutorEducationService tutorEducationService;
     private final TutorFieldService tutorFieldService;
     private final TutorMyPageService tutorMyPageService;
     private final TutorCareerService tutorCareerService;
@@ -350,8 +347,6 @@ public class TutorController {
             tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(userId, request.getFieldIds());
             tutorCareerService.replaceCareers(userId, careers);
-            tutorEducationService.replaceEducations(userId, educations);
-            replaceCertificateTextDocuments(userId, request.getCertificateTextsJson());
 
             userService.deleteAuth(userId, "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
@@ -525,9 +520,26 @@ public class TutorController {
 
         try {
             String userId = authentication.getName();
+            var user = userService.selectById(userId);
 
-            // 1️⃣ Users 정보 수정 (이름 / 비밀번호)
-            userService.updateMyInfo(userId, name, password, passwordConfirm);
+            // 1️⃣ Users 정보 수정: 비밀번호 여부에 따라 처리
+            if (password != null && !password.isBlank()) {
+                // 새 비밀번호가 현재 비밀번호와 같은지 확인
+				if (passwordEncoder.matches(password, user.getPassword())) {
+					return ApiResponse.error("현재 비밀번호와 같습니다");
+				}
+                // 비밀번호 변경: updateMyInfo 사용 (이름도 포함)
+                userService.updateMyInfo(userId, name, password, passwordConfirm);
+                log.info("튜터 비밀번호 업데이트 완료. userId: {}", userId);
+            } else {
+                // 비밀번호 변경 없이 기본 정보만 수정
+                if (name != null && !name.isBlank()) {                    
+                    user.setName(name);
+                    user.setPassword(null); // 🔥 기존 비밀번호 재인코딩 방지
+                    userService.update(user);
+                    log.info("튜터 정보 업데이트 완료. userId: {}", userId);
+                }
+            }
 
             // 2️⃣ TutorProfile 정보 수정
             TutorProfile profile = tutorProfileService.selectByUserId(userId);
@@ -554,12 +566,12 @@ public class TutorController {
             }
 
             tutorProfileService.upsertProfile(profile);
-            log.info("TutorProfile 업데이트 완료");
+            log.info("TutorProfile 업데이트 완료. userId: {}", userId);
 
             return ApiResponse.ok(SuccessCode.UPDATED);
         } catch (Exception e) {
-            log.error("프로필 수정 실패", e);
-            return ApiResponse.error("프로필 수정 실패: " + e.getMessage());
+            log.error("튜터 프로필 수정 실패", e);
+            return ApiResponse.error("프로필 수정에 실패했습니다.");
         }
     }
 

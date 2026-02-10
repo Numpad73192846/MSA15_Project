@@ -21,7 +21,6 @@ public class Users {
 	private String name;
 	private String nickname;
 	private String profileImg;
-	private String phone;
 	@Builder.Default
 	private String role = "ROLE_USER";
 	@Builder.Default

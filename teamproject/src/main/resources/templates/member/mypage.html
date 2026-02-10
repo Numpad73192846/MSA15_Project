@@ -18,10 +18,7 @@
                     <div class="card shadow-sm">
                         <div class="card-body text-center">
                             <div class="profile-avatar mb-3">
-                                <div
-                                    class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto"
-                                    style="cursor: pointer;"
-                                    onclick="document.getElementById('editProfileImage').click(); document.getElementById('profileEditModal').querySelector('[data-bs-dismiss]').click(); setTimeout(() => { var modal = new bootstrap.Modal(document.getElementById('profileEditModal')); modal.show(); }, 100);">
+                                <div id="profileImg" class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center mx-auto">
                                     <span class="fs-1">👤</span>
                                 </div>
                             </div>
@@ -468,7 +465,7 @@
                 }
             }
             
-            // ?섏씠吏 濡쒕뱶 ???뚯썝 留덉씠?섏씠吏 ?곗씠??珥덇린??
+            // 페이지 로드 시 마이페이지 데이터 초기화
             document.addEventListener('DOMContentLoaded', async function() {
                 try {
                     const token = localStorage.getItem('accessToken');
@@ -485,10 +482,28 @@
                     if (result.success && result.data) {
                         const mypage = result.data;
                         memberUserId = mypage.userId;
+
+                        console.log('MyPage Data:', mypage);
                         
                         // 프로필 정보 반영
                         document.getElementById('memberName').textContent = mypage.name || '회원';
                         document.getElementById('memberEmail').textContent = mypage.email || '';
+                        
+                        // 프로필 이미지
+                        const profileImgContainer = document.getElementById('profileImg');
+                        if (mypage.profileImg) {
+                            profileImgContainer.classList.remove('bg-info');
+                            profileImgContainer.innerHTML = `
+                                <img src="${mypage.profileImg}"
+                                    alt="프로필 이미지"
+                                    class="rounded-circle w-100 h-100 object-fit-cover">
+                            `;
+                        } else {
+                            profileImgContainer.classList.add('bg-info');
+                            profileImgContainer.innerHTML = `
+                                <span class="fs-1">👤</span>
+                            `;
+                        }
                         
                         // 모달 폼에 반영
                         document.getElementById('editName').value = mypage.name || '';

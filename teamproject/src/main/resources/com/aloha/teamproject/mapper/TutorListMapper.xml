@@ -9,6 +9,7 @@
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="name" column="name"/>
+        <result property="nickname" column="nickname"/>
         <result property="bio" column="bio"/>
         <result property="selfIntro" column="self_intro"/>
         <result property="ratingAvg" column="rating_avg"/>
@@ -30,7 +31,8 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             u.profile_img,
@@ -82,7 +84,8 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             u.profile_img,
@@ -211,7 +214,8 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
@@ -231,7 +235,7 @@
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND sg.name = #{subject}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, u.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, u.nickname, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -239,7 +243,8 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
@@ -260,7 +265,7 @@
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND l.price &gt;= #{minPrice} 
           AND l.price &lt;= #{maxPrice}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, u.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, u.nickname, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -268,7 +273,8 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             u.profile_img,
@@ -314,6 +320,7 @@
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND (u.name LIKE CONCAT('%', #{searchTerm}, '%') 
+               OR u.nickname LIKE CONCAT('%', #{searchTerm}, '%')
                OR tp.bio LIKE CONCAT('%', #{searchTerm}, '%'))
         ORDER BY rating_avg DESC, review_count DESC
     </select>
