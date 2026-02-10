@@ -245,12 +245,14 @@
                 <div class="card h-100 shadow-sm tutor-card">
                     <div class="card-body">
                         <div class="d-flex gap-3">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                            <div class="rounded-circle ${tutor.profileImg ? '' : 'bg-primary'} text-white d-flex align-items-center justify-content-center overflow-hidden"
                                  style="width:64px;height:64px;font-size:24px;flex:0 0 auto;">
-                                ${(tutor.name || 'T').charAt(0)}
+                                ${tutor.profileImg
+                                    ? `<img src="${tutor.profileImg}" alt="프로필 이미지" class="w-100 h-100 object-fit-cover">` 
+                                    : (tutor.name || 'T').charAt(0)}
                             </div>
                             <div class="flex-grow-1">
-                                <div class="fw-bold fs-5">${tutor.name || '튜터'}</div>
+                                <div class="fw-bold fs-5">${tutor.nickname || '튜터'}</div>
                                 <div class="small text-muted mb-2">
                                     <img src="/img/tutors/star.svg" alt="별점" style="width:16px;height:16px;margin-right:4px;">
                                     <span class="fw-semibold">${tutor.ratingAvg || '-'}</span>
