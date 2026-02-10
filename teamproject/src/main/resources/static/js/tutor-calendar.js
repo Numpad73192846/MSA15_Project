@@ -7,6 +7,9 @@ class TutorCalendar {
     constructor(options = {}) {
         this.options = {
             containerId: 'tutorScheduleCalendar',
+            prevBtnId: 'btnPrevWeek',
+            nextBtnId: 'btnNextWeek',
+            rangeLabelId: 'weekRangeLabel',
             mode: 'edit', // 'edit' | 'readonly'
             maxWeeks: 9,
             timeStepMinutes: 30,
@@ -179,7 +182,7 @@ class TutorCalendar {
     updateWeekHeader() {
         const dates = this.getWeekDates(this.state.weekStart);
         const head = document.querySelector(`#${this.options.containerId} .dayHead`);
-        const label = document.getElementById('weekRangeLabel');
+        const label = document.getElementById(this.options.rangeLabelId);
 
         if (label) {
             const startLabel = this.formatLabel(dates[0]);
@@ -299,8 +302,8 @@ class TutorCalendar {
     }
 
     updateNavigationButtons() {
-        const btnPrev = document.getElementById('btnPrevWeek');
-        const btnNext = document.getElementById('btnNextWeek');
+        const btnPrev = document.getElementById(this.options.prevBtnId);
+        const btnNext = document.getElementById(this.options.nextBtnId);
 
         if (btnPrev) {
             btnPrev.disabled = !this.canMoveWeek(-1);
@@ -335,8 +338,8 @@ class TutorCalendar {
     }
 
     bindEvents() {
-        const btnPrev = document.getElementById('btnPrevWeek');
-        const btnNext = document.getElementById('btnNextWeek');
+        const btnPrev = document.getElementById(this.options.prevBtnId);
+        const btnNext = document.getElementById(this.options.nextBtnId);
         const body = document.querySelector(`#${this.options.containerId} .dayCon`);
         window.addEventListener('resize', () => this.syncHeaderPadding());
 
