@@ -54,6 +54,21 @@ public class MyPageController {
         return "member/mypage";
     }
 
+    @GetMapping("/member/profile-edit")
+    public String memberProfileEdit() {
+        log.info("[GET] - /member/profile-edit");
+        return "member/profile-edit";
+    }
+
+    @GetMapping("/member/profile-edit/partial/{section}")
+    public String memberProfileEditPartial(@PathVariable("section") String section) {
+        String safe = switch (section) {
+            case "basic", "security" -> section;
+            default -> "basic";
+        };
+        return "member/partials/profile-edit-" + safe;
+    }
+
     @PostMapping("/member/mypage/update")
     public String updateMember(Users user, 
                                @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
