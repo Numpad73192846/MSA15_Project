@@ -563,7 +563,7 @@
                     formData.append('profileImg', profileImgFile);
                 }
 
-                // Step 2: 학력 및 경력
+                // Step 2: 근무 경력
                 formData.append('career', step2Data.career || '');
                 const normalizeCareerYear = (value) => {
                     if (value === null || value === undefined) return null;

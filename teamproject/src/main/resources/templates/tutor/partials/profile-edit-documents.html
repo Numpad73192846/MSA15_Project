@@ -1,43 +1,109 @@
+<th:block layout:fragment="extra-css">
+    <link rel="stylesheet" href="/css/tutor-register-admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        #careerCardList:empty {
+            display: none;
+        }
+    </style>
+</th:block>
 <section class="edit-section">
   <div class="card edit-card shadow-sm mb-4">
     <div class="card-body">
       <div class="step-section-title">서류 업로드</div>
       <div class="step-section-desc">학위/학력/자격증을 수정 업로드하세요</div>
 
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="admin-box h-100">
-            <label class="form-label">학력 증명서</label>
+      <div>
+        <!-- 학력증명서 카드 -->
+        <div class="mb-4">
+          <h5 class="fw-bold">1. 학력증명서</h5>
+          <div class="border rounded-3 p-3 bg-light">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div class="small text-muted">PDF, JPG, PNG 가능</div>
+              <div>
+                <div class="fw-semibold">파일 업로드</div>
+                <div class="small text-muted">PDF, JPG, PNG 가능 · 여러 파일 선택 가능</div>
+              </div>
               <label class="btn btn-outline-primary btn-sm mb-0">
                 파일 선택
-                <input type="file" class="d-none" id="editDocEducation" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                <input type="file" class="d-none" id="editDocEducation" multiple accept=".pdf,.jpg,.jpeg,.png">
               </label>
+            </div>
+            <div id="editDocEducationListCard" class="card mt-3 overflow-hidden filelist-card" style="display:none;">
+              <ul id="editDocEducationList" class="list-group list-group-flush"></ul>
+              <div class="file-item-template" style="display: none;">
+                <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                  <div class="col text-break">
+                    <span class="file-name"></span>
+                    <small class="file-size"></small>
+                  </div>
+                  <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                  </div>
+                </li>
+              </div>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="admin-box h-100">
-            <label class="form-label">학위 증명서</label>
+        <!-- 학위증명서 카드 -->
+        <div class="mb-4">
+          <h5 class="fw-bold">2. 학위증명서</h5>
+          <div class="border rounded-3 p-3 bg-light">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div class="small text-muted">PDF, JPG, PNG 가능</div>
+              <div>
+                <div class="fw-semibold">파일 업로드</div>
+                <div class="small text-muted">PDF, JPG, PNG 가능 · 여러 파일 선택 가능</div>
+              </div>
               <label class="btn btn-outline-primary btn-sm mb-0">
                 파일 선택
-                <input type="file" class="d-none" id="editDocDegree" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                <input type="file" class="d-none" id="editDocDegree" multiple accept=".pdf,.jpg,.jpeg,.png">
               </label>
+            </div>
+            <div id="editDocDegreeListCard" class="card mt-3 overflow-hidden filelist-card" style="display:none;">
+              <ul id="editDocDegreeList" class="list-group list-group-flush"></ul>
+              <div class="file-item-template" style="display: none;">
+                <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                  <div class="col text-break">
+                    <span class="file-name"></span>
+                    <small class="file-size"></small>
+                  </div>
+                  <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                  </div>
+                </li>
+              </div>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="admin-box h-100">
-            <label class="form-label">자격증</label>
+        <!-- 자격증 카드 -->
+        <div class="mb-4">
+          <h5 class="fw-bold">3. 자격증</h5>
+          <div class="border rounded-3 p-3 bg-light">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div class="small text-muted">PDF, JPG, PNG 가능</div>
+              <div>
+                <div class="fw-semibold">파일 업로드</div>
+                <div class="small text-muted">PDF, JPG, PNG 가능 · 여러 파일 선택 가능</div>
+              </div>
               <label class="btn btn-outline-primary btn-sm mb-0">
                 파일 선택
-                <input type="file" class="d-none" id="editDocCertificate" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                <input type="file" class="d-none" id="editDocCertificate" multiple accept=".pdf,.jpg,.jpeg,.png">
               </label>
+            </div>
+            <div id="editDocCertificateListCard" class="card mt-3 overflow-hidden filelist-card" style="display:none;">
+              <ul id="editDocCertificateList" class="list-group list-group-flush"></ul>
+              <div class="file-item-template" style="display: none;">
+                <li class="list-group-item py-2 d-flex align-items-center gap-2">
+                  <div class="col text-break">
+                    <span class="file-name"></span>
+                    <small class="file-size"></small>
+                  </div>
+                  <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary edit-btn">수정</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn">삭제</button>
+                  </div>
+                </li>
+              </div>
             </div>
           </div>
         </div>
@@ -74,6 +140,8 @@
 </section>
 <!-- 섹션별 저장 버튼 -->
 <div class="d-flex justify-content-end gap-2">
-    <button type="button" class="btn btn-outline-secondary px-4" onclick="showSection('account')">이전</button>
-    <button type="button" class="btn btn-primary px-4" onclick="showSection('lessons')">다음</button>
+    <a href="/tutor/mypage" class="btn btn-outline-secondary px-4">취소</a>
+    <button type="button" class="btn btn-primary px-4" onclick="saveSection('documents')">
+      <i class="bi bi-check-lg me-1"></i> 서류 정보 저장
+    </button>
 </div>
