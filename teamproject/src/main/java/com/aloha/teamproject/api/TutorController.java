@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,12 +30,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
-import com.aloha.teamproject.dto.Auth;
 import com.aloha.teamproject.dto.Lesson;
 import com.aloha.teamproject.dto.LessonCardItem;
 import com.aloha.teamproject.dto.Subject;
 import com.aloha.teamproject.dto.TutorCareer;
 import com.aloha.teamproject.dto.TutorDocument;
+import com.aloha.teamproject.dto.TutorEducation;
 import com.aloha.teamproject.dto.TutorList;
 import com.aloha.teamproject.dto.TutorMyPage;
 import com.aloha.teamproject.dto.TutorProfile;
@@ -42,17 +44,19 @@ import com.aloha.teamproject.service.LessonService;
 import com.aloha.teamproject.service.SubjectService;
 import com.aloha.teamproject.service.TutorCareerService;
 import com.aloha.teamproject.service.TutorDocumentService;
+import com.aloha.teamproject.service.TutorEducationService;
 import com.aloha.teamproject.service.TutorFieldService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
 import com.aloha.teamproject.service.TutorProfileService;
 import com.aloha.teamproject.service.TutorSubjectService;
 import com.aloha.teamproject.service.UserService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.Data;
 
 @Slf4j
 @RestController
@@ -69,6 +73,7 @@ public class TutorController {
     private final TutorCareerService tutorCareerService;
     private final TutorListService tutorListService;
     private final TutorSubjectService tutorSubjectService;
+    private final TutorEducationService tutorEducationService;
     private final UserService userService;
     private final SubjectService subjectService;
     private final LessonService lessonService;
@@ -347,7 +352,7 @@ public class TutorController {
             tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(userId, request.getFieldIds());
             tutorCareerService.replaceCareers(userId, careers);
-
+            tutorEducationService.replaceEducations(userId, educations);
             userService.deleteAuth(userId, "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
                     .userId(userId)
