@@ -34,7 +34,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE users (
     no BIGINT NOT NULL AUTO_INCREMENT,
     id VARCHAR(64) NOT NULL,
-    username VARCHAR(64) NOT NULL,
+    username VARCHAR(64) NOT NULL,  
+    profile_img VARCHAR(255) NULL,  
     password VARCHAR(255) NOT NULL,
     name VARCHAR(64) NOT NULL,
     nickname VARCHAR(64) NOT NULL,

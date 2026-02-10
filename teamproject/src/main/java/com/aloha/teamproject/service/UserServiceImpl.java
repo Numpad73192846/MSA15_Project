@@ -1,10 +1,17 @@
 package com.aloha.teamproject.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.exception.AppException;
 import com.aloha.teamproject.common.exception.ErrorCode;
@@ -14,13 +21,17 @@ import com.aloha.teamproject.dto.Users;
 import com.aloha.teamproject.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends BaseServiceImpl implements UserService {
 
 	private final UserMapper userMapper;
 	private final PasswordEncoder passwordEncoder;
+
+	private static final String UPLOAD_DIR = "uploads/users/";
 
 	@Override
 	public List<Users> list() throws Exception {
@@ -171,5 +182,24 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		int result = userMapper.update(user);
 		return result > 0;
 	}
+
+	@Override
+    public String saveProfileImg(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        
+        String originalName = file.getOriginalFilename();
+        String ext = FilenameUtils.getExtension(originalName);
+        String fileName = UUID.randomUUID() + "." + ext;
+        
+        Path path = Paths.get(UPLOAD_DIR + fileName);
+        Files.createDirectories(path.getParent());
+        Files.write(path, file.getBytes());
+        
+        log.debug("프로필 이미지 저장 완료: {}", path);
+
+        return "/uploads/users/" + fileName;
+    }
 
 }

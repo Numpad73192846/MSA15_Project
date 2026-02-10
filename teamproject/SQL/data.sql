@@ -17,7 +17,7 @@ INSERT INTO user_auth (user_id, id, auth)
 VALUES (@admin_id, UUID(), 'ROLE_ADMIN');
 
 -- Shared bcrypt hash for password: Admin102938$&
-SET @pw = '$2a$10$eZzE7fa53G86AOcvAN8wbOVoAnOVq5YnvLEAgsFaNDzsgFYCVXRye';
+SET @pw = '$2a$10$3yyQmJ4Uh3AJ4wx8lstb6uUawouD7xEJkbwk8v8YnTvO6S3AMLpDi';
 
 -- Users
 INSERT INTO users (id, username, password, name, nickname, status)
