@@ -383,7 +383,6 @@
                 if (profileImgInput && profileImgInput.files[0]) {
                     profileState.profileImgFile = profileImgInput.files[0];
                 }
-
             }
 
             function applyStateToSection(){
@@ -432,6 +431,8 @@
                     `;
                 }                
             }
+
+            console.log('profileState 초기값:', profileState);
 
             // 프로필 이미지 변경 미리보기
             function bindProfileImagePreview() {
@@ -531,7 +532,7 @@
                     document.body.appendChild(s);
                 }
                 }
-            }
+            }            
 
             async function flushSectionDraftBeforeLeave(nextSection) {
                 if (currentSection === 'employment' && nextSection !== 'employment' && careerDirty) {
@@ -718,8 +719,8 @@
                         formData.set('bio', profileState.bio || '');
                         formData.set('selfIntro', profileState.selfIntro || '');
                         formData.set('videoUrl', profileState.videoUrl || '');
-                        break;
-                        
+                        break;                        
+                    
                     case 'account':
                         formData.set('basicBankName', profileState.bankName || '');
                         formData.set('basicAccountNumber', profileState.accountNumber || '');
@@ -728,6 +729,22 @@
 
                     case 'zoom':
                         formData.set('defaultZoomUrl', profileState.defaultZoomUrl || '');
+                        break;
+
+                    case 'documents':
+                        // 파일 업로드: 학력증명서, 학위증명서, 자격증
+                        const eduFiles = document.getElementById('editDocEducation')?.files || [];
+                        const degFiles = document.getElementById('editDocDegree')?.files || [];
+                        const certFiles = document.getElementById('editDocCertificate')?.files || [];
+                        for (const file of eduFiles) {
+                            formData.append('docEducation', file);
+                        }
+                        for (const file of degFiles) {
+                            formData.append('docDegree', file);
+                        }
+                        for (const file of certFiles) {
+                            formData.append('docCertificate', file);
+                        }
                         break;
                         
                     case 'security':
@@ -1247,7 +1264,6 @@
                     const fd = new FormData();
                     fd.set('docType', docType);
                     fd.set('file', file);
-
                     const res = await fetchWithAuth('/api/tutors/documents', {
                         method: 'POST',
                         body: fd

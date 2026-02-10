@@ -51,9 +51,9 @@ public class TutorsPageController {
                 double avgRating = 0.0;
                 if (!reviews.isEmpty()) {
                     avgRating = reviews.stream()
-                        .mapToInt(Review::getRating)
-                        .average()
-                        .orElse(0.0);
+                            .mapToInt(Review::getRating)
+                            .average()
+                            .orElse(0.0);
                 }
 
                 tutor.setRatingAvg(BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
@@ -105,9 +105,9 @@ public class TutorsPageController {
             double avgRating = 0.0;
             if (!reviews.isEmpty()) {
                 avgRating = reviews.stream()
-                    .mapToInt(Review::getRating)
-                    .average()
-                    .orElse(0.0);
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
             }
 
             model.addAttribute("tutor", tutorMap);
@@ -125,10 +125,10 @@ public class TutorsPageController {
             return false;
         }
         return authentication.getAuthorities().stream()
-            .anyMatch(authority -> {
-                String role = authority.getAuthority();
-                return "ROLE_TUTOR".equals(role) || "ROLE_TUTOR_PENDING".equals(role);
-            });
+                .anyMatch(authority -> {
+                    String role = authority.getAuthority();
+                    return "ROLE_TUTOR".equals(role) || "ROLE_TUTOR_PENDING".equals(role);
+                });
     }
 
     @GetMapping("/tutor/dashboard")
@@ -162,16 +162,17 @@ public class TutorsPageController {
             }
 
             List<UpcomingLesson> dashboardLessons = lessonMap.values().stream()
-                .sorted(Comparator.comparing(UpcomingLesson::getStartAt, Comparator.nullsLast(Comparator.naturalOrder())))
-                .toList();
+                    .sorted(Comparator.comparing(UpcomingLesson::getStartAt,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
 
             List<Map<String, Object>> bookings = dashboardLessons.stream().map(lesson -> {
                 Map<String, Object> map = new HashMap<>();
                 boolean paid = lesson.getPaidAt() != null;
                 boolean canComplete = "CONFIRMED".equals(lesson.getStatus())
-                    && paid
-                    && lesson.getEndAt() != null
-                    && !lesson.getEndAt().isAfter(now);
+                        && paid
+                        && lesson.getEndAt() != null
+                        && !lesson.getEndAt().isAfter(now);
 
                 map.put("id", lesson.getBookingId());
                 map.put("studentId", lesson.getStudentId());
@@ -212,9 +213,8 @@ public class TutorsPageController {
                     subjects.add(lesson.getSubject());
                 }
                 studentMap.get(studentId).put(
-                    "totalSessions",
-                    (Integer) studentMap.get(studentId).get("totalSessions") + 1
-                );
+                        "totalSessions",
+                        (Integer) studentMap.get(studentId).get("totalSessions") + 1);
             }
 
             model.addAttribute("bookings", bookings);

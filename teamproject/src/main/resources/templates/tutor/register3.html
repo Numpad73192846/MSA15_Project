@@ -442,7 +442,7 @@
                     }
                 }
 
-                calendar = new TutorCalendar({
+                calendar = new TutorCalendar({ㄴ
                     containerId: 'tutorScheduleCalendar',
                     mode: 'edit',
                     baseTimeRanges: baseTimeRanges,
@@ -563,7 +563,7 @@
                     formData.append('profileImg', profileImgFile);
                 }
 
-                // Step 2: 학력 및 경력
+                // Step 2: 근무 경력
                 formData.append('career', step2Data.career || '');
                 const normalizeCareerYear = (value) => {
                     if (value === null || value === undefined) return null;
@@ -580,9 +580,13 @@
                     endYear: normalizeCareerYear(career.endYear)
                 }));
                 formData.append('careersJson', JSON.stringify(careersPayload));
-                formData.append('educationsJson', JSON.stringify(step2Data.educations || []));
-                formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
-                formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
+
+                (step2Data.academicCertificates || []).forEach(id =>
+                    formData.append('academicCertificates', id)
+                );
+                (step2Data.educationCertificates || []).forEach(id =>
+                    formData.append('educationCertificates', id)
+                );
 
                 
                 // Step 3

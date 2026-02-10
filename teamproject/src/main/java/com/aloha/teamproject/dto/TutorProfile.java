@@ -66,5 +66,6 @@ public class TutorProfile {
         private String certificateTextsJson;
         private String lessonCardsJson;
         private List<String> fieldIds;
+        private String phone;
     }
 }

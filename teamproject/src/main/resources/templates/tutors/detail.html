@@ -160,105 +160,20 @@
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-3">튜터 정보</h3>
 
-                            <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
-                                        data-bs-target="#intro-pane" type="button" role="tab"
-                                        aria-controls="intro-pane" aria-selected="true">자기소개</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="education-tab" data-bs-toggle="tab"
-                                        data-bs-target="#education-pane" type="button" role="tab"
-                                        aria-controls="education-pane" aria-selected="false">학력</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="career-tab" data-bs-toggle="tab"
-                                        data-bs-target="#career-pane" type="button" role="tab"
-                                        aria-controls="career-pane" aria-selected="false">근무경력</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
-                                        data-bs-target="#certificate-pane" type="button" role="tab"
-                                        aria-controls="certificate-pane" aria-selected="false">자격증</button>
-                                </li>
-                            </ul>
+                            <hr>
+                            <h4 class="h6 fw-bold">강의 스타일</h4>
+                            <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
+                                th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
+                                <div class="text-muted"
+                                    th:each="line : ${lines}"
+                                    th:if="${!#strings.isEmpty(#strings.trim(line))}"
+                                    th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
+                                    - 학생 수준에 맞춘 맞춤형 커리큘럼ㄴ
+                                </div>
+                            </div>
 
-                            <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
-                                <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
-                                    aria-labelledby="intro-tab" tabindex="0">
-                                    <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">소개</div>
-                                        <div class="text-muted"
-                                            th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
-                                            등록된 자기소개가 없습니다.
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
-                                            th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
-                                            <div class="text-muted"
-                                                th:each="line : ${lines}"
-                                                th:if="${!#strings.isEmpty(#strings.trim(line))}"
-                                                th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
-                                                - 학생 수준에 맞춘 맞춤형 커리큘럼
-                                            </div>
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
-                                            등록된 강의 스타일 정보가 없습니다.
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="education-pane" role="tabpanel"
-                                    aria-labelledby="education-tab" tabindex="0">
-                                    <div th:if="${!#lists.isEmpty(tutor.educationTimelineItems)}"
-                                        class="timeline-list">
-                                        <div class="timeline-item"
-                                            th:each="item : ${tutor.educationTimelineItems}">
-                                            <div class="timeline-year"
-                                                th:text="${item.year}">
-                                                2018 - 2022
-                                            </div>
-                                            <div class="timeline-text"
-                                                th:text="${item.text}">
-                                                서울대학교 · 영어영문학 학사
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.educationTimelineItems)}">
-                                        등록된 학력 정보가 없습니다.
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="career-pane" role="tabpanel"
-                                    aria-labelledby="career-tab" tabindex="0">
-                                    <div th:if="${!#lists.isEmpty(tutor.careerTimelineItems)}"
-                                        class="timeline-list">
-                                        <div class="timeline-item"
-                                            th:each="item : ${tutor.careerTimelineItems}">
-                                            <div class="timeline-year"
-                                                th:text="${item.year}">
-                                                2021 - 현재
-                                            </div>
-                                            <div class="timeline-text"
-                                                th:text="${item.text}">
-                                                어학원 · 영어강사
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.careerTimelineItems)}">
-                                        등록된 근무경력 정보가 없습니다.
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="certificate-pane" role="tabpanel"
-                                    aria-labelledby="certificate-tab" tabindex="0">
-                                    <div th:if="${!#strings.isEmpty(tutor.certificates)}"
-                                        th:utext="${#strings.replace(tutor.certificates, ' | ', '<br/>')}">
-                                        TESOL
-                                    </div>
-                                    <div class="text-muted" th:if="${#strings.isEmpty(tutor.certificates)}">
-                                        등록된 자격증 정보가 없습니다.
-                                    </div>
-                                </div>
+                            <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
+                                - 강의 스타일 정보가 아직 등록되지 않았습니다.
                             </div>
                         </div>
                     </div>

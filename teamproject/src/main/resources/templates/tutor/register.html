@@ -253,7 +253,10 @@
                 const savedData = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
                 if (savedData.basicName) document.getElementById('basicName').value = savedData.basicName;
                 if (savedData.basicPhone) document.getElementById('basicPhone').value = savedData.basicPhone;
-                if (savedData.basicBankName) document.getElementById('basicBankName').value = savedData.basicBankName;
+                if (savedData.basicBankName) {
+                    const bankSelect = document.getElementById('basicBankName');
+                    if (bankSelect) bankSelect.value = savedData.basicBankName;
+                }
                 if (savedData.basicAccountNumber) document.getElementById('basicAccountNumber').value = savedData.basicAccountNumber;
                 if (savedData.basicAccountHolder) document.getElementById('basicAccountHolder').value = savedData.basicAccountHolder;
                 if (savedData.headline) document.getElementById('headline').value = savedData.headline;
@@ -293,6 +296,12 @@
                 EL.profileImg.value = null;
                 const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
                 if (saved.profileImg) delete saved.profileImg;
+                sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(saved));
+            });
+
+            EL.basicBankName.addEventListener('change', (event) => {
+                const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep1') || '{}');
+                saved.basicBankName = event.target.value;
                 sessionStorage.setItem('tutorRegisterStep1', JSON.stringify(saved));
             });
 
