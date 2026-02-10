@@ -56,7 +56,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -86,7 +85,7 @@ public class TutorController {
 
         try {
             String userId = authentication.getName();
-            
+
             TutorMyPage tutorMyPage = new TutorMyPage();
             tutorMyPage.setTutorProfile(tutorMyPageService.selectTutorProfileByUserId(userId));
             tutorMyPage.setLanguageFields(tutorMyPageService.selectTutorFieldsByUserId(userId));
@@ -103,7 +102,7 @@ public class TutorController {
         }
     }
 
-    @PostMapping("/subjects") 
+    @PostMapping("/subjects")
     public ApiResponse<Void> subjects(@RequestBody String entity) {
         // TODO: 튜터 과목 관리 - 추후 구현 예정
         return ApiResponse.error("이 기능은 아직 구현 중입니다.");
@@ -142,15 +141,11 @@ public class TutorController {
         }
     }
 
-    @PostMapping(
-        value = "/documents",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> uploadDocument(
-        Authentication authentication,
-        @RequestParam("docType") String docType,
-        @RequestParam("file") MultipartFile file
-    ) {
+            Authentication authentication,
+            @RequestParam("docType") String docType,
+            @RequestParam("file") MultipartFile file) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -172,14 +167,14 @@ public class TutorController {
             Files.write(path, file.getBytes());
 
             TutorDocument doc = TutorDocument.builder()
-                .userId(authentication.getName())
-                .docType(docType)
-                .fileSize((int) file.getSize())
-                .originalName(originalName)
-                .storeName(storeName)
-                .filePath("/uploads/tutors/documents/" + storeName)
-                .contentType(file.getContentType())
-                .build();
+                    .userId(authentication.getName())
+                    .docType(docType)
+                    .fileSize((int) file.getSize())
+                    .originalName(originalName)
+                    .storeName(storeName)
+                    .filePath("/uploads/tutors/documents/" + storeName)
+                    .contentType(file.getContentType())
+                    .build();
 
             tutorDocumentService.insert(doc);
             return ApiResponse.ok(SuccessCode.CREATED);
@@ -189,14 +184,10 @@ public class TutorController {
         }
     }
 
-    @PostMapping(
-        value = "/profile",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> profile(
-        @ModelAttribute TutorProfile.Request request,
-        Authentication authentication
-    ) throws Exception {
+            @ModelAttribute TutorProfile.Request request,
+            Authentication authentication) throws Exception {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -214,26 +205,25 @@ public class TutorController {
             }
 
             TutorProfile profile = TutorProfile.builder()
-                                               .userId(userId)
-                                               .profileImg(profileImgPath)
-                                               .phone(request.getBasicPhone())
-                                               .bankName(request.getBasicBankName())
-                                               .accountNumber(request.getBasicAccountNumber())
-                                               .accountHolder(request.getBasicAccountHolder())
-                                               .headline(request.getHeadline())
-                                               .bio(request.getBio())
-                                               .selfIntro(request.getSelfIntro())
-                                               .videoUrl(request.getVideoUrl())
-                                               .build();
+                    .userId(userId)
+                    .profileImg(profileImgPath)
+                    .phone(request.getBasicPhone())
+                    .bankName(request.getBasicBankName())
+                    .accountNumber(request.getBasicAccountNumber())
+                    .accountHolder(request.getBasicAccountHolder())
+                    .headline(request.getHeadline())
+                    .bio(request.getBio())
+                    .selfIntro(request.getSelfIntro())
+                    .videoUrl(request.getVideoUrl())
+                    .build();
 
             List<LessonCardItem> lessonCards;
             if (!StringUtils.hasText(request.getLessonCardsJson())) {
                 lessonCards = Collections.emptyList();
             } else {
                 lessonCards = Arrays.asList(objectMapper.readValue(
-                    request.getLessonCardsJson(),
-                    LessonCardItem[].class
-                ));
+                        request.getLessonCardsJson(),
+                        LessonCardItem[].class));
             }
 
             Set<String> subjectIds = new java.util.HashSet<>();
@@ -241,12 +231,12 @@ public class TutorController {
                 Subject subject = subjectService.selectByName(card.getSubject());
                 if (subject != null) {
                     Lesson lesson = Lesson.builder()
-                        .userId(userId)
-                        .title(card.getSubject() + "-" + card.getField())
-                        .price(card.getPrice())
-                        .fieldId(card.getFieldId())
-                        .subjectId(subject.getId())
-                        .build();
+                            .userId(userId)
+                            .title(card.getSubject() + "-" + card.getField())
+                            .price(card.getPrice())
+                            .fieldId(card.getFieldId())
+                            .subjectId(subject.getId())
+                            .build();
                     lessonService.insert(lesson);
                     subjectIds.add(subject.getId());
                 }
@@ -260,29 +250,24 @@ public class TutorController {
                 careers = Collections.emptyList();
             } else {
                 careers = Arrays.asList(objectMapper.readValue(
-                    request.getCareersJson(),
-                    TutorCareer.Request.CareerItem[].class
-                ));
+                        request.getCareersJson(),
+                        TutorCareer.Request.CareerItem[].class));
             }
             List<TutorEducation.Request.EducationItem> educations = buildEducationItems(
-                request.getEducationsJson(),
-                request.getDegreesJson()
-            );
+                    request.getEducationsJson(),
+                    request.getDegreesJson());
 
             tutorProfileService.upsertProfile(profile);
             tutorFieldService.replaceFields(userId, request.getFieldIds());
             tutorCareerService.replaceCareers(userId, careers);
-<<<<<<< HEAD
-=======
             tutorEducationService.replaceEducations(userId, educations);
             replaceCertificateTextDocuments(userId, request.getCertificateTextsJson());
->>>>>>> 61fdc8838653fa98f36a74e6995bdfc0e18d1a60
 
             userService.deleteAuth(userId, "ROLE_TUTOR_PENDING");
             userService.insertAuth(UserAuth.builder()
-                .userId(userId)
-                .auth("ROLE_TUTOR")
-                .build());
+                    .userId(userId)
+                    .auth("ROLE_TUTOR")
+                    .build());
 
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
@@ -291,11 +276,12 @@ public class TutorController {
         }
     }
 
-<<<<<<< HEAD
-=======
-    private List<TutorEducation.Request.EducationItem> buildEducationItems(String educationsJson, String degreesJson) throws Exception {
-        JsonNode educationsNode = StringUtils.hasText(educationsJson) ? objectMapper.readTree(educationsJson) : objectMapper.createArrayNode();
-        JsonNode degreesNode = StringUtils.hasText(degreesJson) ? objectMapper.readTree(degreesJson) : objectMapper.createArrayNode();
+    private List<TutorEducation.Request.EducationItem> buildEducationItems(String educationsJson, String degreesJson)
+            throws Exception {
+        JsonNode educationsNode = StringUtils.hasText(educationsJson) ? objectMapper.readTree(educationsJson)
+                : objectMapper.createArrayNode();
+        JsonNode degreesNode = StringUtils.hasText(degreesJson) ? objectMapper.readTree(degreesJson)
+                : objectMapper.createArrayNode();
 
         int educationSize = educationsNode != null && educationsNode.isArray() ? educationsNode.size() : 0;
         int degreeSize = degreesNode != null && degreesNode.isArray() ? degreesNode.size() : 0;
@@ -306,8 +292,8 @@ public class TutorController {
 
         List<TutorEducation.Request.EducationItem> items = new ArrayList<>();
         for (int i = 0; i < maxSize; i++) {
-            JsonNode eduNode = i < educationSize ? educationsNode.get(i) : null;
-            JsonNode degreeNode = i < degreeSize ? degreesNode.get(i) : null;
+            JsonNode eduNode = (educationsNode != null && i < educationSize) ? educationsNode.get(i) : null;
+            JsonNode degreeNode = (degreesNode != null && i < degreeSize) ? degreesNode.get(i) : null;
 
             String schoolName = textOrNull(eduNode, "schoolName");
             Integer startYear = intOrNull(eduNode, "startYear");
@@ -336,11 +322,10 @@ public class TutorController {
             }
 
             items.add(new TutorEducation.Request.EducationItem(
-                schoolName,
-                degree,
-                startYear,
-                graduatedYear
-            ));
+                    schoolName,
+                    degree,
+                    startYear,
+                    graduatedYear));
         }
         return items;
     }
@@ -391,25 +376,24 @@ public class TutorController {
             }
 
             String displayName = StringUtils.hasText(issuer)
-                ? name + " (" + issuer + ")"
-                : name;
+                    ? name + " (" + issuer + ")"
+                    : name;
 
             String virtualName = "certificate-text-" + UUID.randomUUID() + ".txt";
             TutorDocument doc = TutorDocument.builder()
-                .userId(userId)
-                .docType("CERTIFICATE_TEXT")
-                .fileSize(0)
-                .originalName(displayName)
-                .storeName(virtualName)
-                .filePath("/uploads/tutors/documents/" + virtualName)
-                .contentType("text/plain")
-                .build();
+                    .userId(userId)
+                    .docType("CERTIFICATE_TEXT")
+                    .fileSize(0)
+                    .originalName(displayName)
+                    .storeName(virtualName)
+                    .filePath("/uploads/tutors/documents/" + virtualName)
+                    .contentType("text/plain")
+                    .build();
 
             tutorDocumentService.insert(doc);
         }
     }
 
->>>>>>> 61fdc8838653fa98f36a74e6995bdfc0e18d1a60
     private String resolveUserId(String authName) {
         if (!StringUtils.hasText(authName)) {
             return null;
@@ -425,9 +409,8 @@ public class TutorController {
             return null;
         }
     }
-    @PutMapping(
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> updateTutorProfile(
             Authentication authentication,
             @RequestParam(value = "name", required = false) String name,
@@ -441,10 +424,8 @@ public class TutorController {
             @RequestParam(value = "basicBankName", required = false) String basicBankName,
             @RequestParam(value = "basicAccountNumber", required = false) String basicAccountNumber,
             @RequestParam(value = "basicAccountHolder", required = false) String basicAccountHolder,
-            @RequestParam(value = "profileImg", required = false) MultipartFile profileImg
-    ) throws Exception {
+            @RequestParam(value = "profileImg", required = false) MultipartFile profileImg) throws Exception {
 
-        
         if (authentication == null || !authentication.isAuthenticated()) {
             log.error("인증 실패");
             return ApiResponse.error("로그인이 필요합니다.");
@@ -491,59 +472,58 @@ public class TutorController {
 
     @GetMapping()
     public ApiResponse<List<TutorList>> searchTutors(
-        @RequestParam(value = "searchTerm", required = false) String searchTerm,
-        @RequestParam(value = "language", required = false) String language,
-        @RequestParam(value = "subjects", required = false) String subjects,
-        @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
-        @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice
-    ) {
+            @RequestParam(value = "searchTerm", required = false) String searchTerm,
+            @RequestParam(value = "language", required = false) String language,
+            @RequestParam(value = "subjects", required = false) String subjects,
+            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice) {
 
         try {
             List<TutorList> tutors;
 
-            if ( StringUtils.hasText(searchTerm) ) {
+            if (StringUtils.hasText(searchTerm)) {
                 tutors = tutorListService.selectTutorsBySearchTerm(searchTerm);
             } else {
                 tutors = tutorListService.selectAllTutors();
             }
 
-            if ( StringUtils.hasText(language) && !"all".equals(language) ) {
+            if (StringUtils.hasText(language) && !"all".equals(language)) {
                 final String lang = language.trim();
                 tutors = tutors.stream()
-                               .filter(tutor -> tutor.getSubjects() != null && tutor.getSubjects().contains(lang))
-                               .collect(Collectors.toList());
-            } 
+                        .filter(tutor -> tutor.getSubjects() != null && tutor.getSubjects().contains(lang))
+                        .collect(Collectors.toList());
+            }
 
-            if ( StringUtils.hasText(subjects) ) {
+            if (StringUtils.hasText(subjects)) {
                 List<String> subjectList = Arrays.stream(subjects.split(","))
-                                               .map(String::trim)
-                                               .filter(s -> !s.isEmpty())
-                                               .collect(Collectors.toList());
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList());
                 if (!subjectList.isEmpty()) {
                     tutors = tutors.stream()
-                                   .filter(tutor -> {
-                                        if (tutor.getSubjects() == null) {
-                                            return false;
-                                        }
-                                        return subjectList.stream()
-                                                          .anyMatch(subject -> tutor.getSubjects().contains(subject));
-                                    })
-                                   .collect(Collectors.toList());
+                            .filter(tutor -> {
+                                if (tutor.getSubjects() == null) {
+                                    return false;
+                                }
+                                return subjectList.stream()
+                                        .anyMatch(subject -> tutor.getSubjects().contains(subject));
+                            })
+                            .collect(Collectors.toList());
                 }
             }
 
-            if ( minPrice != null || maxPrice != null ) {
+            if (minPrice != null || maxPrice != null) {
                 final BigDecimal min = (minPrice != null) ? minPrice : BigDecimal.ZERO;
                 final BigDecimal max = (maxPrice != null) ? maxPrice : BigDecimal.valueOf(Double.MAX_VALUE);
 
                 tutors = tutors.stream()
-                               .filter(tutor -> {
-                                    if ( tutor.getPrice() == null ) {
-                                        return false;
-                                    }
-                                    return tutor.getPrice().compareTo(min) >= 0 && tutor.getPrice().compareTo(max) <= 0;
-                               })
-                               .collect(Collectors.toList());
+                        .filter(tutor -> {
+                            if (tutor.getPrice() == null) {
+                                return false;
+                            }
+                            return tutor.getPrice().compareTo(min) >= 0 && tutor.getPrice().compareTo(max) <= 0;
+                        })
+                        .collect(Collectors.toList());
             }
             return ApiResponse.ok(tutors);
 
@@ -551,6 +531,5 @@ public class TutorController {
             return ApiResponse.error("튜터 목록을 조회할 수 없습니다.");
         }
     }
-    
-    
+
 }
