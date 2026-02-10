@@ -62,7 +62,6 @@
     </div>
   </div>
 </section>
-
 <script>
   (() => {
     const lessonState = {
@@ -399,7 +398,8 @@
   })();
 </script>
 
-<div class="d-flex justify-content-end gap-2">
-  <button type="button" class="btn btn-outline-secondary px-4" onclick="showSection('documents')">이전</button>
-  <button type="button" class="btn btn-primary px-4" onclick="showSection('schedule')">다음</button>
+<div class="d-flex justify-content-end">
+  <button type="button" class="btn btn-primary px-4" onclick="document.getElementById('btnLessonSave')?.click()">
+    <i class="bi bi-check-lg me-1"></i> 수업 저장
+  </button>
 </div>

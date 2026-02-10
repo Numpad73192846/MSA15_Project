@@ -298,11 +298,11 @@ public class TutorController {
             String profileImgPath = null;
             if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
                 profileImgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
+                userService.updateProfileImg(userId, profileImgPath);
             }
 
             TutorProfile profile = TutorProfile.builder()
                                                .userId(userId)
-                                               .profileImg(profileImgPath)
                                                .phone(request.getBasicPhone())
                                                .bankName(request.getBasicBankName())
                                                .accountNumber(request.getBasicAccountNumber())
@@ -558,7 +558,7 @@ public class TutorController {
             // 프로필 이미지
             if (profileImg != null && !profileImg.isEmpty()) {
                 String imgPath = tutorProfileService.saveProfileImg(profileImg);
-                profile.setProfileImg(imgPath);
+                userService.updateProfileImg(userId, imgPath);
                 log.info("프로필 이미지 저장 완료: {}", imgPath);
             }
 

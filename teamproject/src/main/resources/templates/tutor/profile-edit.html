@@ -276,14 +276,6 @@
                 <main class="flex-grow-1">
                     <form id="profileEditForm">
                         <div id="profileEditContainer"></div>
-
-                        <!-- 저장 버튼 -->
-                        <!-- <div class="d-flex justify-content-end gap-2">
-                            <a href="/tutor/mypage" class="btn btn-outline-secondary px-4">취소</a>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-check-lg me-1"></i> 저장
-                            </button>
-                        </div> -->
                     </form>
                 </main>
             </div>
@@ -356,10 +348,20 @@
                 educationFiles: [],
                 degreeFiles: [],
                 certificateFiles: [],
-                certificateTexts: []
+                certificateTexts: [],
+                careers: [],
+                educations: [],
+                degrees: [],
+                employmentFiles: []
             };
+
             let documentTextsInitialized = false;
+            let careersInitialized = false;
+            let educationsInitialized = false;
             let certificateTextsDirty = false;
+            let careerDirty = false;
+            let educationDirty = false;
+            let degreeDirty = false;
 
             function collectSectionValues(){
                 if (document.getElementById('editEmail')) profileState.email = document.getElementById('editEmail').value || "";
@@ -382,11 +384,6 @@
                     profileState.profileImgFile = profileImgInput.files[0];
                 }
 
-                // 수정할 것
-                // const el = document.getElementById('editPhone');
-                // if (el && el.value.trim() !== "") {
-                //     profileState.phone = el.value;
-                // }
             }
 
             function applyStateToSection(){
@@ -536,8 +533,25 @@
                 }
             }
 
+            async function flushSectionDraftBeforeLeave(nextSection) {
+                if (currentSection === 'employment' && nextSection !== 'employment' && careerDirty) {
+                    const ok = await saveCareersToApi(true);
+                    if (!ok) return false;
+                }
+
+                if (currentSection === 'documents' && nextSection !== 'documents' && (educationDirty || degreeDirty)) {
+                    const ok = await saveEducationsToApi(true);
+                    if (!ok) return false;
+                }
+
+                return true;
+            }
+
             async function showSection(key){
                 const safeKey = sections.includes(key) ? key : "basic";
+                const canLeave = await flushSectionDraftBeforeLeave(safeKey);
+                if (!canLeave) return;
+
                 collectSectionValues();
 
                 document.querySelectorAll('.edit-menu .list-group-item').forEach(i => {
@@ -788,6 +802,318 @@
                 };
             }
 
+            function renderCareerCards() {
+                const listEl = document.getElementById('careerCardList');
+                if ( !listEl ) return;
+
+                listEl.innerHTML = '';
+                if ( !Array.isArray( documentDraft.careers ) || documentDraft.careers.length === 0 ) {
+                    const empty = document.createElement('div');
+                    empty.className = 'text-muted small';
+                    empty.textContent = '추가된 근무경력이 없습니다.';
+                    listEl.appendChild(empty);
+                    return;
+                }
+
+                documentDraft.careers.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'career-item-card';
+
+                    const yearCol = document.createElement('div');
+                    yearCol.className = 'career-year-col';
+                    yearCol.innerHTML = `
+                        <div class="career-year-title">입사</div>
+                        <div class="career-year-value">${item.startYear || '-'}</div>
+                        <div class="career-year-title mt-1">퇴사</div>
+                        <div class="career-year-value">${item.endYear || '재직중'}</div>
+                    `;
+
+
+                    const mainCol = document.createElement('div');
+                    mainCol.className = 'career-main-col';
+
+                    const company = document.createElement('div');
+                    company.className = 'career-company';
+                    company.textContent = item.companyName || '회사명 미입력';
+
+                    const role = document.createElement('div');
+                    role.className = 'career-role';
+                    
+                    const job = item.jobCategory || '';
+                    const pos = item.jobRole || '';
+                    role.textContent = [job, pos].filter(Boolean).join(' · ') || '직종/직위 미입력';
+
+                    mainCol.appendChild(company);
+                    mainCol.appendChild(role);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger career-remove-btn btn-delete';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.careers.splice(index, 1);
+                        careerDirty = true;
+                        renderCareerCards();
+                    });
+
+                    card.appendChild(yearCol);
+                    card.appendChild(mainCol);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+
+            }
+
+             function renderEducationCards() {
+                const listEl = document.getElementById('educationCardList');
+                if (!listEl) return;
+
+                listEl.innerHTML = '';
+                if (!Array.isArray(documentDraft.educations) || documentDraft.educations.length === 0) {
+                    return;
+                }
+
+                documentDraft.educations.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'text-entry-card text-entry-edu';
+
+                    const icon = document.createElement('div');
+                    icon.className = 'text-entry-icon';
+                    icon.innerHTML = '<i class="bi bi-mortarboard-fill"></i>';
+
+                    const main = document.createElement('div');
+                    main.className = 'text-entry-main';
+
+                    const title = document.createElement('div');
+                    title.className = 'text-entry-title';
+                    title.textContent = item.schoolName || '학교명 미입력';
+
+                    const sub = document.createElement('div');
+                    sub.className = 'text-entry-sub';
+                    sub.textContent = `${item.startYear || '-'} ~ ${item.graduatedYear || '재학중'}`;
+
+                    main.appendChild(title);
+                    main.appendChild(sub);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.educations.splice(index, 1);
+                        educationDirty = true;
+                        renderEducationCards();
+                    });
+
+                    card.appendChild(icon);
+                    card.appendChild(main);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+            }
+
+            function renderDegreeCards() {
+                const listEl = document.getElementById('degreeCardList');
+                if (!listEl) return;
+
+                listEl.innerHTML = '';
+                if (!Array.isArray(documentDraft.degrees) || documentDraft.degrees.length === 0) {
+                    return;
+                }
+
+                documentDraft.degrees.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'text-entry-card text-entry-degree';
+
+                    const icon = document.createElement('div');
+                    icon.className = 'text-entry-icon';
+                    icon.innerHTML = '<i class="bi bi-award-fill"></i>';
+
+                    const main = document.createElement('div');
+                    main.className = 'text-entry-main';
+
+                    const title = document.createElement('div');
+                    title.className = 'text-entry-title';
+                    title.textContent = item.degreeName || '학위명 미입력';
+
+                    const sub = document.createElement('div');
+                    sub.className = 'text-entry-sub';
+                    sub.textContent = item.major ? `전공: ${item.major}` : '전공 미입력';
+
+                    main.appendChild(title);
+                    main.appendChild(sub);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+                    deleteBtn.textContent = '삭제';
+                    deleteBtn.addEventListener('click', () => {
+                        documentDraft.degrees.splice(index, 1);
+                        degreeDirty = true;
+                        renderDegreeCards();
+                    });
+
+                    card.appendChild(icon);
+                    card.appendChild(main);
+                    card.appendChild(deleteBtn);
+                    listEl.appendChild(card);
+                });
+            }
+
+            function buildCareerPayload() {
+                return ( documentDraft.careers || [] )
+                    .map( (item) => ({
+                        companyName: (item.companyName || '').trim(),
+                        jobCategory: (item.jobCategory || '').trim(),
+                        jobRole: (item.jobRole || '').trim(),
+                        startYear: item.startYear ? Number(item.startYear) : null,
+                        endYear: item.endYear ? Number(item.endYear) : null,
+                    }))
+                    .filter( (item) => item.companyName && item.startYear );
+            }
+
+            function buildEducationPayload() {
+                const payload = [];
+                const maxLen = Math.max(
+                    documentDraft.educations.length,
+                    documentDraft.degrees.length
+                );
+
+                const nowYear = new Date().getFullYear();
+
+                for ( let i = 0; i < maxLen; i++ ) {
+                    const edu = documentDraft.educations[i] || {};
+                    const deg = documentDraft.degrees[i] || {};
+
+                    const schoolName = (edu.schoolName || '').trim();
+                    const degreeName = (deg.degreeName || '').trim();
+                    const major = (deg.major || '').trim();
+
+                    const degree = degreeName && major ? `${degreeName} (${major})` : (degreeName || major || '');
+
+                    if ( !schoolName && !degree ) continue;
+
+                    payload.push({
+                        schoolName: schoolName || '학위 정보',
+                        degree: degree || '학위 미입력',
+                        startYear: Number( edu.startYear || edu.graduatedYear || nowYear ),
+                        graduatedYear: edu.graduatedYear ? Number(edu.graduatedYear) : null,
+                    });
+
+                }
+
+                return payload;
+
+            }
+
+            async function saveCareersToApi( showSuccess = false ) {
+                const payload = buildCareerPayload();
+
+                const res = await fetchWithAuth('/api/tutors/careers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json()
+                                        .catch(() => ({ 
+                                            success: false,
+                                            message: '응답 파싱 실패'
+                                        }));
+
+                if (!(res.ok && result.success)) {
+                    alert( result.message || '근무경력 저장에 실패했습니다.' );
+                    return false;
+                }
+
+                careerDirty = false;
+                if ( showSuccess ) alert('근무경력이 저장되었습니다.');
+                return true;
+
+            }
+
+            async function saveEducationsToApi(showSuccess = false) {
+                const payload = buildEducationPayload();
+
+                const res = await fetchWithAuth('/api/tutors/educations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json().catch(() => ({ success: false, message: '응답 파싱 실패' }));
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '학력/학위 저장에 실패했습니다.');
+                    return false;
+                }
+
+                educationDirty = false;
+                degreeDirty = false;
+                if (showSuccess) alert('학력/학위가 저장되었습니다.');
+                return true;
+            }
+
+            async function loadCareersFromApi() {
+                if (careersInitialized) {
+                    renderCareerCards();
+                    return;
+                }
+
+                const res = await fetchWithAuth('/api/tutors/careers');
+                const result = await res.json().catch(() => ({ success: false, data: [] }));
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '근무경력 조회에 실패했습니다.');
+                    return;
+                }
+
+                documentDraft.careers = (result.data || []).map((item) => ({
+                    companyName: item.companyName || '',
+                    jobCategory: item.jobCategory || '',
+                    jobRole: item.jobRole || '',
+                    startYear: item.startYear || null,
+                    endYear: item.endYear || null
+                }));
+
+                careersInitialized = true;
+                careerDirty = false;
+                renderCareerCards();
+            }
+
+            async function loadEducationsFromApi() {
+                if (educationsInitialized) {
+                    renderEducationCards();
+                    renderDegreeCards();
+                    return;
+                }
+
+                const res = await fetchWithAuth('/api/tutors/educations');
+                const result = await res.json().catch(() => ({ success: false, data: [] }));
+                if (!(res.ok && result.success)) {
+                    alert(result.message || '학력/학위 조회에 실패했습니다.');
+                    return;
+                }
+
+                const rows = result.data || [];
+                documentDraft.educations = rows.map((item) => ({
+                    schoolName: item.schoolName || '',
+                    startYear: item.startYear || null,
+                    graduatedYear: item.graduatedYear || null
+                }));
+
+                documentDraft.degrees = rows.map((item) => {
+                    const raw = String(item.degree || '').trim();
+                    const m = raw.match(/^(.*)\((.*)\)$/);
+                    if (m) return { degreeName: m[1].trim(), major: m[2].trim() };
+                    return { degreeName: raw, major: '' };
+                });
+
+                educationsInitialized = true;
+                educationDirty = false;
+                degreeDirty = false;
+                renderEducationCards();
+                renderDegreeCards();
+            }
+
             function renderPendingFileList(listId, cardId, files, inputId, draftKey) {
                 const listEl = document.getElementById(listId);
                 const cardEl = document.getElementById(cardId);
@@ -1005,43 +1331,83 @@
             }
 
             async function initEmploymentSection() {
-                const uploadBtn = document.getElementById('btnEmploymentUpload');
-                if (!uploadBtn) return;
+                await loadCareersFromApi();
 
-                const input = document.getElementById('editDocEmployment');
-                if (!input) return;
+                renderCareerCards();
 
-                input.addEventListener('change', () => {
-                    const files = Array.from(input.files || []);
-                    if (files.length === 0) return;
+                document.getElementById('btnAddCareer')?.addEventListener('click', () => {
+                    const companyName = document.getElementById('careerCompany')?.value.trim() || '';
+                    const jobCategory = document.getElementById('careerJob')?.value.trim() || '';
+                    const jobRole = document.getElementById('careerPosition')?.value.trim() || '';
+                    const startYearRaw = document.getElementById('careerStartYear')?.value.trim() || '';
+                    const endYearRaw = document.getElementById('careerEndYear')?.value.trim() || '';
 
-                    documentDraft.employmentFiles = files;
-                    input.value = '';
-                });
-
-                uploadBtn.addEventListener('click', async () => {
-                    if (documentDraft.employmentFiles.length === 0) {
-                        alert('업로드할 파일을 선택해주세요.');
+                    if ( !companyName ) {
+                        alert('회사명을 입력해주세요.');
                         return;
                     }
 
-                    try {
-                        await uploadDocs('EMPLOYMENT', documentDraft.employmentFiles);
-                        documentDraft.employmentFiles = [];
-                        alert('재직증명서가 업로드되었습니다.');
-                        await loadDocumentList();
-                    } catch (e) {
-                        console.error(e);
-                        alert(e.message || '재직증명서 업로드 중 오류가 발생했습니다.');
+                    if ( !startYearRaw ) {
+                        alert('입사년도를 입력해주세요.');
+                        return;
                     }
+
+                    documentDraft.careers.push({
+                        companyName,
+                        jobCategory,
+                        jobRole,
+                        startYear: Number(startYearRaw),
+                        endYear: endYearRaw ? Number(endYearRaw) : null
+                    });
+
+                    careerDirty = true;
+                    renderCareerCards();
+
+                    document.getElementById('careerCompany').value = '';
+                    document.getElementById('careerJob').value = '';
+                    document.getElementById('careerPosition').value = '';
+                    document.getElementById('careerStartYear').value = '';
+                    document.getElementById('careerEndYear').value = '';
                 });
 
-                await loadDocumentList();
+                const uploadBtn = document.getElementById('btnEmploymentUpload');
+                const input = document.getElementById('editDocEmployment');
+
+                if ( uploadBtn && input ) {
+
+                    input.addEventListener('change', () => {
+                        const files = Array.from(input.files || []);
+                        if (files.length === 0) return;
+    
+                        documentDraft.employmentFiles = files;
+                        input.value = '';
+                    });
+    
+                    uploadBtn.addEventListener('click', async () => {
+                        if (documentDraft.employmentFiles.length === 0) {
+                            alert('업로드할 파일을 선택해주세요.');
+                            return;
+                        }
+    
+                        try {
+                            await uploadDocs('EMPLOYMENT', documentDraft.employmentFiles);
+                            documentDraft.employmentFiles = [];
+                            alert('재직증명서가 업로드되었습니다.');
+                            await loadDocumentList();
+                        } catch (e) {
+                            console.error(e);
+                            alert(e.message || '재직증명서 업로드 중 오류가 발생했습니다.');
+                        }
+                    });
+                }
             }
 
             async function initDocumentSection() {
                 const uploadBtn = document.getElementById('btnDocUpload');
+
                 if (!uploadBtn) return;
+
+                await loadEducationsFromApi();
 
                 bindDocumentInput('editDocEducation', 'educationFiles', 'academicList', 'academicListCard');
                 bindDocumentInput('educationCertificate', 'degreeFiles', 'educationList', 'educationListCard');
@@ -1051,6 +1417,61 @@
                 renderPendingFileList('educationList', 'educationListCard', documentDraft.degreeFiles, 'educationCertificate', 'degreeFiles');
                 renderPendingFileList('certificateFileList', 'certificateFileListCard', documentDraft.certificateFiles, 'certificateFiles', 'certificateFiles');
                 renderCertificateTextCards();
+
+                renderEducationCards();
+                renderDegreeCards();
+
+                document.getElementById('btnAddEducation')?.addEventListener('click', () => {
+                    const schoolName = document.getElementById('educationSchoolName')?.value.trim() || '';
+                    const startYearRaw = document.getElementById('educationStartYear')?.value.trim() || '';
+                    const graduatedYearRaw = document.getElementById('educationGraduatedYear')?.value.trim() || '';
+
+                    if ( !schoolName ) {
+                        alert('학교명을 입력해주세요.');
+                        return;
+                    }
+
+                    if ( !startYearRaw ) {
+                        alert('입학년도를 입력해주세요.');
+                        return;
+                    }
+
+                    documentDraft.educations.push({
+                        schoolName,
+                        startYear: Number(startYearRaw),
+                        graduatedYear: graduatedYearRaw ? Number(graduatedYearRaw) : null
+                    });
+
+                    educationDirty = true;
+                    renderEducationCards();
+
+                    document.getElementById('educationSchoolName').value = '';
+                    document.getElementById('educationStartYear').value = '';
+                    document.getElementById('educationGraduatedYear').value = '';
+
+                });
+
+                document.getElementById('btnAddDegree')?.addEventListener('click', () => {
+                    const degreeName = document.getElementById('degreeName')?.value.trim() || '';
+                    const major = document.getElementById('degreeMajor')?.value.trim() || '';
+
+                    if ( !degreeName ) {
+                        alert('학위명을 입력해주세요.');
+                        return;
+                    }
+
+                    documentDraft.degrees.push({
+                        degreeName,
+                        major
+                    });
+
+                    degreeDirty = true;
+                    renderDegreeCards();
+
+                    document.getElementById('degreeName').value = '';
+                    document.getElementById('degreeMajor').value = '';
+
+                });
 
                 document.getElementById('btnAddCertificateText')?.addEventListener('click', () => {
                     const nameInput = document.getElementById('certificateName');
@@ -1076,13 +1497,19 @@
                         documentDraft.educationFiles.length > 0 ||
                         documentDraft.degreeFiles.length > 0 ||
                         documentDraft.certificateFiles.length > 0;
+                    const hasEduChanges = educationDirty || degreeDirty;
 
-                    if (!hasFiles && !certificateTextsDirty) {
+                    if (!hasFiles && !certificateTextsDirty && !hasEduChanges) {
                         alert('변경된 내용이 없습니다.');
                         return;
                     }
 
                     try {
+                        if (hasEduChanges) {
+                            const ok = await saveEducationsToApi(false);
+                            if (!ok) return;
+                        }
+
                         if (hasFiles) {
                             await uploadDocs('EDUCATION', documentDraft.educationFiles);
                             await uploadDocs('DEGREE', documentDraft.degreeFiles);

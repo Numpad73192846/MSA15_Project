@@ -53,6 +53,10 @@ VALUES
 ('u-tutor-19','tutor19@test.com', @pw, '김찬튜터', '화학전문', 'ACTIVE'),
 ('u-tutor-20','tutor20@test.com', @pw, '김태튜터', '생물전문', 'ACTIVE');
 
+UPDATE users
+SET profile_img = '/img/tutors/default.png'
+WHERE id LIKE 'u-tutor-%';
+
 -- Roles
 INSERT INTO user_auth (user_id, id, auth)
 VALUES
@@ -145,107 +149,107 @@ VALUES
 ('sg-rus', 'sub-rus-high','고등 러시아어', 3);
 
 INSERT INTO tutor_profile (
-    user_id, id, profile_img, phone, headline, bio, self_intro, video_url,
+    user_id, id, phone, headline, bio, self_intro, video_url,
     default_zoom_url, bank_name, account_number, account_holder,
     is_verified, rating_avg, review_count
 )
 VALUES
-('u-tutor-1','tp-1','/img/tutors/default.png','010-1111-1111',
+('u-tutor-1','tp-1','010-1111-1111',
  '국·영어 전문 튜터','시험 대비 중심 수업',
  '기초부터 심화까지 단계별로 이해시키는 체계적인 수업을 진행합니다.',NULL,
  'https://zoom.us/j/1111111111','KB','111-111-111111','김튜터',TRUE,4.80,12),
 
-('u-tutor-2','tp-2','/img/tutors/default.png','010-2222-2222',
+('u-tutor-2','tp-2','010-2222-2222',
  '비즈니스 영어 튜터','실무 영어 집중',
  '면접, 프레젠테이션, 이메일까지 실무에 바로 쓰는 영어를 알려드립니다.',NULL,
  'https://zoom.us/j/2222222222','Shinhan','222-222-222222','이튜터',TRUE,4.70,8),
 
-('u-tutor-3','tp-3','/img/tutors/default.png','010-3333-3333',
+('u-tutor-3','tp-3','010-3333-3333',
  '일본어 회화 튜터','기초부터 자연스럽게',
  '회화 위주로 일본어 감각을 빠르게 익히도록 도와드립니다.',NULL,
  'https://zoom.us/j/3333333333','Woori','333-333-333333','박튜터',TRUE,4.60,5),
 
-('u-tutor-4','tp-4','/img/tutors/default.png','010-4444-4444',
+('u-tutor-4','tp-4','010-4444-4444',
  '영어 발음 교정 튜터','발음·억양 집중',
  '원어민에 가까운 발음을 목표로 단계별 교정을 진행합니다.',NULL,
  'https://zoom.us/j/4444444444','Hana','444-444-444444','최튜터',TRUE,4.75,9),
 
-('u-tutor-5','tp-5','/img/tutors/default.png','010-5555-5555',
+('u-tutor-5','tp-5','010-5555-5555',
  '영어 문법 튜터','개념 중심 문법',
  '헷갈리는 문법을 예문과 구조로 명확하게 정리합니다.',NULL,
  'https://zoom.us/j/5555555555','KB','555-555-555555','정튜터',TRUE,4.68,7),
 
-('u-tutor-6','tp-6','/img/tutors/default.png','010-6666-6666',
+('u-tutor-6','tp-6','010-6666-6666',
  '토익 전문 튜터','점수 상승 전략',
  'LC/RC 유형 분석과 시간 관리 전략으로 목표 점수를 만듭니다.',NULL,
  'https://zoom.us/j/6666666666','Shinhan','666-666-666666','조튜터',TRUE,4.82,14),
 
-('u-tutor-7','tp-7','/img/tutors/default.png','010-7777-7777',
+('u-tutor-7','tp-7','010-7777-7777',
  '중국어 튜터','회화·HSK 대비',
  '실생활 회화와 시험 대비를 함께 진행합니다.',NULL,
  'https://zoom.us/j/7777777777','Woori','777-777-777777','윤튜터',TRUE,4.61,6),
 
-('u-tutor-8','tp-8','/img/tutors/default.png','010-8888-8888',
+('u-tutor-8','tp-8','010-8888-8888',
  '일본어 전문 튜터','JLPT·회화',
  '시험 대비와 실전 회화를 균형 있게 지도합니다.',NULL,
  'https://zoom.us/j/8888888888','Hana','888-888-888888','장튜터',TRUE,4.73,10),
 
-('u-tutor-9','tp-9','/img/tutors/default.png','010-9999-9999',
+('u-tutor-9','tp-9','010-9999-9999',
  '스페인어 튜터','기초·여행 회화',
  '여행에서 바로 쓸 수 있는 표현 위주로 수업합니다.',NULL,
  'https://zoom.us/j/9999999999','KB','999-999-999999','임튜터',TRUE,4.55,4),
 
-('u-tutor-10','tp-10','/img/tutors/default.png','010-1010-1010',
+('u-tutor-10','tp-10','010-1010-1010',
  '비즈니스 영어 튜터','실무 회화 중심',
  '회의, 협상, 이메일 상황별 영어를 연습합니다.',NULL,
  'https://zoom.us/j/1010101010','Shinhan','101-101-101010','하튜터',TRUE,4.79,11),
 
-('u-tutor-11','tp-11','/img/tutors/default.png','010-1112-1112',
+('u-tutor-11','tp-11','010-1112-1112',
  '드라마 영어 튜터','콘텐츠 기반 학습',
  '드라마 장면을 활용해 자연스러운 표현을 익힙니다.',NULL,
  'https://zoom.us/j/1112111211','Woori','111-211-121112','강튜터',TRUE,4.66,5),
 
-('u-tutor-12','tp-12','/img/tutors/default.png','010-1212-1212',
+('u-tutor-12','tp-12','010-1212-1212',
  '노래로 배우는 영어','리스닝·발음 강화',
  '영어 노래를 통해 발음과 표현을 자연스럽게 익힙니다.',NULL,
  'https://zoom.us/j/1212121212','Hana','121-212-121212','고튜터',TRUE,4.58,3),
 
-('u-tutor-13','tp-13','/img/tutors/default.png','010-1313-1313',
+('u-tutor-13','tp-13','010-1313-1313',
  '영어 문화 튜터','문화 이해 중심',
  '언어와 함께 문화적 배경까지 설명합니다.',NULL,
  'https://zoom.us/j/1313131313','KB','131-313-131313','곽튜터',TRUE,4.60,4),
 
-('u-tutor-14','tp-14','/img/tutors/default.png','010-1414-1414',
+('u-tutor-14','tp-14','010-1414-1414',
  '여행 영어 튜터','상황별 회화',
  '공항·호텔·식당 등 여행 필수 표현을 연습합니다.',NULL,
  'https://zoom.us/j/1414141414','Shinhan','141-414-141414','구튜터',TRUE,4.63,6),
 
-('u-tutor-15','tp-15','/img/tutors/default.png','010-1515-1515',
+('u-tutor-15','tp-15','010-1515-1515',
  '어린이 영어 튜터','놀이 중심 수업',
  '게임과 활동으로 영어에 대한 흥미를 키워줍니다.',NULL,
  'https://zoom.us/j/1515151515','Woori','151-515-151515','권튜터',TRUE,4.71,8),
 
-('u-tutor-16','tp-16','/img/tutors/default.png','010-1616-1616',
+('u-tutor-16','tp-16','010-1616-1616',
  '고등 영어 튜터','내신·수능 대비',
  '독해 구조와 문제 풀이 전략을 중심으로 지도합니다.',NULL,
  'https://zoom.us/j/1616161616','KB','161-616-161616','김동튜터',TRUE,4.74,9),
 
-('u-tutor-17','tp-17','/img/tutors/default.png','010-1717-1717',
+('u-tutor-17','tp-17','010-1717-1717',
  '중등 영어 튜터','기초부터 탄탄하게',
  '문법과 독해의 기본기를 확실히 잡아드립니다.',NULL,
  'https://zoom.us/j/1717171717','Shinhan','171-717-171717','김선튜터',TRUE,4.62,5),
 
-('u-tutor-18','tp-18','/img/tutors/default.png','010-1818-1818',
+('u-tutor-18','tp-18','010-1818-1818',
  '영어 회화 튜터','말하기 집중',
  '반복 연습으로 말이 자연스럽게 나오도록 합니다.',NULL,
  'https://zoom.us/j/1818181818','Woori','181-818-181818','김주튜터',TRUE,4.68,6),
 
-('u-tutor-19','tp-19','/img/tutors/default.png','010-1919-1919',
+('u-tutor-19','tp-19','010-1919-1919',
  '영어 시험 대비 튜터','유형별 문제 풀이',
  '시험에 자주 나오는 패턴을 집중 공략합니다.',NULL,
  'https://zoom.us/j/1919191919','Hana','191-919-191919','김찬튜터',TRUE,4.57,4),
 
-('u-tutor-20','tp-20','/img/tutors/default.png','010-2020-2020',
+('u-tutor-20','tp-20','010-2020-2020',
  '스페인어 회화 튜터','기초·일상 회화',
  '일상에서 바로 쓸 수 있는 회화를 중심으로 진행합니다.',NULL,
  'https://zoom.us/j/2020202020','KB','202-020-202020','김태튜터',TRUE,4.64,5);

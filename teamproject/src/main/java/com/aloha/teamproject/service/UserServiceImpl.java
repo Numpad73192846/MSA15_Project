@@ -172,4 +172,12 @@ public class UserServiceImpl extends BaseServiceImpl implements UserService {
 		return result > 0;
 	}
 
+	@Override
+	@Transactional
+	public boolean updateProfileImg(String userId, String profileImg) throws Exception {
+		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+		int result = userMapper.updateProfileImg(userId, profileImg);
+		return result > 0;
+	}
+
 }

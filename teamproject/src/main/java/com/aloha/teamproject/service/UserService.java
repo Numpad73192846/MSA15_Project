@@ -24,5 +24,6 @@ public interface UserService extends BaseCrudService<Users> {
 
 	// 회원 정보 수정 (이름, 비밀번호)
 	boolean updateMyInfo(String userId, String name, String password, String passwordConfirm) throws Exception;
+	boolean updateProfileImg(String userId, String profileImg) throws Exception;
 
 }
