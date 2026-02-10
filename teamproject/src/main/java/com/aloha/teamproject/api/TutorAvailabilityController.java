@@ -82,7 +82,8 @@ public class TutorAvailabilityController {
             
             // OPEN 상태만 필터링 (학생에게는 예약 가능한 시간만 보여줌)
                 List<TutorAvailability> dtoList = availabilities.stream()
-                    .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN)
+                    .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN
+                            || av.getStatus() == TutorAvailability.Status.BOOKED)
                     .toList();
 
             return ApiResponse.ok(dtoList);

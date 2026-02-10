@@ -16,6 +16,7 @@
         <result property="canceledAt" column="canceled_at"/>
         <result property="doneAt" column="done_at"/>
         <result property="memo" column="memo"/>
+        <result property="zoomJoinUrl" column="zoom_join_url"/>
     </resultMap>
 
     <select id="selectAll" resultMap="BookingMap">
@@ -48,15 +49,17 @@
 
     <insert id="insert">
         INSERT INTO booking (
-            id, user_id, lesson_id, availability_id, title, requested_at, memo
+            id, user_id, lesson_id, availability_id, title, requested_at, memo, zoom_join_url
         ) VALUES (
-            UUID(), #{userId}, #{lessonId}, #{availabilityId}, #{title}, NOW(), #{memo}
+            UUID(), #{userId}, #{lessonId}, #{availabilityId}, #{title}, NOW(), #{memo}, #{zoomJoinUrl}
         )
     </insert>
 
     <update id="update">
         UPDATE booking
-        SET title = #{title}, memo = #{memo}
+        SET title = #{title},
+            memo = #{memo},
+            zoom_join_url = #{zoomJoinUrl}
         WHERE id = #{id}
     </update>
 
@@ -79,9 +82,24 @@
     </update>
 
     <update id="completeBooking">
-        UPDATE booking
-        SET done_at = NOW()
-        WHERE id = #{id}
+        UPDATE booking b
+        JOIN tutor_availability ta ON b.availability_id = ta.id
+        SET b.done_at = NOW()
+        WHERE b.id = #{id}
+          AND b.canceled_at IS NULL
+          AND b.done_at IS NULL
+          AND b.confirmed_at IS NOT NULL
+          AND (
+            b.paid_at IS NOT NULL
+            OR EXISTS (
+              SELECT 1
+              FROM payment p
+              WHERE p.booking_id = b.id
+                AND p.status = 'PAID'
+                AND p.paid_at IS NOT NULL
+            )
+          )
+          AND ta.end_at &lt;= NOW()
     </update>
 
     <update id="updatePaidAt">

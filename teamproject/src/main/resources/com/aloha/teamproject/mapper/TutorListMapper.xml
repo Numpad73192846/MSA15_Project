@@ -17,6 +17,11 @@
         <result property="subjects" column="subjects"/>
         <result property="price" column="price"/>
         <result property="experience" column="experience"/>
+        <result property="educationSchools" column="education_schools"/>
+        <result property="educationDegrees" column="education_degrees"/>
+        <result property="educationDocuments" column="education_documents"/>
+        <result property="degreeDocuments" column="degree_documents"/>
+        <result property="certificates" column="certificates"/>
     </resultMap>
 
     <select id="selectAllTutors" resultMap="TutorListMap">
@@ -115,7 +120,51 @@
                  FROM tutor_career tc
                  WHERE tc.user_id = tp.user_id),
                 ''
-            ) AS experience
+            ) AS experience,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT te.school_name ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.school_name <> '학위 정보'),
+                ''
+            ) AS education_schools,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT te.degree ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.degree <> '학위 미기입력'),
+                ''
+            ) AS education_degrees,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학력 증명서')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'EDUCATION'),
+                ''
+            ) AS education_documents,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학위 증명서')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'DEGREE'),
+                ''
+            ) AS degree_documents,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '자격증')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type IN ('CERTIFICATE', 'CERTIFICATE_TEXT')),
+                ''
+            ) AS certificates
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
         WHERE tp.id = #{userId}

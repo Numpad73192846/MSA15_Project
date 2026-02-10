@@ -1,7 +1,10 @@
 package com.aloha.teamproject.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,10 +16,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.aloha.teamproject.dto.Review;
 import com.aloha.teamproject.dto.TutorList;
+import com.aloha.teamproject.dto.TutorMessage;
+import com.aloha.teamproject.dto.TutorStudentNote;
 import com.aloha.teamproject.dto.UpcomingLesson;
 import com.aloha.teamproject.service.ReviewService;
+import com.aloha.teamproject.service.TutorMessageService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
+import com.aloha.teamproject.service.TutorStudentNoteService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +36,17 @@ public class TutorsPageController {
     private final TutorListService tutorListService;
     private final ReviewService reviewService;
     private final TutorMyPageService tutorMyPageService;
+    private final TutorStudentNoteService tutorStudentNoteService;
+    private final TutorMessageService tutorMessageService;
 
     @GetMapping("/tutors")
     public String tutors(Authentication authentication, Model model) {
         try {
             List<TutorList> tutors = tutorListService.selectAllTutors();
-            
-            // 각 튜터의 리뷰 평점 계산
+
             for (TutorList tutor : tutors) {
                 List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
-                
+
                 double avgRating = 0.0;
                 if (!reviews.isEmpty()) {
                     avgRating = reviews.stream()
@@ -46,26 +54,27 @@ public class TutorsPageController {
                         .average()
                         .orElse(0.0);
                 }
-                
+
                 tutor.setRatingAvg(BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
                 tutor.setReviewCount(reviews.size());
             }
-            
+
             model.addAttribute("tutors", tutors);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("튜터 목록 조회 실패", e);
         }
         return "tutors/list";
     }
 
     @GetMapping("/tutors/{id}")
-    public String tutorDetail(@PathVariable("id") String id, Model model) {
+    public String tutorDetail(@PathVariable("id") String id, Model model, Authentication authentication) {
+        boolean isTutorViewer = hasTutorAuthority(authentication);
+        model.addAttribute("isTutorViewer", isTutorViewer);
+        model.addAttribute("canBook", !isTutorViewer);
 
         try {
-
             TutorList tutor = tutorListService.selectTutorById(id);
-
-            if ( tutor == null ) {
+            if (tutor == null) {
                 return "redirect:/tutors";
             }
 
@@ -78,12 +87,16 @@ public class TutorsPageController {
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
             tutorMap.put("selfIntro", tutor.getSelfIntro() != null ? tutor.getSelfIntro() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
+            tutorMap.put("educationSchools", tutor.getEducationSchools() != null ? tutor.getEducationSchools() : "");
+            tutorMap.put("educationDegrees", tutor.getEducationDegrees() != null ? tutor.getEducationDegrees() : "");
+            tutorMap.put("educationDocuments", tutor.getEducationDocuments() != null ? tutor.getEducationDocuments() : "");
+            tutorMap.put("degreeDocuments", tutor.getDegreeDocuments() != null ? tutor.getDegreeDocuments() : "");
+            tutorMap.put("certificates", tutor.getCertificates() != null ? tutor.getCertificates() : "");
             tutorMap.put("price", tutor.getPrice() != null ? tutor.getPrice() : 0);
             tutorMap.put("availability", "평일 저녁, 주말");
 
             List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
-            
-            // 리뷰 평점 계산
+
             double avgRating = 0.0;
             if (!reviews.isEmpty()) {
                 avgRating = reviews.stream()
@@ -91,19 +104,29 @@ public class TutorsPageController {
                     .average()
                     .orElse(0.0);
             }
-            
+
             model.addAttribute("tutor", tutorMap);
             model.addAttribute("reviews", reviews);
             model.addAttribute("avgRating", BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
             model.addAttribute("reviewCount", reviews.size());
-
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("튜터 상세 조회 실패", e);
         }
         return "tutors/detail";
     }
 
-        @GetMapping("/tutor/dashboard")
+    private boolean hasTutorAuthority(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+            .anyMatch(authority -> {
+                String role = authority.getAuthority();
+                return "ROLE_TUTOR".equals(role) || "ROLE_TUTOR_PENDING".equals(role);
+            });
+    }
+
+    @GetMapping("/tutor/dashboard")
     public String tutorDashboard(Model model, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return "redirect:/login";
@@ -111,62 +134,148 @@ public class TutorsPageController {
 
         try {
             String userId = authentication.getName();
-            
-            // 예약 목록 조회 (대기중 + 확정 상태)
+            LocalDateTime now = LocalDateTime.now();
+
             List<UpcomingLesson> upcomingLessons = tutorMyPageService.selectUpcomingBookingsByUserId(userId);
-            
-            // 대시보드용 예약 데이터 변환
-            List<java.util.Map<String, Object>> bookings = upcomingLessons.stream().map(lesson -> {
-                java.util.Map<String, Object> map = new java.util.HashMap<>();
+            List<UpcomingLesson> pastLessons = tutorMyPageService.selectPastBookingsByUserId(userId);
+            List<TutorStudentNote> studentNotes = tutorStudentNoteService.selectByTutorId(userId);
+            List<TutorMessage> studentReplies = tutorMessageService.selectStudentRepliesByTutorId(userId);
+
+            Map<String, TutorStudentNote> noteMap = new HashMap<>();
+            for (TutorStudentNote note : studentNotes) {
+                noteMap.put(note.getStudentId(), note);
+            }
+
+            Map<String, UpcomingLesson> lessonMap = new LinkedHashMap<>();
+            for (UpcomingLesson lesson : upcomingLessons) {
+                lessonMap.put(lesson.getBookingId(), lesson);
+            }
+            for (UpcomingLesson lesson : pastLessons) {
+                if ("CONFIRMED".equals(lesson.getStatus())) {
+                    lessonMap.putIfAbsent(lesson.getBookingId(), lesson);
+                }
+            }
+
+            List<UpcomingLesson> dashboardLessons = lessonMap.values().stream()
+                .sorted(Comparator.comparing(UpcomingLesson::getStartAt, Comparator.nullsLast(Comparator.naturalOrder())))
+                .toList();
+
+            List<Map<String, Object>> bookings = dashboardLessons.stream().map(lesson -> {
+                Map<String, Object> map = new HashMap<>();
+                boolean paid = lesson.getPaidAt() != null;
+                boolean canComplete = "CONFIRMED".equals(lesson.getStatus())
+                    && paid
+                    && lesson.getEndAt() != null
+                    && !lesson.getEndAt().isAfter(now);
+
                 map.put("id", lesson.getBookingId());
+                map.put("studentId", lesson.getStudentId());
                 map.put("studentName", lesson.getStudentName());
                 map.put("subject", lesson.getSubject());
-                String status = "PENDING".equals(lesson.getStatus()) ? "대기중" : 
-                               "CONFIRMED".equals(lesson.getStatus()) ? "확정" : "취소";
-                map.put("status", status);
+                map.put("status", toDashboardStatus(lesson.getStatus(), paid));
+                map.put("statusClass", toDashboardStatusClass(lesson.getStatus(), paid));
+                map.put("actionState", toActionState(lesson.getStatus(), paid, canComplete));
+                map.put("canComplete", canComplete);
+                map.put("paid", paid);
                 map.put("date", lesson.getLessonDate());
                 map.put("time", lesson.getStartTime());
                 map.put("duration", lesson.getDurationHours());
                 map.put("totalPrice", lesson.getPrice() != null ? lesson.getPrice().intValue() : 0);
                 return map;
             }).toList();
-            
-            // 학생 목록은 예약에서 추출 (중복 제거)
-            java.util.Map<String, java.util.Map<String, Object>> studentMap = new java.util.LinkedHashMap<>();
-            for (UpcomingLesson lesson : upcomingLessons) {
+
+            Map<String, Map<String, Object>> studentMap = new LinkedHashMap<>();
+            for (UpcomingLesson lesson : dashboardLessons) {
                 String studentId = lesson.getStudentId();
                 if (!studentMap.containsKey(studentId)) {
-                    java.util.Map<String, Object> student = new java.util.HashMap<>();
+                    Map<String, Object> student = new HashMap<>();
+                    TutorStudentNote note = noteMap.get(studentId);
+                    student.put("id", studentId);
                     student.put("name", lesson.getStudentName());
                     student.put("email", "");
                     student.put("phone", "");
                     student.put("subjects", new java.util.ArrayList<String>());
                     student.put("totalSessions", 0);
                     student.put("lastSession", lesson.getLessonDate());
-                    student.put("progress", "");
-                    student.put("notes", "");
+                    student.put("progress", note != null && note.getProgress() != null ? note.getProgress() : "");
+                    student.put("notes", note != null && note.getNotes() != null ? note.getNotes() : "");
                     studentMap.put(studentId, student);
                 }
                 @SuppressWarnings("unchecked")
-                java.util.List<String> subjects = (java.util.List<String>) studentMap.get(studentId).get("subjects");
+                List<String> subjects = (List<String>) studentMap.get(studentId).get("subjects");
                 if (!subjects.contains(lesson.getSubject())) {
                     subjects.add(lesson.getSubject());
                 }
-                studentMap.get(studentId).put("totalSessions", 
-                    (Integer) studentMap.get(studentId).get("totalSessions") + 1);
+                studentMap.get(studentId).put(
+                    "totalSessions",
+                    (Integer) studentMap.get(studentId).get("totalSessions") + 1
+                );
             }
-            
+
             model.addAttribute("bookings", bookings);
             model.addAttribute("students", new java.util.ArrayList<>(studentMap.values()));
+            model.addAttribute("studentReplies", studentReplies);
         } catch (Exception e) {
             log.error("튜터 대시보드 데이터 조회 실패", e);
             model.addAttribute("bookings", List.of());
             model.addAttribute("students", List.of());
+            model.addAttribute("studentReplies", List.of());
         }
-        
+
         return "tutor/dashboard";
     }
-    
+
+    private String toDashboardStatus(String status, boolean paid) {
+        if ("PENDING".equals(status)) {
+            return "대기중";
+        }
+        if ("CONFIRMED".equals(status)) {
+            return paid ? "결제완료" : "결제대기";
+        }
+        if ("COMPLETED".equals(status)) {
+            return "수업완료";
+        }
+        if ("CANCELLED".equals(status)) {
+            return "취소";
+        }
+        return status == null ? "" : status;
+    }
+
+    private String toDashboardStatusClass(String status, boolean paid) {
+        if ("PENDING".equals(status)) {
+            return "bg-warning text-dark";
+        }
+        if ("CONFIRMED".equals(status)) {
+            return paid ? "bg-success" : "bg-secondary";
+        }
+        if ("COMPLETED".equals(status)) {
+            return "bg-primary";
+        }
+        if ("CANCELLED".equals(status)) {
+            return "bg-danger";
+        }
+        return "bg-secondary";
+    }
+
+    private String toActionState(String status, boolean paid, boolean canComplete) {
+        if ("PENDING".equals(status)) {
+            return "PENDING";
+        }
+        if ("CONFIRMED".equals(status)) {
+            if (!paid) {
+                return "WAITING_PAYMENT";
+            }
+            return canComplete ? "COMPLETE_AVAILABLE" : "PAID";
+        }
+        if ("COMPLETED".equals(status)) {
+            return "COMPLETED";
+        }
+        if ("CANCELLED".equals(status)) {
+            return "CANCELLED";
+        }
+        return "NONE";
+    }
+
     @GetMapping("/tutor/register")
     public String tutorRegister() {
         return "tutor/register";
@@ -186,5 +295,8 @@ public class TutorsPageController {
     public String tutorRegister3() {
         return "tutor/register3";
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 61fdc8838653fa98f36a74e6995bdfc0e18d1a60
 }

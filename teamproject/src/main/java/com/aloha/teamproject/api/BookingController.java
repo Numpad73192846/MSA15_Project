@@ -20,10 +20,12 @@ import com.aloha.teamproject.dto.Booking;
 import com.aloha.teamproject.dto.Lesson;
 import com.aloha.teamproject.dto.StudentBooking;
 import com.aloha.teamproject.dto.TutorAvailability;
+import com.aloha.teamproject.dto.TutorProfile;
 import com.aloha.teamproject.service.BookingService;
 import com.aloha.teamproject.service.LessonService;
 import com.aloha.teamproject.service.MemberMyPageService;
 import com.aloha.teamproject.service.TutorAvailabilityService;
+import com.aloha.teamproject.service.TutorProfileService;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -41,6 +43,7 @@ public class BookingController {
     private final TutorAvailabilityService tutorAvailabilityService;
     private final LessonService lessonService;
     private final MemberMyPageService memberMyPageService;
+    private final TutorProfileService tutorProfileService;
 
     @GetMapping
     public ApiResponse<List<Booking>> getAllBookings(Authentication authentication) {
@@ -250,12 +253,19 @@ public class BookingController {
             }
             
             // 예약 생성
+            String zoomJoinUrl = null;
+            TutorProfile tutorProfile = tutorProfileService.selectByUserId(tutorId);
+            if (tutorProfile != null && tutorProfile.getDefaultZoomUrl() != null && !tutorProfile.getDefaultZoomUrl().isBlank()) {
+                zoomJoinUrl = tutorProfile.getDefaultZoomUrl().trim();
+            }
+
             Booking booking = Booking.builder()
                 .userId(studentId)
                 .lessonId(lesson.getId())
                 .availabilityId(availability.getId())
                 .title(request.getSubject() + " 수업")
                 .memo(request.getMessage())
+                .zoomJoinUrl(zoomJoinUrl)
                 .build();
 
             log.info("[튜터 예약 생성] booking 객체 생성: {}", booking);
