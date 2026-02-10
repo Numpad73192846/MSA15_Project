@@ -358,7 +358,7 @@ CREATE TABLE tutor_time_range (
     id VARCHAR(64) NOT NULL,
     start_at TIME NOT NULL,
     end_at TIME NOT NULL,
-    day_of_week ENUM('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN') NOT NULL,
+    day_of_week ENUM('월', '화', '수', '목', '금', '토', '일') NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (no),
