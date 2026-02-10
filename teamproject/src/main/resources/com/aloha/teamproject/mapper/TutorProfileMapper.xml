@@ -15,6 +15,7 @@
         <result property="bio" column="bio" />
         <result property="selfIntro" column="self_intro" />
         <result property="videoUrl" column="video_url" />
+        <result property="defaultZoomUrl" column="default_zoom_url" />
         <result property="bankName" column="bank_name" />
         <result property="accountNumber" column="account_number" />
         <result property="accountHolder" column="account_holder" />

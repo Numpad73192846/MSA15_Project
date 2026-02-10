@@ -1,4 +1,4 @@
-<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+﻿<div xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
 
     <div layout:fragment="content">
@@ -88,7 +88,7 @@
                         <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
                             <h3 class="h6 fw-bold mb-0">튜터 메시지</h3>
                         </div>
-                        <div class="list-group list-group-flush pt-2" id="tutorMessagesContainer">
+                        <div class="d-grid gap-2 p-3" id="tutorMessagesContainer">
                             <div class="text-center text-muted py-3">메시지가 없습니다.</div>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
 
         <!-- Message Detail & Reply Modal -->
         <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-header border-bottom-0 pb-0">
                         <h5 class="modal-title fw-bold">메시지 확인</h5>
@@ -167,24 +167,28 @@
                             <div>
                                 <h6 class="fw-bold mb-0" id="msgTutorName">튜터 이름</h6>
                                 <small class="text-muted" id="msgDate">시간</small>
+                                <div class="small text-muted mt-1" id="memberMessageMeta">Lesson chat</div>
                             </div>
                         </div>
-                        <div class="p-3 bg-light rounded-3 mb-4">
-                            <p class="mb-0 text-dark small" id="msgContent">메시지 내용...</p>
+                        <div class="mb-4">
+                            <div id="memberMessageThread" class="tutor-chat-thread">
+                                <div class="text-center text-muted py-4 small">No messages yet.</div>
+                            </div>
                         </div>
+                        <input type="hidden" id="replyTutorId">
+                        <input type="hidden" id="replyBookingId">
 
                         <hr class="border-light my-4">
 
                         <h6 class="fw-bold small mb-3">답장 보내기</h6>
                         <div class="mb-3">
-                            <textarea class="form-control bg-light border-0" id="replyMessageArea" rows="4"
+                            <textarea class="form-control bg-light border-0" id="replyMessageArea" rows="3"
                                 placeholder="답장을 입력하세요..." style="resize: none;"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0 pt-0">
                         <button type="button" class="btn btn-light text-muted" data-bs-dismiss="modal">닫기</button>
-                        <button type="button" class="btn btn-primary px-4" onclick="alert('답장이 전송되었습니다.');"
-                            data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-primary px-4" id="btnSendReplyMessage">
                             <span class="me-1">📤</span> 전송하기
                         </button>
                     </div>
@@ -209,7 +213,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3 mb-3">
                                     <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
-                                         style="width:48px;height:48px;font-size:18px;" id="paymentTutorInitial">김</div>
+                                         style="width:48px;height:48px;font-size:18px;" id="paymentTutorInitial">源</div>
                                     <div>
                                         <div class="fw-bold" id="paymentTutorName">튜터명</div>
                                         <div class="small text-muted" id="paymentSubject">영어</div>
@@ -228,7 +232,7 @@
                             </div>
                         </div>
 
-                        <!-- 결제 수단 선택 -->
+                        <!-- 寃곗젣 ?섎떒 ?좏깮 -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">결제 수단</label>
                             <div class="d-flex flex-column gap-2">
@@ -263,7 +267,7 @@
                             </div>
                         </div>
 
-                        <!-- 결제 금액 -->
+                        <!-- 寃곗젣 湲덉븸 -->
                         <div class="border-top pt-3">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">수업료</span>
@@ -397,7 +401,7 @@
                 await payment.requestPayment(request);
             }
 
-            // 결제 확인 버튼 클릭
+            // 결제 확인 버튼 핸들러
             document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('btnConfirmPayment')?.addEventListener('click', async () => {
                     if (!pendingPayment) {
@@ -419,7 +423,6 @@
                     btnConfirm.disabled = true;
                     btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리중...';
 
-
                     try {
                         await startTossPayment(paymentMethod);
                         return;
@@ -434,9 +437,9 @@
                 });
             });
             
-            // 수업 취소 함수
+            // 예약 취소 함수
             async function cancelBooking(bookingId) {
-                if (!confirm('수업을 취소하시겠습니까?')) return;
+                if (!confirm('정말로 예약을 취소하시겠습니까?')) return;
                 const token = localStorage.getItem('accessToken');
                 if (!token) {
                     alert('로그인이 필요합니다.');
@@ -454,7 +457,7 @@
                     });
                     const result = await response.json();
                     if (result.success) {
-                        alert('수업이 취소되었습니다.');
+                        alert('예약이 취소되었습니다.');
                         location.reload();
                     } else {
                         alert(result.message || '취소에 실패했습니다.');
@@ -465,7 +468,7 @@
                 }
             }
             
-            // 페이지 로드 시 회원 마이페이지 데이터 초기화
+            // ?섏씠吏 濡쒕뱶 ???뚯썝 留덉씠?섏씠吏 ?곗씠??珥덇린??
             document.addEventListener('DOMContentLoaded', async function() {
                 try {
                     const token = localStorage.getItem('accessToken');
@@ -483,34 +486,152 @@
                         const mypage = result.data;
                         memberUserId = mypage.userId;
                         
-                        // 프로필 정보 바인딩
+                        // 프로필 정보 반영
                         document.getElementById('memberName').textContent = mypage.name || '회원';
                         document.getElementById('memberEmail').textContent = mypage.email || '';
                         
-                        // 모달 폼에도 바인딩
+                        // 모달 폼에 반영
                         document.getElementById('editName').value = mypage.name || '';
                         document.getElementById('editNickname').value = mypage.nickname || '';
                         document.getElementById('editEmail').value = mypage.email || '';
                         
-                        // Stats 바인딩
+                        // Stats 반영
                         if (mypage.memberStats) {
                             const stats = mypage.memberStats;
                             const statValues = document.querySelectorAll('.stat-value');
                             statValues[0].textContent = stats.upcomingLessons || 0;
                             statValues[1].textContent = stats.completedLessons || 0;
                         }
+
+                        // 튜터 메시지 반영
+                        const tutorMessages = Array.isArray(mypage.tutorMessages) ? mypage.tutorMessages : [];
+                        const tutorMessagesContainer = document.getElementById('tutorMessagesContainer');
+                        if (tutorMessagesContainer) {
+                            tutorMessagesContainer.innerHTML = '';
+                            if (tutorMessages.length === 0) {
+                                tutorMessagesContainer.innerHTML = '<div class="text-center text-muted py-3">메시지가 없습니다.</div>';
+                            } else {
+                                tutorMessages.forEach(msg => {
+                                    const item = document.createElement('button');
+                                    item.type = 'button';
+                                    item.className = 'tutor-message-card w-100 text-start border-0 px-3 py-3';
+                                    item.setAttribute('data-bs-toggle', 'modal');
+                                    item.setAttribute('data-bs-target', '#messageModal');
+
+                                    const tutorName = msg.tutorName || '튜터';
+                                    const tutorId = msg.tutorId || '';
+                                    const bookingId = msg.bookingId || '';
+                                    const subject = msg.subject || '';
+                                    const createdAtText = msg.createdAt
+                                        ? new Date(msg.createdAt).toLocaleString('ko-KR')
+                                        : '';
+                                    const content = msg.content || '';
+
+                                    item.setAttribute('data-tutor', tutorName);
+                                    item.setAttribute('data-tutor-id', tutorId);
+                                    item.setAttribute('data-booking-id', bookingId);
+                                    item.setAttribute('data-subject', subject);
+                                    item.setAttribute('data-date', createdAtText);
+                                    item.setAttribute('data-message', content);
+
+                                    const top = document.createElement('div');
+                                    top.className = 'd-flex justify-content-between align-items-start';
+
+                                    const left = document.createElement('div');
+                                    left.className = 'd-flex align-items-center gap-2';
+
+                                    const avatar = document.createElement('div');
+                                    avatar.className = 'tutor-message-avatar';
+                                    avatar.textContent = tutorName.trim().charAt(0) || 'T';
+
+                                    const nameWrap = document.createElement('div');
+
+                                    const nameEl = document.createElement('div');
+                                    nameEl.className = 'fw-semibold';
+                                    nameEl.textContent = `${tutorName} 튜터`;
+
+                                    const subjectEl = document.createElement('div');
+                                    subjectEl.className = 'small text-primary tutor-message-subject';
+                                    subjectEl.textContent = subject || '과목 정보 없음';
+
+                                    const subEl = document.createElement('div');
+                                    subEl.className = 'small text-muted';
+                                    subEl.textContent = '최신 메시지';
+
+                                    const dateEl = document.createElement('small');
+                                    dateEl.className = 'text-muted';
+                                    dateEl.textContent = createdAtText;
+
+                                    const contentEl = document.createElement('div');
+                                    contentEl.className = 'small text-muted mt-2 tutor-message-preview';
+                                    contentEl.textContent = content;
+
+                                    nameWrap.appendChild(nameEl);
+                                    nameWrap.appendChild(subjectEl);
+                                    nameWrap.appendChild(subEl);
+                                    left.appendChild(avatar);
+                                    left.appendChild(nameWrap);
+
+                                    top.appendChild(left);
+                                    top.appendChild(dateEl);
+                                    item.appendChild(top);
+                                    item.appendChild(contentEl);
+                                    tutorMessagesContainer.appendChild(item);
+                                });
+                            }
+                        }
                         
-                        // 예정된 수업 바인딩
-                        if (mypage.upcomingBookings && mypage.upcomingBookings.length > 0) {
-                            const upcomingContainer = document.querySelector('#bookingsTab .card:first-child .d-grid');
+                        // 내 수업 카드 바인딩                      
+                        const upcomingBookings = Array.isArray(mypage.upcomingBookings) ? mypage.upcomingBookings : [];
+                        const myClassContent = document.getElementById('myClassContent');
+
+                        const normalizeZoomJoinUrl = (rawUrl) => {
+                            const zoomJoinUrlRaw = String(rawUrl || '').trim();
+                            const zoomJoinUrl = /^https?:\/\//i.test(zoomJoinUrlRaw)
+                                ? zoomJoinUrlRaw
+                                : 'https://zoom.us/wc/join';
+                            return zoomJoinUrl
+                                .replace(/\"/g, '&quot;')
+                                .replace(/'/g, '&#39;');
+                        };
+
+                        const toLessonTime = (booking) => {
+                            const lessonDateTime = new Date(`${booking.lessonDate}T${booking.startTime}`);
+                            return Number.isNaN(lessonDateTime.getTime()) ? Number.MAX_SAFE_INTEGER : lessonDateTime.getTime();
+                        };
+
+                        if (myClassContent) {
+                            const zoomAvailableBookings = upcomingBookings
+                                .filter(booking => booking.status === 'CONFIRMED' && Boolean(booking.paidAt))
+                                .sort((a, b) => toLessonTime(a) - toLessonTime(b));
+
+                            if (zoomAvailableBookings.length > 0) {
+                                const nextZoomBooking = zoomAvailableBookings[0];
+                                const safeZoomJoinUrl = normalizeZoomJoinUrl(nextZoomBooking.zoomJoinUrl);
+                                myClassContent.innerHTML = `
+                                    <div class="small text-muted mb-2">결제 완료된 다음 수업</div>
+                                    <div class="fw-semibold">${nextZoomBooking.tutorName} 튜터</div>
+                                    <div class="small text-muted mt-1">
+                                        날짜 ${nextZoomBooking.lessonDate} | 시간 ${nextZoomBooking.startTime} (${nextZoomBooking.durationHours}분)
+                                    </div>
+                                    <div class="small text-muted mb-3">${nextZoomBooking.subject}</div>
+                                    <a class="btn btn-primary w-100" href="${safeZoomJoinUrl}" target="_blank" rel="noopener noreferrer">Zoom 입장</a>
+                                `;
+                            } else {
+                                myClassContent.innerHTML = '<div class="text-center text-muted py-2">결제 완료된 예정 수업이 없습니다.</div>';
+                            }
+                        }
+
+                        if (upcomingBookings.length > 0) {
+                            const upcomingContainer = document.getElementById('upcomingBookingsContainer');
                             if (upcomingContainer) {
                                 upcomingContainer.innerHTML = '';
-                                mypage.upcomingBookings.forEach(booking => {
+                                upcomingBookings.forEach(booking => {
                                     const item = document.createElement('div');
                                     item.className = 'booking-item p-3 border rounded';
                                     const statusBadge = booking.status === 'CONFIRMED' ? 'bg-success' : 'bg-warning text-dark';
-                                    const statusText = booking.status === 'CONFIRMED' ? '승인됨' : 
-                                                      booking.status === 'PENDING' ? '승인대기' : '취소됨';
+                                    const statusText = booking.status === 'CONFIRMED' ? '확정'
+                                        : booking.status === 'PENDING' ? '대기중' : '취소';
                                     const cancelBtn = booking.status === 'PENDING' 
                                         ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${booking.bookingId}')">취소</button>` 
                                         : '';
@@ -526,7 +647,7 @@
                                             <div>
                                                 <div class="fw-semibold">${booking.tutorName} 튜터</div>
                                                 <div class="small text-muted mt-1">
-                                                    📅 ${booking.lessonDate} | ⏰ ${booking.startTime} (${booking.durationHours}시간)
+                                                    날짜 ${booking.lessonDate} | 시간 ${booking.startTime} (${booking.durationHours}분)
                                                 </div>
                                             </div>
                                             <span class="badge ${statusBadge}">${statusText}</span>
@@ -567,7 +688,7 @@
                                             <div>
                                                 <div class="fw-semibold">${booking.tutorName} 튜터</div>
                                                 <div class="small text-muted mt-1">
-                                                    📅 ${booking.lessonDate} | ⏰ ${booking.startTime} (${booking.durationHours}시간)
+                                                    날짜 ${booking.lessonDate} | 시간 ${booking.startTime} (${booking.durationHours}분)
                                                 </div>
                                             </div>
                                             <span class="badge bg-secondary">완료</span>
@@ -597,7 +718,7 @@
                                     item.onclick = () => location.href = `/tutors/${review.tutorProfileId}`;
                                     item.innerHTML = `
                                         <div class="d-flex justify-content-between mb-2">
-                                            <div class="fw-semibold">${review.tutorName} 튜터 <small class="text-primary opacity-75 ms-1">상세보기 ↗</small></div>
+                                            <div class="fw-semibold">${review.tutorName} 튜터 <small class="text-primary opacity-75 ms-1">자세히 보기</small></div>
                                             <div class="text-warning">${rating}</div>
                                         </div>
                                         <p class="small mb-1">${review.content}</p>
@@ -609,31 +730,249 @@
                         }
                     }
                 } catch (e) {
-                    console.warn('마이페이지 데이터 로드 실패', e);
+                    console.warn('마이페이지 데이터 로드 중 오류 발생', e);
                 }
             });
             
-            // Simple script to populate modal based on clicked item
+            // Message modal (thread style)
             document.addEventListener('DOMContentLoaded', function () {
-                var messageModal = document.getElementById('messageModal');
+                const messageModal = document.getElementById('messageModal');
+                const replyArea = document.getElementById('replyMessageArea');
+                const replyBtn = document.getElementById('btnSendReplyMessage');
+                const threadBox = document.getElementById('memberMessageThread');
+                const metaBox = document.getElementById('memberMessageMeta');
+                let memberThreadTimer = null;
+
+                function escapeHtml(value) {
+                    return String(value ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
+
+                function formatMessageTime(value) {
+                    if (!value) return '';
+                    const date = new Date(value);
+                    if (Number.isNaN(date.getTime())) return String(value);
+                    return date.toLocaleString('ko-KR', { hour12: false });
+                }
+
+                function setEmptyThread() {
+                    if (!threadBox) return;
+                    threadBox.innerHTML = '<div class="text-center text-muted py-4 small">아직 메시지가 없습니다.</div>';
+                }
+
+                function scrollThreadToBottom() {
+                    if (!threadBox) return;
+                    threadBox.scrollTop = threadBox.scrollHeight;
+                }
+
+                function renderThread(messages, forceScroll = false) {
+                    if (!threadBox) return;
+                    if (!Array.isArray(messages) || messages.length === 0) {
+                        setEmptyThread();
+                        return;
+                    }
+
+                    const html = messages.map((msg) => {
+                        const mine = (msg.senderRole || '').toUpperCase() === 'STUDENT';
+                        const roleText = mine ? 'Me' : 'Tutor';
+                        const content = escapeHtml(msg.content || '');
+                        const createdAt = formatMessageTime(msg.createdAt);
+                        return `
+                            <div class="tutor-chat-row${mine ? ' mine' : ''}">
+                                <div class="tutor-chat-bubble">
+                                    <div class="small">${content}</div>
+                                    <div class="tutor-chat-meta mt-1">${roleText}${createdAt ? ' - ' + createdAt : ''}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    threadBox.innerHTML = html;
+                    if (forceScroll) {
+                        scrollThreadToBottom();
+                        return;
+                    }
+
+                    const distanceFromBottom = threadBox.scrollHeight - threadBox.scrollTop - threadBox.clientHeight;
+                    if (distanceFromBottom < 60) {
+                        scrollThreadToBottom();
+                    }
+                }
+
+                function stopMemberThreadPolling() {
+                    if (memberThreadTimer) {
+                        clearInterval(memberThreadTimer);
+                        memberThreadTimer = null;
+                    }
+                }
+
+                async function loadThread(tutorId, bookingId, forceScroll = false) {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token || !tutorId || !bookingId) {
+                        setEmptyThread();
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/tutor/messages/thread/member?tutorId=${encodeURIComponent(tutorId)}&bookingId=${encodeURIComponent(bookingId)}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            renderThread(result.data || [], forceScroll);
+                        }
+                    } catch (e) {
+                        console.error('대화 내역 조회 실패', e);
+                    }
+                }
+
+                function setReplyReadOnly(readOnly, label) {
+                    if (replyArea) replyArea.readOnly = readOnly;
+                    if (replyBtn) {
+                        replyBtn.disabled = readOnly;
+                        replyBtn.innerHTML = readOnly
+                            ? (label || '읽기 전용')
+                            : '<span class="me-1">📤</span> 전송하기';
+                    }
+                }
+
+                async function syncReplyWritableState(tutorId, bookingId) {
+                    const token = localStorage.getItem('accessToken');
+                    if (!token || !tutorId || !bookingId) {
+                        setReplyReadOnly(true, '읽기 전용');
+                        return;
+                    }
+
+                    setReplyReadOnly(true, '확인 중...');
+                    try {
+                        const response = await fetch(`/api/tutor/messages/reply-writable?tutorId=${encodeURIComponent(tutorId)}&bookingId=${encodeURIComponent(bookingId)}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const result = await response.json();
+                        const writable = Boolean(result.success && result.data === true);
+                        setReplyReadOnly(!writable, writable ? '' : '읽기 전용');
+                    } catch (e) {
+                        console.error('답장 가능 여부 조회 실패', e);
+                        setReplyReadOnly(true, '읽기 전용');
+                    }
+                }
+
                 messageModal.addEventListener('show.bs.modal', function (event) {
-                    var button = event.relatedTarget;
-                    var tutor = button.getAttribute('data-tutor');
-                    var date = button.getAttribute('data-date');
-                    var message = button.getAttribute('data-message');
+                    const button = event.relatedTarget;
+                    const tutor = button?.getAttribute('data-tutor') || '튜터';
+                    const tutorId = button?.getAttribute('data-tutor-id') || '';
+                    const bookingId = button?.getAttribute('data-booking-id') || '';
+                    const subject = button?.getAttribute('data-subject') || '';
+                    const date = button?.getAttribute('data-date') || '';
 
                     document.getElementById('msgTutorName').textContent = tutor;
                     document.getElementById('msgDate').textContent = date;
-                    document.getElementById('msgContent').textContent = message;
+                    document.getElementById('replyTutorId').value = tutorId;
+                    document.getElementById('replyBookingId').value = bookingId;
 
-                    // Initial extraction for avatar
-                    var initial = tutor.trim().charAt(0);
+                    const initial = tutor.trim().charAt(0);
                     document.getElementById('msgTutorInitial').textContent = initial;
+                    if (metaBox) {
+                        if (subject && bookingId) {
+                            metaBox.textContent = `${subject} · Booking: ${bookingId}`;
+                        } else if (subject) {
+                            metaBox.textContent = subject;
+                        } else if (bookingId) {
+                            metaBox.textContent = `Booking: ${bookingId}`;
+                        } else {
+                            metaBox.textContent = 'Lesson chat';
+                        }
+                    }
 
-                    // Clear reply area
-                    document.getElementById('replyMessageArea').value = '';
-                })
+                    replyArea.value = '';
+                    setEmptyThread();
+                    syncReplyWritableState(tutorId, bookingId);
+                    loadThread(tutorId, bookingId, true);
+
+                    stopMemberThreadPolling();
+                    memberThreadTimer = setInterval(() => {
+                        loadThread(tutorId, bookingId, false);
+                    }, 4000);
+                });
+
+                messageModal.addEventListener('hidden.bs.modal', function () {
+                    stopMemberThreadPolling();
+                    document.getElementById('replyTutorId').value = '';
+                    document.getElementById('replyBookingId').value = '';
+                    if (replyArea) replyArea.value = '';
+                    setEmptyThread();
+                });
+
+                document.getElementById('btnSendReplyMessage')?.addEventListener('click', async function() {
+                    const tutorId = document.getElementById('replyTutorId').value;
+                    const bookingId = document.getElementById('replyBookingId').value;
+                    const content = document.getElementById('replyMessageArea').value.trim();
+                    const token = localStorage.getItem('accessToken');
+
+                    if (document.getElementById('replyMessageArea').readOnly) {
+                        alert('현재는 읽기 전용 상태입니다.');
+                        return;
+                    }
+                    if (!token) {
+                        alert('로그인이 필요합니다.');
+                        location.href = '/login';
+                        return;
+                    }
+                    if (!tutorId) {
+                        alert('튜터 정보를 찾을 수 없습니다.');
+                        return;
+                    }
+                    if (!bookingId) {
+                        alert('수업 정보를 찾을 수 없습니다.');
+                        return;
+                    }
+                    if (!content) {
+                        alert('답장 내용을 입력해 주세요.');
+                        return;
+                    }
+
+                    const btn = this;
+                    try {
+                        btn.disabled = true;
+                        const response = await fetch('/api/tutor/messages/reply', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                tutorId: tutorId,
+                                bookingId: bookingId,
+                                content: content
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            document.getElementById('replyMessageArea').value = '';
+                            await loadThread(tutorId, bookingId, true);
+                        } else {
+                            if ((result.message || '').includes('학생 메시지 작성은 불가')) {
+                                setReplyReadOnly(true, '읽기 전용');
+                            }
+                            alert(result.message || '답장 전송에 실패했습니다.');
+                        }
+                    } catch (e) {
+                        console.error('답장 전송 실패', e);
+                        alert('답장 전송 중 오류가 발생했습니다.');
+                    } finally {
+                        if (!document.getElementById('replyMessageArea').readOnly) {
+                            btn.disabled = false;
+                        }
+                    }
+                });
             });
+
         </script>
         <!-- Profile Edit Modal -->
         <div class="modal fade" id="profileEditModal" tabindex="-1" aria-hidden="true">
@@ -693,3 +1032,5 @@
         </div>
     </div>
 </div>
+
+

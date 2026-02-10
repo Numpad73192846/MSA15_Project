@@ -10,12 +10,18 @@
         <result property="userId" column="user_id"/>
         <result property="name" column="name"/>
         <result property="bio" column="bio"/>
+        <result property="selfIntro" column="self_intro"/>
         <result property="ratingAvg" column="rating_avg"/>
         <result property="reviewCount" column="review_count"/>
         <result property="profileImg" column="profile_img"/>
         <result property="subjects" column="subjects"/>
         <result property="price" column="price"/>
         <result property="experience" column="experience"/>
+        <result property="educationSchools" column="education_schools"/>
+        <result property="educationDegrees" column="education_degrees"/>
+        <result property="educationDocuments" column="education_documents"/>
+        <result property="degreeDocuments" column="degree_documents"/>
+        <result property="certificates" column="certificates"/>
     </resultMap>
 
     <select id="selectAllTutors" resultMap="TutorListMap">
@@ -24,6 +30,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             tp.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
@@ -75,6 +82,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             tp.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
@@ -112,7 +120,51 @@
                  FROM tutor_career tc
                  WHERE tc.user_id = tp.user_id),
                 ''
-            ) AS experience
+            ) AS experience,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT te.school_name ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.school_name != '학위 정보'),
+                ''
+            ) AS education_schools,
+            COALESCE(
+                (SELECT GROUP_CONCAT(DISTINCT te.degree ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.degree != '학위 미기입력'),
+                ''
+            ) AS education_degrees,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학력 증명서')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'EDUCATION'),
+                ''
+            ) AS education_documents,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학위 증명서')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'DEGREE'),
+                ''
+            ) AS degree_documents,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '자격증')
+                        ORDER BY td.created_at DESC SEPARATOR ' | '
+                    )
+                 FROM tutor_document td
+                 WHERE td.user_id = tp.user_id
+                   AND td.doc_type = 'CERTIFICATE_TEXT'),
+                ''
+            ) AS certificates
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
         WHERE tp.id = #{userId}
@@ -125,6 +177,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             tp.profile_img,
@@ -142,7 +195,7 @@
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND sg.name = #{subject}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -152,6 +205,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             tp.profile_img,
@@ -170,7 +224,7 @@
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND l.price &gt;= #{minPrice} 
           AND l.price &lt;= #{maxPrice}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -180,6 +234,7 @@
             tp.user_id, 
             u.name, 
             tp.bio, 
+            tp.self_intro,
             tp.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 

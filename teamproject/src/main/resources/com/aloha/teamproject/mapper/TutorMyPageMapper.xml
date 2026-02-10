@@ -30,11 +30,18 @@
 		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
 		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		    ELSE 'PENDING'
-		  END AS status, l.price AS price
+		  END AS status, l.price AS price,
+		  COALESCE(b.paid_at, p.paid_at) AS paidAt
 		FROM booking b
 		JOIN lesson l ON b.lesson_id = l.id
 		JOIN tutor_availability ta ON b.availability_id = ta.id
 		JOIN users u ON b.user_id = u.id
+		LEFT JOIN (
+			SELECT booking_id, MAX(paid_at) AS paid_at
+			FROM payment
+			WHERE status = 'PAID'
+			GROUP BY booking_id
+		) p ON p.booking_id = b.id
 		WHERE l.user_id = #{userId}
 		  AND ta.start_at &gt;= NOW()
 		  AND b.canceled_at IS NULL
@@ -50,11 +57,18 @@
 		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
 		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		    ELSE 'PENDING'
-		  END AS status, l.price AS price
+		  END AS status, l.price AS price,
+		  COALESCE(b.paid_at, p.paid_at) AS paidAt
 		FROM booking b
 		JOIN lesson l ON b.lesson_id = l.id
 		JOIN tutor_availability ta ON b.availability_id = ta.id
 		JOIN users u ON b.user_id = u.id
+		LEFT JOIN (
+			SELECT booking_id, MAX(paid_at) AS paid_at
+			FROM payment
+			WHERE status = 'PAID'
+			GROUP BY booking_id
+		) p ON p.booking_id = b.id
 		WHERE l.user_id = #{userId}
 		  AND (ta.start_at &lt; NOW() OR b.done_at IS NOT NULL OR b.canceled_at IS NOT NULL)
 		ORDER BY ta.start_at DESC
@@ -73,22 +87,40 @@
 	</select>
 
 	<select id="selectTutorStatsByUserId" resultType="TutorStats">
-		SELECT COUNT(DISTINCT l.id) AS totalLessons,
-			   COALESCE(SUM(p.amount), 0) AS totalEarnings,
-			   COUNT(DISTINCT b.user_id) AS activeStudents,
-			   NULL AS hourlyRate,
-			   COALESCE(AVG(r.rating), 0) AS ratingAvg,
-			   COUNT(r.id) AS reviewCount
-		FROM lesson l
-		LEFT JOIN booking b ON l.id = b.lesson_id
-		LEFT JOIN payment p ON p.booking_id = b.id AND p.status = 'PAID'
-		LEFT JOIN review r ON b.id = r.booking_id
-		WHERE l.user_id = #{userId}
+		SELECT
+			(SELECT COUNT(*)
+			 FROM booking b
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}
+			   AND b.canceled_at IS NULL
+			   AND b.done_at IS NOT NULL) AS totalLessons,
+			COALESCE((SELECT SUM(p.amount)
+			 FROM payment p
+			 JOIN booking b ON p.booking_id = b.id
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}
+			   AND p.status = 'PAID'), 0) AS totalEarnings,
+			(SELECT COUNT(DISTINCT b.user_id)
+			 FROM booking b
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}
+			   AND b.canceled_at IS NULL) AS activeStudents,
+			NULL AS hourlyRate,
+			COALESCE((SELECT AVG(r.rating)
+			 FROM review r
+			 JOIN booking b ON r.booking_id = b.id
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}), 0) AS ratingAvg,
+			(SELECT COUNT(*)
+			 FROM review r
+			 JOIN booking b ON r.booking_id = b.id
+			 JOIN lesson l ON b.lesson_id = l.id
+			 WHERE l.user_id = #{userId}) AS reviewCount
 	</select>
 
 	<select id="selectMonthlyEarningsByUserId" resultType="MonthlyEarning">
 		SELECT DATE_FORMAT(p.paid_at, '%Y-%m') AS yearMonth,
-			   COUNT(DISTINCT l.id) AS lessonCount,
+			   COUNT(DISTINCT b.id) AS lessonCount,
 			   COALESCE(SUM(TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at)) / 60, 0) AS totalHours,
 			   COALESCE(SUM(p.amount), 0) AS totalEarnings,
 			   COUNT(p.id) AS paidCount,

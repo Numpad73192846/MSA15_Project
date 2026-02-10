@@ -17,6 +17,7 @@ public class UpcomingLesson {
 	private LocalDateTime endAt;
 	private String status;
 	private BigDecimal price;
+	private LocalDateTime paidAt;
 	
 	// 뷰에서 사용할 편의 필드
 	public String getLessonDate() {

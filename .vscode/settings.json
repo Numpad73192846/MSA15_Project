@@ -4,7 +4,21 @@
         "teamproject",
         "tuter"
     ],
+    "git.path": "D:\\Program Files\\Git\\cmd\\git.exe",
+    "git.terminalAuthentication": true,
     "java.compile.nullAnalysis.mode": "automatic",
     "java.configuration.updateBuildConfiguration": "interactive",
+
+    "files.encoding": "utf8bom",
+    "files.autoGuessEncoding": true,
+
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": ".*\\.cs$",
+                "cmd": "powershell -NoProfile -Command \"(Get-Content -Raw -Endoding UTH8 '%file%') | Set-Content -Encoding UTF8 '%file%'\""
+            }
+        ]
+    }
     
 }

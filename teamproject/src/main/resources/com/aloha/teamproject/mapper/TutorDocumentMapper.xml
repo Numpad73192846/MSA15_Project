@@ -53,6 +53,12 @@
         DELETE FROM tutor_document WHERE id = #{id}
     </delete>
 
+    <delete id="deleteByUserIdAndDocType">
+        DELETE FROM tutor_document
+        WHERE user_id = #{userId}
+          AND doc_type = #{docType}
+    </delete>
+
     <update id="approve">
         UPDATE tutor_document
         SET reviewed_by = #{reviewedBy}, reviewed_at = NOW()

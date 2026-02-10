@@ -480,6 +480,48 @@
                 return new File([u8arr], filename, { type: mime });
             }
 
+            function normalizeBase64Files(items) {
+                if (!Array.isArray(items)) return [];
+                return items.filter((item) =>
+                    item &&
+                    typeof item === 'object' &&
+                    typeof item.data === 'string' &&
+                    item.data.startsWith('data:') &&
+                    typeof item.name === 'string' &&
+                    item.name.trim() !== ''
+                );
+            }
+
+            async function uploadTutorDocuments(accessToken, docs, docType) {
+                const files = normalizeBase64Files(docs);
+                for (const doc of files) {
+                    const file = base64ToFile(doc.data, doc.name);
+                    const uploadForm = new FormData();
+                    uploadForm.append('docType', docType);
+                    uploadForm.append('file', file);
+
+                    const response = await fetch('/api/tutors/documents', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`
+                        },
+                        body: uploadForm
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch (_) {
+                        payload = null;
+                    }
+
+                    if (!response.ok || (payload && payload.success === false)) {
+                        const message = payload && payload.message ? payload.message : `${docType} 문서 업로드 실패`;
+                        throw new Error(message);
+                    }
+                }
+            }
+
             document.getElementById('tutorProfileForm').addEventListener('submit', async (event) => {
                 event.preventDefault();
 
@@ -538,18 +580,9 @@
                     endYear: normalizeCareerYear(career.endYear)
                 }));
                 formData.append('careersJson', JSON.stringify(careersPayload));
-
-
-                // 학력증명서, 학위증명서, 자격증 파일 첨부
-                (step2Data.docEducation || []).forEach(fileObj =>
-                    formData.append('docEducation', fileObj.data)
-                );
-                (step2Data.docDegree || []).forEach(fileObj =>
-                    formData.append('docDegree', fileObj.data)
-                );
-                (step2Data.docCertificate || []).forEach(fileObj =>
-                    formData.append('docCertificate', fileObj.data)
-                );
+                formData.append('educationsJson', JSON.stringify(step2Data.educations || []));
+                formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
+                formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
 
                 
                 // Step 3
@@ -583,6 +616,10 @@
                         alert(result.message || '튜터 등록 실패');
                         return;
                     }
+
+                    await uploadTutorDocuments(accessToken, step2Data.academicCertificates, 'EDUCATION');
+                    await uploadTutorDocuments(accessToken, step2Data.educationCertificates, 'DEGREE');
+                    await uploadTutorDocuments(accessToken, step2Data.certificateFiles, 'CERTIFICATE');
 
                     // 스케줄 저장
                     if (calendar) {

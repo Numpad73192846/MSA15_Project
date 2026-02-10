@@ -3,6 +3,7 @@ package com.aloha.teamproject.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.aloha.teamproject.dto.TutorDocument;
 
@@ -20,6 +21,8 @@ public interface TutorDocumentMapper {
     public int update(TutorDocument document) throws Exception;
 
     public int delete(String id) throws Exception;
+
+    public int deleteByUserIdAndDocType(@Param("userId") String userId, @Param("docType") String docType) throws Exception;
 
     public int approve(String id, String reviewedBy) throws Exception;
 
