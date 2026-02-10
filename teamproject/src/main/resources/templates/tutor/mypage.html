@@ -116,6 +116,11 @@
                                 수익
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#weeklyScheduleTab" type="button">
+                                주간 스케줄
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab Content -->
@@ -248,6 +253,107 @@
                                             </p>
                                             <div class="small text-muted">2026-01-20</div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Schedule Tab -->
+                        <div class="tab-pane fade" id="weeklyScheduleTab">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h4 class="h6 fw-bold mb-3">주간 스케줄</h4>
+
+                                    <div class="mb-3">
+                                        <div class="tc-toolbar mb-3">
+                                            <button type="button" class="tc-iconbtn" id="btnPrevWeekView" aria-label="이전 주">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 5.5 9 12l6.5 6.5"/></svg>
+                                            </button>
+                                            <div class="tc-range" id="weekRangeLabelView">2026.02.02 ~ 02.08</div>
+                                            <button type="button" class="tc-iconbtn" id="btnNextWeekView" aria-label="다음 주">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 18.5 15 12 8.5 5.5"/></svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="weekly_calendar_wrap" id="mypageWeeklySchedule">
+                                            <div class="weekly_head">
+                                                <ul class="dayHead" id="weeklyViewDayHead">
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">일</p>
+                                                            <p class="dayDate">02.02</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">월</p>
+                                                            <p class="dayDate">02.03</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">화</p>
+                                                            <p class="dayDate">02.04</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">수</p>
+                                                            <p class="dayDate">02.05</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">목</p>
+                                                            <p class="dayDate">02.06</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">금</p>
+                                                            <p class="dayDate">02.07</p>
+                                                        </div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="head_in">
+                                                            <p class="dayTit">토</p>
+                                                            <p class="dayDate">02.08</p>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div class="weekly_con">
+                                                <ul class="dayCon" id="weeklyViewDayBody">
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                    <li>
+                                                        <div class="con_in"></div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <small class="text-muted d-block mt-2">
+                                            <span class="badge bg-primary">●</span> 수업 가능 
+                                            <span class="badge bg-danger ms-2">●</span> 예약됨
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -848,6 +954,42 @@
                     }
                 }
             }
+
+            // 주간 스케줄 탭 - readonly 캘린더
+            let weeklyViewCalendar = null;
+
+            async function initWeeklyScheduleView() {
+                if (weeklyViewCalendar) return;
+
+                try {
+                    const baseTimeRanges = await loadBaseTimeRanges();
+                    const initialData = await loadAvailability();
+
+                    weeklyViewCalendar = new TutorCalendar({
+                        containerId: 'mypageWeeklySchedule',
+                        prevBtnId: 'btnPrevWeekView',
+                        nextBtnId: 'btnNextWeekView',
+                        rangeLabelId: 'weekRangeLabelView',
+                        mode: 'readonly',
+                        baseTimeRanges: baseTimeRanges,
+                        renderOnlyInRange: true,
+                        timeStepMinutes: 30,
+                        initialData: initialData
+                    });
+                } catch (e) {
+                    console.warn('주간 스케줄 캘린더 초기화 실패', e);
+                }
+            }
+
+            // 탭 전환 시 lazy 초기화
+            document.addEventListener('DOMContentLoaded', function() {
+                const weeklyTabBtn = document.querySelector('[data-bs-target="#weeklyScheduleTab"]');
+                if (weeklyTabBtn) {
+                    weeklyTabBtn.addEventListener('shown.bs.tab', function() {
+                        initWeeklyScheduleView();
+                    });
+                }
+            });
         </script>
     </div>
 </div>
