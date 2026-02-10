@@ -111,6 +111,9 @@ public class SecurityConfig {
             "/api/reviews/**",
             "/api/bookings/**",
             "/api/payments/**",
+            "/api/tutor/messages",
+            "/api/tutor/messages/**",
+            "/api/tutor/students/**",
             "/api/game/**"
             ))
             .authorizeHttpRequests(auth -> auth
@@ -134,6 +137,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
                 .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/payments/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/tutor/messages/thread/member").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/tutor/messages/reply-writable").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/tutor/messages/reply").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/tutor/messages").hasAnyRole("TUTOR", "ADMIN")
+                .requestMatchers("/api/tutor/messages/**").hasAnyRole("TUTOR", "ADMIN")
+                .requestMatchers("/api/tutor/students/**").hasAnyRole("TUTOR", "ADMIN")
                 .requestMatchers("/api/tutors/profile", "/api/tutors/me/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING")
                 .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")

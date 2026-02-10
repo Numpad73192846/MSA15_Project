@@ -19,6 +19,7 @@ public class StudentBooking {
 	private String status;
 	private BigDecimal price;
 	private LocalDateTime paidAt;
+	private String zoomJoinUrl;
 	private String reviewId;
 	
 	// 뷰에서 사용할 편의 필드

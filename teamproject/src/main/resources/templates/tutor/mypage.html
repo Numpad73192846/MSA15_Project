@@ -612,19 +612,17 @@
                             });
                         }
                         
-                        const statusLabel = (status) => {
-                            if (status === 'CONFIRMED') return '확정';
-                            if (status === 'PENDING') return '대기중';
-                            if (status === 'CANCELLED') return '취소됨';
-                            if (status === 'COMPLETED') return '완료';
-                            return status || '';
-                        };
-                        const statusClass = (status) => {
-                            if (status === 'CONFIRMED') return 'bg-success';
-                            if (status === 'PENDING') return 'bg-warning text-dark';
-                            if (status === 'CANCELLED') return 'bg-danger';
-                            if (status === 'COMPLETED') return 'bg-secondary';
-                            return 'bg-secondary';
+                        const lessonStatusInfo = (lesson) => {
+                            const isPaid = Boolean(lesson.paidAt);
+                            if (lesson.status === 'PENDING') return { label: '대기중', className: 'bg-warning text-dark' };
+                            if (lesson.status === 'CONFIRMED') {
+                                return isPaid
+                                    ? { label: '결제완료', className: 'bg-success' }
+                                    : { label: '결제대기', className: 'bg-secondary' };
+                            }
+                            if (lesson.status === 'COMPLETED') return { label: '수업완료', className: 'bg-primary' };
+                            if (lesson.status === 'CANCELLED') return { label: '취소됨', className: 'bg-danger' };
+                            return { label: lesson.status || '', className: 'bg-secondary' };
                         };
 
                         // 다가오는 수업 바인딩
@@ -633,8 +631,7 @@
                             if (scheduleContainer) {
                                 scheduleContainer.innerHTML = '';
                                 mypage.upcomingLessons.forEach(lesson => {
-                                    const label = statusLabel(lesson.status);
-                                    const badgeClass = statusClass(lesson.status);
+                                    const statusInfo = lessonStatusInfo(lesson);
                                     const item = document.createElement('div');
                                     item.className = 'schedule-item p-3 border rounded';
                                     item.innerHTML = `
@@ -645,8 +642,8 @@
                                                     <img src="/img/tutors/cal.svg" alt="날짜" style="width:16px;height:16px;margin-right:4px;"> ${lesson.lessonDate} | <img src="/img/tutors/time.svg" alt="시간" style="width:16px;height:16px;margin-right:4px;"> ${lesson.startTime} (${lesson.durationHours}시간) | <img src="/img/tutors/class.svg" alt="과목" style="width:16px;height:16px;margin-right:4px;"> ${lesson.subject}
                                                 </div>
                                             </div>
-                                            <span class="badge ${badgeClass}">
-                                                ${label}
+                                            <span class="badge ${statusInfo.className}">
+                                                ${statusInfo.label}
                                             </span>
                                         </div>
                                     `;
@@ -662,8 +659,7 @@
                             if (scheduleContainer) {
                                 scheduleContainer.innerHTML = '';
                                 mypage.pastLessons.forEach(lesson => {
-                                    const label = statusLabel(lesson.status);
-                                    const badgeClass = statusClass(lesson.status);
+                                    const statusInfo = lessonStatusInfo(lesson);
                                     const item = document.createElement('div');
                                     item.className = 'schedule-item p-3 border rounded bg-light';
                                     item.innerHTML = `
@@ -674,8 +670,8 @@
                                                 <img src="/img/tutors/cal.svg" alt="날짜" style="width:16px;height:16px;margin-right:4px;"> ${lesson.lessonDate} | <img src="/img/tutors/time.svg" alt="시간" style="width:16px;height:16px;margin-right:4px;"> ${lesson.startTime} (${lesson.durationHours}시간) | <img src="/img/tutors/class.svg" alt="과목" style="width:16px;height:16px;margin-right:4px;"> ${lesson.subject}
                                             </div>
                                         </div>
-                                        <span class="badge ${badgeClass}">
-                                            ${label}
+                                        <span class="badge ${statusInfo.className}">
+                                            ${statusInfo.label}
                                         </span>
                                     </div>
                                     `;

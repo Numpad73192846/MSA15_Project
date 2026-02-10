@@ -10,6 +10,7 @@ import com.aloha.teamproject.dto.MemberMyPage;
 import com.aloha.teamproject.dto.MemberStats;
 import com.aloha.teamproject.dto.StudentBooking;
 import com.aloha.teamproject.dto.StudentReview;
+import com.aloha.teamproject.dto.TutorMessage;
 import com.aloha.teamproject.mapper.MemberMyPageMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -66,6 +67,15 @@ public class MemberMyPageServiceImpl extends BaseServiceImpl implements MemberMy
 		List<StudentReview> reviews = memberMyPageMapper.selectStudentReviews(userId);
 		log.debug("[MemberMyPage] 학생 리뷰 조회 완료 - 총 {}개", reviews.size());
 		return reviews;
+	}
+
+	@Override
+	public List<TutorMessage> selectTutorMessages(String userId) throws Exception {
+		requiredNotBlank(userId, ErrorCode.INVALID_REQUEST);
+		log.debug("[MemberMyPage] 튜터 메시지 조회 - userId: {}", userId);
+		List<TutorMessage> messages = memberMyPageMapper.selectTutorMessages(userId);
+		log.debug("[MemberMyPage] 튜터 메시지 조회 완료 - 총 {}개", messages.size());
+		return messages;
 	}
 
 }

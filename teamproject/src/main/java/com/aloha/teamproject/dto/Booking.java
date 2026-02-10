@@ -23,6 +23,7 @@ public class Booking {
     private LocalDateTime canceledAt;
     private LocalDateTime doneAt;
     private String memo;
+    private String zoomJoinUrl;
 
     @Data
     @Builder
@@ -33,6 +34,7 @@ public class Booking {
         private String availabilityId;
         private String title;
         private String memo;
+        private String zoomJoinUrl;
     }
 
     @Data
@@ -50,6 +52,7 @@ public class Booking {
         private LocalDateTime canceledAt;
         private LocalDateTime doneAt;
         private String memo;
+        private String zoomJoinUrl;
         private String status;
         private String tutorName;
         private String studentName;

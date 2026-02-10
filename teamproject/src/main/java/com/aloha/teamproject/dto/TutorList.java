@@ -17,11 +17,17 @@ public class TutorList {
     private String userId;
     private String name;
     private String bio;
+    private String selfIntro;
     private BigDecimal ratingAvg;
     private Integer reviewCount;
     private String profileImg;
     private String subjects;
     private BigDecimal price;
     private String experience;
+    private String educationSchools;
+    private String educationDegrees;
+    private String educationDocuments;
+    private String degreeDocuments;
+    private String certificates;
 
 }

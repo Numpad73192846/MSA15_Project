@@ -52,6 +52,12 @@ public class TutorDocumentServiceImpl extends BaseServiceImpl implements TutorDo
 
     @Override
     @Transactional
+    public int deleteByUserIdAndDocType(String userId, String docType) throws Exception {
+        return tutorDocumentMapper.deleteByUserIdAndDocType(userId, docType);
+    }
+
+    @Override
+    @Transactional
     public int approve(String id, String reviewedBy) throws Exception {
         return tutorDocumentMapper.approve(id, reviewedBy);
     }

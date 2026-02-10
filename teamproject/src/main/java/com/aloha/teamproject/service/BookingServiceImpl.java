@@ -75,7 +75,11 @@ public class BookingServiceImpl extends BaseServiceImpl implements BookingServic
     @Override
     @Transactional
     public int completeBooking(String id) throws Exception {
-        return bookingMapper.completeBooking(id);
+        int updated = bookingMapper.completeBooking(id);
+        if (updated <= 0) {
+            throw new IllegalStateException("결제 완료 후 수업 시간이 지난 예약만 완료 처리할 수 있습니다.");
+        }
+        return updated;
     }
 
     @Override
