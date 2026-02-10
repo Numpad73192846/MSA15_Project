@@ -62,12 +62,19 @@
 
             <div class="divider"></div>
 
-            <div class="fw-bold mb-2">내용</div>
-            <div class="small" id="ticketContent">-</div>
+            <div class="fw-bold mb-2">문의 내용</div>
+            <div class="small mb-2" id="ticketContent">-</div>
 
             <div class="divider"></div>
 
-            <div class="fw-bold mb-2">답변</div>
+            <div class="fw-bold mb-2">대화 내역</div>
+            <div id="ticketThread" class="ticket-thread">
+              <div class="text-center text-muted small py-3">메시지 내역이 없습니다.</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fw-bold mb-2">관리자 답변</div>
             <textarea class="form-control form-control-sm" id="ticketReply" rows="4" placeholder="답변을 입력하세요"></textarea>
 
             <div class="d-flex gap-2 mt-2">
@@ -77,9 +84,7 @@
 
             <div class="divider"></div>
 
-            <button class="btn btn-primary btn-sm btn-pill w-100" id="btnTicketSave">
-              답변 저장(시뮬레이션)
-            </button>
+            <button class="btn btn-primary btn-sm btn-pill w-100" id="btnTicketSave">답변 전송</button>
           </div>
         </div>
       </div>

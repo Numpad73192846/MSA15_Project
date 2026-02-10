@@ -21,6 +21,11 @@ public interface TutorAvailabilityMapper {
     );
 
     /**
+     * ID로 가용시간 단건 조회
+     */
+    TutorAvailability selectById(@Param("id") String id);
+
+    /**
      * 가용 시간 추가
      */
     int insert(TutorAvailability availability);
@@ -35,6 +40,24 @@ public interface TutorAvailabilityMapper {
      */
     int updateStatus(
             @Param("id") String id,
+            @Param("status") String status
+    );
+
+    /**
+     * 가용 시간의 시작/종료/상태를 함께 변경
+     */
+    int updateRangeAndStatus(
+            @Param("id") String id,
+            @Param("startAt") LocalDateTime startAt,
+            @Param("endAt") LocalDateTime endAt,
+            @Param("status") String status
+    );
+
+    /**
+     * 가용 시간 상태 일괄 변경
+     */
+    int updateStatusBatch(
+            @Param("ids") List<String> ids,
             @Param("status") String status
     );
 

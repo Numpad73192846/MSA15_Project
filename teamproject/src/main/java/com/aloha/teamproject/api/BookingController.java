@@ -1,7 +1,15 @@
 package com.aloha.teamproject.api;
 
-import java.util.List;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,9 +35,7 @@ import com.aloha.teamproject.service.MemberMyPageService;
 import com.aloha.teamproject.service.TutorAvailabilityService;
 import com.aloha.teamproject.service.TutorProfileService;
 
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
-
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,212 +53,207 @@ public class BookingController {
 
     @GetMapping
     public ApiResponse<List<Booking>> getAllBookings(Authentication authentication) {
-        log.info("[예약 목록 조회 시작]");
         if (authentication == null || !authentication.isAuthenticated()) {
-            log.warn("[예약 목록 조회] 인증 실패 - authentication is null or not authenticated");
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             String userId = authentication.getName();
-            log.info("[예약 목록 조회] userId: {}", userId);
             List<Booking> bookings = bookingService.selectByUserId(userId);
-            log.info("[예약 목록 조회 성공] 조회된 예약 수: {}", bookings.size());
             return ApiResponse.ok(bookings);
         } catch (Exception e) {
-            log.error("[예약 목록 조회 실패]", e);
-            return ApiResponse.error("예약 목록을 조회하지 못했습니다.");
+            log.error("[?덉빟 紐⑸줉 議고쉶 ?ㅽ뙣]", e);
+            return ApiResponse.error("?덉빟 紐⑸줉??議고쉶?섏? 紐삵뻽?듬땲??");
         }
     }
 
     @GetMapping("/{id}")
     public ApiResponse<Booking> getBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             Booking booking = bookingService.selectById(id);
             return ApiResponse.ok(booking);
         } catch (Exception e) {
-            log.error("예약 조회 실패", e);
-            return ApiResponse.error("예약을 조회하지 못했습니다.");
+            log.error("[?덉빟 議고쉶 ?ㅽ뙣] id={}", id, e);
+            return ApiResponse.error("?덉빟??議고쉶?섏? 紐삵뻽?듬땲??");
         }
     }
 
     @GetMapping("/student/{studentId}")
-    public ApiResponse<List<StudentBooking>> getStudentPastBookings(@PathVariable("studentId") String studentId, @RequestParam(name = "tutorId", required = false) String tutorId, Authentication authentication) {
+    public ApiResponse<List<StudentBooking>> getStudentPastBookings(
+            @PathVariable("studentId") String studentId,
+            @RequestParam(name = "tutorId", required = false) String tutorId,
+            Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             List<StudentBooking> pastBookings = memberMyPageService.selectPastBookings(studentId);
-            
-            // tutorId로 필터링하면 해당 튜터와의 예약만 반환
             if (tutorId != null && !tutorId.isEmpty()) {
                 pastBookings = pastBookings.stream()
-                    .filter(b -> tutorId.equals(b.getTutorId()))
-                    .collect(Collectors.toList());
+                        .filter(b -> tutorId.equals(b.getTutorId()))
+                        .collect(Collectors.toList());
             }
-            
             return ApiResponse.ok(pastBookings);
         } catch (Exception e) {
-            log.error("학생 과거 예약 조회 실패", e);
-            return ApiResponse.error("예약을 조회하지 못했습니다.");
+            log.error("[?숈깮 怨쇨굅 ?덉빟 議고쉶 ?ㅽ뙣] studentId={}", studentId, e);
+            return ApiResponse.error("?덉빟??議고쉶?섏? 紐삵뻽?듬땲??");
         }
     }
 
     @PostMapping
     public ApiResponse<Void> createBooking(@RequestBody Booking.Request request, Authentication authentication) {
-        log.info("[예약 생성 시작]");
         if (authentication == null || !authentication.isAuthenticated()) {
-            log.warn("[예약 생성] 인증 실패");
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             String userId = authentication.getName();
-            log.info("[예약 생성] userId: {}, request: {}", userId, request);
             Booking booking = Booking.builder()
-                .userId(userId)
-                .lessonId(request.getLessonId())
-                .availabilityId(request.getAvailabilityId())
-                .title(request.getTitle())
-                .memo(request.getMemo())
-                .build();
-
-            log.info("[예약 생성] booking 객체: {}", booking);
+                    .userId(userId)
+                    .lessonId(request.getLessonId())
+                    .availabilityId(request.getAvailabilityId())
+                    .title(request.getTitle())
+                    .memo(request.getMemo())
+                    .zoomJoinUrl(request.getZoomJoinUrl())
+                    .build();
             bookingService.insert(booking);
-            log.info("[예약 생성 성공] bookingId: {}", booking.getId());
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
-            log.error("[예약 생성 실패]", e);
-            return ApiResponse.error("예약을 생성하지 못했습니다.");
+            log.error("[?덉빟 ?앹꽦 ?ㅽ뙣]", e);
+            return ApiResponse.error("?덉빟 ?앹꽦???ㅽ뙣?덉뒿?덈떎.");
         }
     }
 
     @PutMapping("/{id}/confirm")
     public ApiResponse<Void> confirmBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             bookingService.confirmBooking(id);
             return ApiResponse.ok(SuccessCode.UPDATED);
         } catch (Exception e) {
-            log.error("예약 확정 실패", e);
-            return ApiResponse.error("예약을 확정하지 못했습니다.");
+            log.error("[?덉빟 ?뺤젙 ?ㅽ뙣] id={}", id, e);
+            return ApiResponse.error("?덉빟 ?뺤젙???ㅽ뙣?덉뒿?덈떎.");
         }
     }
 
     @PutMapping("/{id}/cancel")
     public ApiResponse<Void> cancelBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
+            Booking booking = bookingService.selectById(id);
+            if (booking == null) {
+                return ApiResponse.error("?덉빟 ?뺣낫瑜?李얠쓣 ???놁뒿?덈떎.");
+            }
+
+            String actorId = authentication.getName();
+            if (!canCancelBooking(actorId, booking)) {
+                return ApiResponse.error("?덉빟 痍⑥냼 沅뚰븳???놁뒿?덈떎.");
+            }
+
             bookingService.cancelBooking(id);
             return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(e.getMessage());
         } catch (Exception e) {
-            log.error("예약 취소 실패", e);
-            return ApiResponse.error("예약을 취소하지 못했습니다.");
+            log.error("[?덉빟 痍⑥냼 ?ㅽ뙣] id={}", id, e);
+            return ApiResponse.error("?덉빟 痍⑥냼???ㅽ뙣?덉뒿?덈떎.");
         }
     }
 
     @PutMapping("/{id}/complete")
     public ApiResponse<Void> completeBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             bookingService.completeBooking(id);
             return ApiResponse.ok(SuccessCode.UPDATED);
         } catch (Exception e) {
-            log.error("예약 완료 처리 실패", e);
-            return ApiResponse.error("예약을 완료 처리하지 못했습니다.");
+            log.error("[?섏뾽 ?꾨즺 泥섎━ ?ㅽ뙣] id={}", id, e);
+            return ApiResponse.error("?섏뾽 ?꾨즺 泥섎━???ㅽ뙣?덉뒿?덈떎.");
         }
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteBooking(@PathVariable("id") String id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             bookingService.delete(id);
             return ApiResponse.ok(SuccessCode.DELETED);
         } catch (Exception e) {
-            log.error("예약 삭제 실패", e);
-            return ApiResponse.error("예약을 삭제하지 못했습니다.");
+            log.error("[?덉빟 ??젣 ?ㅽ뙣] id={}", id, e);
+            return ApiResponse.error("?덉빟????젣?섏? 紐삵뻽?듬땲??");
         }
     }
 
     @PostMapping("/tutor/{tutorId}")
-        public ApiResponse<Void> createTutorBooking(
+    public ApiResponse<Void> createTutorBooking(
             @PathVariable("tutorId") String tutorId,
             @RequestBody TutorBookingRequest request,
             Authentication authentication) {
-        log.info("[튜터 예약 생성 시작] tutorId: {}", tutorId);
         if (authentication == null || !authentication.isAuthenticated()) {
-            log.warn("[튜터 예약 생성] 인증 실패");
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             String studentId = authentication.getName();
-            log.info("[튜터 예약 생성] studentId: {}, request: {}", studentId, request);
-            
-            // 날짜/시간으로 튜터의 availability 찾기
             LocalDateTime startAt = LocalDateTime.parse(request.getDate() + "T" + request.getTime() + ":00");
-            LocalDateTime endAt = startAt.plusMinutes(30);
-            log.info("[튜터 예약 생성] 시간 범위 - startAt: {}, endAt: {}", startAt, endAt);
-            
+            LocalDateTime endAt = (request.getEndTime() != null && !request.getEndTime().isBlank())
+                    ? LocalDateTime.parse(request.getDate() + "T" + request.getEndTime() + ":00")
+                    : startAt.plusMinutes(30);
+            long requestedMinutes = ChronoUnit.MINUTES.between(startAt, endAt);
+            if (requestedMinutes <= 0 || (requestedMinutes % 30L) != 0L) {
+                return ApiResponse.error("?덉빟 ?쒓컙? 30遺??⑥쐞濡쒕쭔 ?좏깮?????덉뒿?덈떎.");
+            }
+
             List<TutorAvailability> availabilities = tutorAvailabilityService.selectByUserIdAndDateRange(
-                tutorId, startAt, endAt);
-            List<TutorAvailability> availableSlots = availabilities.stream()
-                .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN)
-                .filter(av -> !av.getStartAt().isAfter(startAt) && !av.getEndAt().isBefore(endAt))
-                .toList();
-            log.info("[튜터 예약 생성] availability 조회 결과: {}개", availableSlots.size());
-            
-            if (availableSlots.isEmpty()) {
-                log.warn("[튜터 예약 생성] 선택한 시간에 예약 가능한 슬롯 없음");
-                return ApiResponse.error("선택한 시간에 예약 가능한 슬롯이 없습니다.");
+                    tutorId, startAt, endAt);
+            List<TutorAvailability> openAvailabilities = availabilities.stream()
+                    .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN)
+                    .filter(av -> av.getStartAt() != null && av.getEndAt() != null)
+                    .toList();
+            List<TutorAvailability> slotsToBook = collectContiguousSlots(openAvailabilities, startAt, endAt);
+            if (slotsToBook.isEmpty()) {
+                return ApiResponse.error("?좏깮???쒓컙?濡??덉빟??遺덇??ν빀?덈떎.");
             }
-            
-            TutorAvailability availability = availableSlots.get(0);
-            log.info("[튜터 예약 생성] 선택된 availability: {}", availability.getId());
-            
-            // 튜터의 lesson 찾기 (OPEN 상태인 것), 없으면 자동 생성
+
+            TutorAvailability availability = chooseAnchorSlot(slotsToBook, startAt);
+            if (availability == null) {
+                return ApiResponse.error("?덉빟 媛?ν븳 ?쒖옉 ?щ’??李얠? 紐삵뻽?듬땲??");
+            }
+
             List<Lesson> lessons = lessonService.selectByUserId(tutorId);
-            log.info("[튜터 예약 생성] lesson 조회 결과: {}개", lessons.size());
             Lesson lesson = lessons.stream()
-                .filter(l -> "OPEN".equals(l.getStatus()))
-                .findFirst()
-                .orElse(null);
-            
+                    .filter(l -> "OPEN".equals(l.getStatus()))
+                    .findFirst()
+                    .orElse(null);
+
             if (lesson == null) {
-                log.info("[튜터 예약 생성] OPEN 상태 lesson 없음 - 자동 생성");
-                // 튜터의 기본 lesson 자동 생성
                 lesson = Lesson.builder()
-                    .userId(tutorId)
-                    .title(request.getSubject())
-                    .description("튜터링 수업")
-                    .status("OPEN")
-                    .price(java.math.BigDecimal.ZERO)
-                    .build();
+                        .userId(tutorId)
+                        .title(request.getSubject())
+                        .description("?쒗꽣留??섏뾽")
+                        .status("OPEN")
+                        .price(BigDecimal.ZERO)
+                        .build();
                 lessonService.insert(lesson);
-                log.info("[튜터 예약 생성] lesson 자동 생성 완료: {}", lesson.getId());
-            } else {
-                log.info("[튜터 예약 생성] 기존 lesson 사용: {}", lesson.getId());
             }
-            
-            // 예약 생성
+
             String zoomJoinUrl = null;
             TutorProfile tutorProfile = tutorProfileService.selectByUserId(tutorId);
             if (tutorProfile != null && tutorProfile.getDefaultZoomUrl() != null && !tutorProfile.getDefaultZoomUrl().isBlank()) {
@@ -260,91 +261,247 @@ public class BookingController {
             }
 
             Booking booking = Booking.builder()
-                .userId(studentId)
-                .lessonId(lesson.getId())
-                .availabilityId(availability.getId())
-                .title(request.getSubject() + " 수업")
-                .memo(request.getMessage())
-                .zoomJoinUrl(zoomJoinUrl)
-                .build();
-
-            log.info("[튜터 예약 생성] booking 객체 생성: {}", booking);
+                    .userId(studentId)
+                    .lessonId(lesson.getId())
+                    .availabilityId(availability.getId())
+                    .title(request.getSubject() + " ?섏뾽")
+                    .memo(request.getMessage())
+                    .zoomJoinUrl(zoomJoinUrl)
+                    .build();
             bookingService.insert(booking);
-            log.info("[튜터 예약 생성] booking DB 저장 완료: {}", booking.getId());
-            
-            // availability 상태를 BOOKED로 변경
-            tutorAvailabilityService.updateStatus(availability.getId(), "BOOKED");
-            log.info("[튜터 예약 생성] availability 상태 BOOKED로 변경 완료");
-            
-            log.info("[튜터 예약 생성 성공] bookingId: {}", booking.getId());
+
+            tutorAvailabilityService.updateRangeAndStatus(availability.getId(), startAt, endAt, "BOOKED");
+            List<String> siblingIds = slotsToBook.stream()
+                    .map(TutorAvailability::getId)
+                    .filter(Objects::nonNull)
+                    .filter(slotId -> !slotId.equals(availability.getId()))
+                    .distinct()
+                    .toList();
+            if (!siblingIds.isEmpty()) {
+                tutorAvailabilityService.updateStatusBatch(siblingIds, "CANCELLED");
+            }
+
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
-            log.error("[튜터 예약 생성 실패] tutorId: {}, request: {}", tutorId, request, e);
-            return ApiResponse.error("예약을 생성하지 못했습니다.");
+            log.error("[?쒗꽣 ?덉빟 ?앹꽦 ?ㅽ뙣] tutorId={}, request={}", tutorId, request, e);
+            return ApiResponse.error("?덉빟 ?앹꽦???ㅽ뙣?덉뒿?덈떎.");
         }
     }
 
-    @lombok.Data
-    public static class TutorBookingRequest {
-        private String date;
-        private String time;
-        private String subject;
-        private String message;
+    @PutMapping("/{id}/reschedule")
+    public ApiResponse<Void> rescheduleBooking(
+            @PathVariable("id") String id,
+            @RequestBody RescheduleRequest request,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
+        }
+        if (request == null || request.getDate() == null || request.getTime() == null) {
+            return ApiResponse.error("蹂寃쏀븷 ?섏뾽 ?쒓컙???낅젰?댁＜?몄슂.");
+        }
+
+        try {
+            Booking booking = bookingService.selectById(id);
+            if (booking == null) {
+                return ApiResponse.error("예약 정보를 찾을 수 없습니다.");
+            }
+            if (booking.getCanceledAt() != null) {
+                return ApiResponse.error("이미 취소된 예약입니다.");
+            }
+            if (booking.getDoneAt() != null) {
+                return ApiResponse.error("이미 완료된 예약은 시간 변경이 불가합니다.");
+            }
+
+            Lesson lesson = lessonService.selectById(booking.getLessonId());
+            if (lesson == null || lesson.getUserId() == null) {
+                return ApiResponse.error("?섏뾽 ?뺣낫瑜?李얠쓣 ???놁뒿?덈떎.");
+            }
+
+            String tutorId = lesson.getUserId();
+            String actorId = authentication.getName();
+            if (!tutorId.equals(actorId)) {
+                return ApiResponse.error("?쒗꽣留??덉빟 ?쒓컙??蹂寃쏀븷 ???덉뒿?덈떎.");
+            }
+
+            LocalDateTime startAt = LocalDateTime.parse(request.getDate() + "T" + request.getTime() + ":00");
+            LocalDateTime endAt = (request.getEndTime() != null && !request.getEndTime().isBlank())
+                    ? LocalDateTime.parse(request.getDate() + "T" + request.getEndTime() + ":00")
+                    : startAt.plusMinutes(30);
+            long requestedMinutes = ChronoUnit.MINUTES.between(startAt, endAt);
+            if (requestedMinutes <= 0 || (requestedMinutes % 30L) != 0L) {
+                return ApiResponse.error("?덉빟 ?쒓컙? 30遺??⑥쐞濡쒕쭔 ?ㅼ젙?????덉뒿?덈떎.");
+            }
+
+            List<TutorAvailability> availabilities = tutorAvailabilityService.selectByUserIdAndDateRange(
+                    tutorId, startAt, endAt);
+            List<TutorAvailability> openAvailabilities = availabilities.stream()
+                    .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN)
+                    .filter(av -> av.getStartAt() != null && av.getEndAt() != null)
+                    .toList();
+            List<TutorAvailability> slotsToBook = collectContiguousSlots(openAvailabilities, startAt, endAt);
+            if (slotsToBook.isEmpty()) {
+                return ApiResponse.error("?좏깮???쒓컙?쇰줈 ?덉빟????만 ???놁뒿?덈떎.");
+            }
+
+            TutorAvailability newAnchor = chooseAnchorSlot(slotsToBook, startAt);
+            if (newAnchor == null) {
+                return ApiResponse.error("蹂寃?媛?ν븳 ?쒓컙 ?щ’??李얠쓣 ???놁뒿?덈떎.");
+            }
+
+            String oldAvailabilityId = booking.getAvailabilityId();
+            bookingService.updateAvailabilityId(id, newAnchor.getId());
+
+            if (oldAvailabilityId != null && !oldAvailabilityId.equals(newAnchor.getId())) {
+                tutorAvailabilityService.updateStatus(oldAvailabilityId, "OPEN");
+            }
+
+            tutorAvailabilityService.updateRangeAndStatus(newAnchor.getId(), startAt, endAt, "BOOKED");
+            List<String> siblingIds = slotsToBook.stream()
+                    .map(TutorAvailability::getId)
+                    .filter(Objects::nonNull)
+                    .filter(slotId -> !slotId.equals(newAnchor.getId()))
+                    .distinct()
+                    .toList();
+            if (!siblingIds.isEmpty()) {
+                tutorAvailabilityService.updateStatusBatch(siblingIds, "CANCELLED");
+            }
+
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("[?덉빟 ?쒓컙 蹂寃??ㅽ뙣] bookingId={}, request={}", id, request, e);
+            return ApiResponse.error("?덉빟 ?쒓컙 蹂寃쎌뿉 ?ㅽ뙣?덉뒿?덈떎.");
+        }
+    }
+
+    private List<TutorAvailability> collectContiguousSlots(
+            List<TutorAvailability> openAvailabilities,
+            LocalDateTime startAt,
+            LocalDateTime endAt) {
+        if (openAvailabilities == null || openAvailabilities.isEmpty()) {
+            return List.of();
+        }
+
+        List<TutorAvailability> sorted = openAvailabilities.stream()
+                .filter(Objects::nonNull)
+                .filter(item -> item.getStartAt() != null && item.getEndAt() != null)
+                .sorted(Comparator.comparing(TutorAvailability::getStartAt).thenComparing(TutorAvailability::getEndAt))
+                .toList();
+        if (sorted.isEmpty()) {
+            return List.of();
+        }
+
+        List<TutorAvailability> covered = new ArrayList<>();
+        LocalDateTime cursor = startAt;
+        while (cursor.isBefore(endAt)) {
+            LocalDateTime segmentEnd = cursor.plusMinutes(30);
+            TutorAvailability slot = null;
+            for (TutorAvailability item : sorted) {
+                if (!item.getStartAt().isAfter(cursor) && !item.getEndAt().isBefore(segmentEnd)) {
+                    slot = item;
+                    break;
+                }
+            }
+
+            if (slot == null) {
+                return List.of();
+            }
+            covered.add(slot);
+            cursor = segmentEnd;
+        }
+
+        Map<String, TutorAvailability> dedup = new LinkedHashMap<>();
+        for (TutorAvailability item : covered) {
+            if (item == null || item.getId() == null) {
+                continue;
+            }
+            dedup.putIfAbsent(item.getId(), item);
+        }
+        return new ArrayList<>(dedup.values());
+    }
+
+    private TutorAvailability chooseAnchorSlot(List<TutorAvailability> slotsToBook, LocalDateTime startAt) {
+        if (slotsToBook == null || slotsToBook.isEmpty()) {
+            return null;
+        }
+
+        return slotsToBook.stream()
+                .filter(item -> item.getStartAt() != null)
+                .filter(item -> item.getStartAt().equals(startAt))
+                .min(Comparator.comparing(TutorAvailability::getEndAt))
+                .orElseGet(() -> slotsToBook.stream()
+                        .filter(item -> item.getStartAt() != null)
+                        .min(Comparator.comparing(TutorAvailability::getStartAt))
+                        .orElse(null));
+    }
+
+    private boolean canCancelBooking(String actorId, Booking booking) throws Exception {
+        if (actorId == null || booking == null) {
+            return false;
+        }
+        if (actorId.equals(booking.getUserId())) {
+            return true;
+        }
+        Lesson lesson = lessonService.selectById(booking.getLessonId());
+        return lesson != null && actorId.equals(lesson.getUserId());
     }
 
     /**
-     * 예약 결제 처리
+     * ?덉빟 寃곗젣 泥섎━
      */
     @PostMapping("/{id}/pay")
     public ApiResponse<Void> payBooking(
             @PathVariable("id") String id,
             @RequestBody PaymentRequest request,
             Authentication authentication) {
-        log.info("[예약 결제 시작] bookingId: {}", id);
         if (authentication == null || !authentication.isAuthenticated()) {
-            log.warn("[예약 결제] 인증 실패");
-            return ApiResponse.error("로그인이 필요합니다.");
+            return ApiResponse.error("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
         }
 
         try {
             String userId = authentication.getName();
-            log.info("[예약 결제] userId: {}, paymentMethod: {}, amount: {}", 
-                userId, request.getPaymentMethod(), request.getAmount());
-            
-            // 예약 조회
             Booking booking = bookingService.selectById(id);
             if (booking == null) {
-                log.warn("[예약 결제] 예약을 찾을 수 없음: {}", id);
-                return ApiResponse.error("예약을 찾을 수 없습니다.");
+                return ApiResponse.error("?덉빟??李얠쓣 ???놁뒿?덈떎.");
             }
-            
-            // 본인 예약인지 확인
             if (!userId.equals(booking.getUserId())) {
-                log.warn("[예약 결제] 권한 없음 - userId: {}, bookingUserId: {}", userId, booking.getUserId());
-                return ApiResponse.error("결제 권한이 없습니다.");
+                return ApiResponse.error("寃곗젣 沅뚰븳???놁뒿?덈떎.");
             }
-            
-            // 결제 처리 (비토스 결제는 내부 처리)
+
             BigDecimal amount = request.getAmount() != null
-                ? BigDecimal.valueOf(request.getAmount())
-                : BigDecimal.ZERO;
+                    ? BigDecimal.valueOf(request.getAmount())
+                    : BigDecimal.ZERO;
             String provider = request.getPaymentMethod() != null
-                ? request.getPaymentMethod().toUpperCase()
-                : "UNKNOWN";
+                    ? request.getPaymentMethod().toUpperCase()
+                    : "UNKNOWN";
+
             bookingService.payBooking(id, amount, provider);
-            log.info("[예약 결제 성공] bookingId: {}", id);
-            
             return ApiResponse.ok(SuccessCode.OK);
         } catch (Exception e) {
-            log.error("[예약 결제 실패] bookingId: {}", id, e);
-            return ApiResponse.error("결제 처리에 실패했습니다.");
+            log.error("[?덉빟 寃곗젣 ?ㅽ뙣] bookingId={}", id, e);
+            return ApiResponse.error("寃곗젣 泥섎━???ㅽ뙣?덉뒿?덈떎.");
         }
     }
 
-    @lombok.Data
+    @Data
+    public static class TutorBookingRequest {
+        private String date;
+        private String time;
+        private String endTime;
+        private String subject;
+        private String message;
+    }
+
+    @Data
+    public static class RescheduleRequest {
+        private String date;
+        private String time;
+        private String endTime;
+    }
+
+    @Data
     public static class PaymentRequest {
         private String paymentMethod;
         private Integer amount;
     }
-
 }
+

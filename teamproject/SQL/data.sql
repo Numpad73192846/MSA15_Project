@@ -831,6 +831,25 @@ VALUES
 ('tm-5-1','book-5','u-tutor-4','u-student-5','TUTOR','발음 교정은 녹음이 중요해요. 샘플 음성 30초만 보내도 좋습니다.',DATE_SUB(NOW(),INTERVAL 14 HOUR)),
 ('tm-5-2','book-5','u-tutor-4','u-student-5','STUDENT','네! 오늘 연습한 걸 녹음해서 보내볼게요.',DATE_SUB(NOW(),INTERVAL 13 HOUR));
 
+-- Admin inquiries
+INSERT INTO admin_inquiry (
+    id, user_id, category, title, contact_name, contact_email, contact_phone, status, created_at, updated_at
+)
+VALUES
+('inq-1','u-student-1','PAYMENT','결제 완료 확인 요청','박학생','student1@test.com','010-1111-1111','IN_PROGRESS',DATE_SUB(NOW(), INTERVAL 2 DAY),DATE_SUB(NOW(), INTERVAL 1 DAY)),
+('inq-2','u-student-4','INQUIRY','예약 시간 변경 문의','최학생','student4@test.com','010-4444-4444','OPEN',DATE_SUB(NOW(), INTERVAL 18 HOUR),DATE_SUB(NOW(), INTERVAL 18 HOUR)),
+('inq-3','u-student-8','REPORT','수업 품질 관련 문의','장학생','student8@test.com','010-8888-8888','DONE',DATE_SUB(NOW(), INTERVAL 5 DAY),DATE_SUB(NOW(), INTERVAL 4 DAY));
+
+INSERT INTO admin_inquiry_message (
+    id, inquiry_id, sender_id, sender_role, content, created_at
+)
+VALUES
+('inq-msg-1','inq-1','u-student-1','USER','결제가 완료됐는데 마이페이지 상태가 늦게 바뀌는 것 같습니다.',DATE_SUB(NOW(), INTERVAL 2 DAY)),
+('inq-msg-2','inq-1',@admin_id,'ADMIN','확인 후 상태 동기화 처리했습니다. 새로고침 후 다시 확인 부탁드립니다.',DATE_SUB(NOW(), INTERVAL 1 DAY)),
+('inq-msg-3','inq-2','u-student-4','USER','이미 예약된 수업의 시간 변경 가능 범위를 알고 싶습니다.',DATE_SUB(NOW(), INTERVAL 18 HOUR)),
+('inq-msg-4','inq-3','u-student-8','USER','수업 품질 관련으로 문의드립니다. 환불 기준 안내 부탁드립니다.',DATE_SUB(NOW(), INTERVAL 5 DAY)),
+('inq-msg-5','inq-3',@admin_id,'ADMIN','관련 규정과 절차를 안내드렸습니다. 추가 문의는 같은 스레드로 남겨주세요.',DATE_SUB(NOW(), INTERVAL 4 DAY));
+
 -- Korean proverb game seed
 INSERT INTO korean_proverb (
     question, answer, option1, option2, option3, option4,

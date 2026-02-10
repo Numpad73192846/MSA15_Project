@@ -30,7 +30,8 @@
 		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
 		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		    ELSE 'PENDING'
-		  END AS status, l.price AS price,
+		  END AS status,
+		  (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
 		  COALESCE(b.paid_at, p.paid_at) AS paidAt
 		FROM booking b
 		JOIN lesson l ON b.lesson_id = l.id
@@ -57,7 +58,8 @@
 		    WHEN b.done_at IS NOT NULL THEN 'COMPLETED'
 		    WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		    ELSE 'PENDING'
-		  END AS status, l.price AS price,
+		  END AS status,
+		  (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
 		  COALESCE(b.paid_at, p.paid_at) AS paidAt
 		FROM booking b
 		JOIN lesson l ON b.lesson_id = l.id

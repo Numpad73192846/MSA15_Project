@@ -1,4 +1,4 @@
-{
+﻿﻿{
     "cSpell.words": [
         "mypages",
         "teamproject",
@@ -10,13 +10,13 @@
     "java.configuration.updateBuildConfiguration": "interactive",
 
     "files.encoding": "utf8bom",
-    "files.autoGuessEncoding": true,
+    "files.autoGuessEncoding": false,
 
     "emeraldwalk.runonsave": {
         "commands": [
             {
                 "match": ".*\\.cs$",
-                "cmd": "powershell -NoProfile -Command \"(Get-Content -Raw -Endoding UTH8 '%file%') | Set-Content -Encoding UTF8 '%file%'\""
+                "cmd": "powershell -NoProfile -Command \"(Get-Content -Raw -Encoding UTF8 '%file%') | Set-Content -Encoding UTF8 '%file%'\""
             }
         ]
     }

@@ -17,6 +17,7 @@ class TutorCalendar {
             singleSlotPerDay: false,
             onSlotClick: null,
             onWeekChange: null,
+            onBookedSlotHover: null,
             initialData: null, // {date: 'yyyy-MM-dd', slots: ['HH:mm', ...]}[]
             availableSlots: null, // {date: 'yyyy-MM-dd', slots: ['HH:mm', ...]}[]
             availableSlotsOnly: false,
@@ -36,6 +37,7 @@ class TutorCalendar {
             weekStart: null,
             selectedSlots: new Map(),
             bookedSlots: new Map(), // 예약된 슬롯 (읽기 전용)
+            bookedSlotMeta: new Map(), // key: yyyy-MM-dd|HH:mm
             availableSlots: new Map()
         };
 
@@ -62,13 +64,30 @@ class TutorCalendar {
     loadInitialData() {
         if (!this.options.initialData) return;
         
-        this.options.initialData.forEach(({ date, slots, booked }) => {
+        this.options.initialData.forEach(({ date, slots, booked, metaByTime }) => {
+            if (!date || !Array.isArray(slots)) return;
             if (booked) {
                 this.state.bookedSlots.set(date, new Set(slots));
+                if (metaByTime && typeof metaByTime === 'object') {
+                    slots.forEach((time) => {
+                        if (metaByTime[time]) {
+                            this.state.bookedSlotMeta.set(`${date}|${time}`, metaByTime[time]);
+                        }
+                    });
+                }
             } else {
                 this.state.selectedSlots.set(date, new Set(slots));
             }
         });
+    }
+
+    setInitialData(initialData = []) {
+        this.options.initialData = initialData;
+        this.state.selectedSlots.clear();
+        this.state.bookedSlots.clear();
+        this.state.bookedSlotMeta.clear();
+        this.loadInitialData();
+        this.render();
     }
 
     loadAvailableSlots() {
@@ -174,6 +193,18 @@ class TutorCalendar {
             a.dataset.date = dateKey;
             a.dataset.inRange = slot.inRange ? 'true' : 'false';
             a.innerHTML = `${slot.time}<p class="sch_dsttime ${slot.inRange ? 'on' : 'off'}"></p>`;
+
+            if (slot.isBooked) {
+                const meta = this.state.bookedSlotMeta.get(`${dateKey}|${slot.time}`);
+                if (meta) {
+                    a.classList.add('booked-hover-enabled');
+                    const preview = [meta.studentName, meta.subject].filter(Boolean).join(' | ');
+                    if (preview) {
+                        a.title = preview;
+                    }
+                }
+            }
+
             wrap.appendChild(a);
             container.appendChild(wrap);
         });
@@ -342,6 +373,47 @@ class TutorCalendar {
         const btnNext = document.getElementById(this.options.nextBtnId);
         const body = document.querySelector(`#${this.options.containerId} .dayCon`);
         window.addEventListener('resize', () => this.syncHeaderPadding());
+
+        if (body) {
+            body.addEventListener('mouseover', (e) => {
+                if (typeof this.options.onBookedSlotHover !== 'function') return;
+                const target = e.target.closest('a.time_in');
+                if (!target || !body.contains(target)) {
+                    this.options.onBookedSlotHover(null);
+                    return;
+                }
+
+                const dateKey = target.dataset.date;
+                const time = target.dataset.time;
+                if (!dateKey || !time) {
+                    this.options.onBookedSlotHover(null);
+                    return;
+                }
+
+                const meta = this.state.bookedSlotMeta.get(`${dateKey}|${time}`);
+                if (!meta) {
+                    this.options.onBookedSlotHover(null);
+                    return;
+                }
+
+                this.options.onBookedSlotHover({
+                    ...meta,
+                    date: dateKey,
+                    time
+                });
+            });
+
+            body.addEventListener('mouseout', (e) => {
+                if (typeof this.options.onBookedSlotHover !== 'function') return;
+                const from = e.target.closest('a.time_in');
+                if (!from || !body.contains(from)) return;
+                const to = e.relatedTarget && e.relatedTarget.closest
+                    ? e.relatedTarget.closest('a.time_in')
+                    : null;
+                if (to && body.contains(to)) return;
+                this.options.onBookedSlotHover(null);
+            });
+        }
 
         if (btnPrev) {
             btnPrev.addEventListener('click', () => {

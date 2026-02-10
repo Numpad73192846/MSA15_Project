@@ -15,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import com.aloha.teamproject.config.TossPaymentsProperties;
 import com.aloha.teamproject.dto.Booking;
 import com.aloha.teamproject.dto.Lesson;
+import com.aloha.teamproject.dto.TutorAvailability;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class TossPaymentServiceImpl implements TossPaymentService {
     private final TossPaymentsProperties properties;
     private final BookingService bookingService;
     private final LessonService lessonService;
+    private final TutorAvailabilityService tutorAvailabilityService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -53,7 +55,19 @@ public class TossPaymentServiceImpl implements TossPaymentService {
         }
 
         Lesson lesson = lessonService.selectById(booking.getLessonId());
-        BigDecimal expectedAmount = lesson != null ? lesson.getPrice() : null;
+        BigDecimal expectedAmount = null;
+        if (lesson != null && lesson.getPrice() != null) {
+            TutorAvailability availability = tutorAvailabilityService.selectById(booking.getAvailabilityId());
+            long minutes = 30L;
+            if (availability != null && availability.getStartAt() != null && availability.getEndAt() != null) {
+                long diff = java.time.temporal.ChronoUnit.MINUTES.between(availability.getStartAt(), availability.getEndAt());
+                if (diff > 0) {
+                    minutes = diff;
+                }
+            }
+            long slotCount = Math.max(1L, minutes / 30L);
+            expectedAmount = lesson.getPrice().multiply(BigDecimal.valueOf(slotCount));
+        }
         BigDecimal paidAmount = BigDecimal.valueOf(amount);
 
         if (expectedAmount != null && expectedAmount.compareTo(paidAmount) != 0) {
