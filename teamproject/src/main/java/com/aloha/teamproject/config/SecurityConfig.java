@@ -111,6 +111,7 @@ public class SecurityConfig {
             "/api/reviews/**",
             "/api/bookings/**",
             "/api/payments/**",
+            "/api/lessons/**",
             "/api/tutor/messages",
             "/api/tutor/messages/**",
             "/api/tutor/students/**",

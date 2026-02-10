@@ -1,6 +1,7 @@
 package com.aloha.teamproject.controller;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -87,8 +88,12 @@ public class TutorsPageController {
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
             tutorMap.put("selfIntro", tutor.getSelfIntro() != null ? tutor.getSelfIntro() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
+            tutorMap.put("careerTimeline", tutor.getCareerTimeline() != null ? tutor.getCareerTimeline() : "");
+            tutorMap.put("careerTimelineItems", toTimelineItems(tutor.getCareerTimeline()));
             tutorMap.put("educationSchools", tutor.getEducationSchools() != null ? tutor.getEducationSchools() : "");
             tutorMap.put("educationDegrees", tutor.getEducationDegrees() != null ? tutor.getEducationDegrees() : "");
+            tutorMap.put("educationTimeline", tutor.getEducationTimeline() != null ? tutor.getEducationTimeline() : "");
+            tutorMap.put("educationTimelineItems", toTimelineItems(tutor.getEducationTimeline()));
             tutorMap.put("educationDocuments", tutor.getEducationDocuments() != null ? tutor.getEducationDocuments() : "");
             tutorMap.put("degreeDocuments", tutor.getDegreeDocuments() != null ? tutor.getDegreeDocuments() : "");
             tutorMap.put("certificates", tutor.getCertificates() != null ? tutor.getCertificates() : "");
@@ -239,6 +244,35 @@ public class TutorsPageController {
             return "취소";
         }
         return status == null ? "" : status;
+    }
+
+    private List<Map<String, String>> toTimelineItems(String timelineRaw) {
+        List<Map<String, String>> items = new ArrayList<>();
+        if (timelineRaw == null || timelineRaw.isBlank()) {
+            return items;
+        }
+
+        String[] timelineRows = timelineRaw.split("\\s*\\|\\|\\|\\s*");
+        for (String row : timelineRows) {
+            if (row == null || row.isBlank()) {
+                continue;
+            }
+
+            String[] parts = row.split(":::", 2);
+            String year = parts.length > 0 ? parts[0].trim() : "";
+            String text = parts.length > 1 ? parts[1].trim() : "";
+
+            if (year.isEmpty() && text.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> item = new HashMap<>();
+            item.put("year", year);
+            item.put("text", text);
+            items.add(item);
+        }
+
+        return items;
     }
 
     private String toDashboardStatusClass(String status, boolean paid) {

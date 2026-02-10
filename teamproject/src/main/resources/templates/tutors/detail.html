@@ -59,6 +59,35 @@
                 color: #334155;
                 line-height: 1.7;
             }
+            .timeline-list {
+                display: flex;
+                flex-direction: column;
+                gap: .45rem;
+                margin-top: .1rem;
+            }
+            .timeline-item {
+                display: grid;
+                grid-template-columns: 104px 1fr;
+                gap: .8rem;
+                align-items: start;
+                padding: .08rem 0;
+            }
+            .timeline-item + .timeline-item {
+                margin-top: .1rem;
+            }
+            .timeline-year {
+                font-size: .85rem;
+                font-weight: 700;
+                color: #64748b;
+                white-space: nowrap;
+                line-height: 1.7;
+            }
+            .timeline-text {
+                color: #0f172a;
+                font-size: .95rem;
+                font-weight: 500;
+                line-height: 1.65;
+            }
             @media (max-width: 576px) {
                 .tutor-info-tabs .nav-link {
                     font-size: .85rem;
@@ -67,6 +96,16 @@
                 .tutor-info-tab-content {
                     padding: .95rem .85rem;
                     border-radius: 0 0 12px 12px;
+                }
+                .timeline-item {
+                    grid-template-columns: 82px 1fr;
+                    gap: .55rem;
+                }
+                .timeline-year {
+                    font-size: .78rem;
+                }
+                .timeline-text {
+                    font-size: .9rem;
                 }
             }
         </style>
@@ -172,34 +211,41 @@
                                 </div>
                                 <div class="tab-pane fade" id="education-pane" role="tabpanel"
                                     aria-labelledby="education-tab" tabindex="0">
-                                    <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">학교</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.educationSchools)}"
-                                            th:utext="${#strings.replace(tutor.educationSchools, ' | ', '<br/>')}">
-                                            서울대학교
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.educationSchools)}">
-                                            등록된 학력 정보가 없습니다.
+                                    <div th:if="${!#lists.isEmpty(tutor.educationTimelineItems)}"
+                                        class="timeline-list">
+                                        <div class="timeline-item"
+                                            th:each="item : ${tutor.educationTimelineItems}">
+                                            <div class="timeline-year"
+                                                th:text="${item.year}">
+                                                2018 - 2022
+                                            </div>
+                                            <div class="timeline-text"
+                                                th:text="${item.text}">
+                                                서울대학교 · 영어영문학 학사
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">학위</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.educationDegrees)}"
-                                            th:utext="${#strings.replace(tutor.educationDegrees, ' | ', '<br/>')}">
-                                            학사
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.educationDegrees)}">
-                                            등록된 학위 정보가 없습니다.
-                                        </div>
+                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.educationTimelineItems)}">
+                                        등록된 학력 정보가 없습니다.
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="career-pane" role="tabpanel"
                                     aria-labelledby="career-tab" tabindex="0">
-                                    <div th:if="${!#strings.isEmpty(tutor.experience)}"
-                                        th:utext="${#strings.replace(tutor.experience, ' | ', '<br/>')}">
-                                        어학원 - 영어강사
+                                    <div th:if="${!#lists.isEmpty(tutor.careerTimelineItems)}"
+                                        class="timeline-list">
+                                        <div class="timeline-item"
+                                            th:each="item : ${tutor.careerTimelineItems}">
+                                            <div class="timeline-year"
+                                                th:text="${item.year}">
+                                                2021 - 현재
+                                            </div>
+                                            <div class="timeline-text"
+                                                th:text="${item.text}">
+                                                어학원 · 영어강사
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-muted" th:if="${#strings.isEmpty(tutor.experience)}">
+                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.careerTimelineItems)}">
                                         등록된 근무경력 정보가 없습니다.
                                     </div>
                                 </div>

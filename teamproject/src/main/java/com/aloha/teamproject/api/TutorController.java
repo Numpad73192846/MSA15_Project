@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
+import com.aloha.teamproject.dto.Auth;
 import com.aloha.teamproject.dto.Lesson;
 import com.aloha.teamproject.dto.LessonCardItem;
 import com.aloha.teamproject.dto.Subject;
@@ -55,6 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
 
 
 @Slf4j
@@ -77,6 +79,12 @@ public class TutorController {
     private final ObjectMapper objectMapper;
 
     private static final String DOC_UPLOAD_DIR = "uploads/tutors/documents/";
+
+    @Data
+    public static class CertificateTextItem {
+        private String name;
+        private String issuer;
+    }
 
     @GetMapping("/me")
     public ApiResponse<TutorMyPage> me(Authentication authentication) {
@@ -109,20 +117,75 @@ public class TutorController {
         return ApiResponse.error("이 기능은 아직 구현 중입니다.");
     }
 
+    @GetMapping("/careers")
+    public ApiResponse<List<TutorCareer>> myCareers(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            List<TutorCareer> careers = tutorCareerService.selectByUserId(authentication.getName());
+            return ApiResponse.ok(careers);
+        } catch (Exception e) {
+            log.error("/api/tutors/careers 조회 실패", e);
+            return ApiResponse.error("경력을 가져오지 못했습니다.");
+        }
+    }
+
     @PostMapping("/careers")
-    public ApiResponse<Void> careers(@RequestBody String entity) {
-        // TODO: 튜터 경력 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
+    public ApiResponse<Void> careers(
+        Authentication authentication,
+        @RequestBody List<TutorCareer.Request.CareerItem> items
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            tutorCareerService.replaceCareers(authentication.getName(), items);
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/careers 저장 실패", e);
+            return ApiResponse.error("경력 저장에 실패했습니다.");
+        }
+
+    }
+
+    @GetMapping("/educations")
+    public ApiResponse<List<TutorEducation>> myEducations(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            List<TutorEducation> educations = tutorEducationService.selectByUserId(authentication.getName());
+            return ApiResponse.ok(educations);
+        } catch (Exception e) {
+            log.error("/api/tutors/educations 조회 실패", e);
+            return ApiResponse.error("학력 목록을 가져오지 못했습니다.");
+        }
     }
 
     @PostMapping("/educations")
-    public ApiResponse<Void> educations(@RequestBody String entity) {
-        // TODO: 튜터 학력 관리 - 추후 구현 예정
-        return ApiResponse.error("이 기능은 아직 구현 중입니다.");
+    public ApiResponse<Void> educations(
+        Authentication authentication,
+        @RequestBody List<TutorEducation.Request.EducationItem> items
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            tutorEducationService.replaceEducations(authentication.getName(), items);
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/educations 저장 실패", e);
+            return ApiResponse.error("학력 저장에 실패했습니다.");
+        }
     }
 
     @PostMapping("/time-ranges")
-    public ApiResponse<Void> time_ranges(@RequestBody String entity) {
+    public ApiResponse<Void> timeRanges(@RequestBody String entity) {
         // TODO: 시간대 관리는 /api/tutors/me/time-ranges에서 처리
         return ApiResponse.error("시간대 관리는 /api/tutors/me/time-ranges를 사용해주세요.");
     }
@@ -186,6 +249,30 @@ public class TutorController {
         } catch (Exception e) {
             log.error("/api/tutors/documents 업로드 실패", e);
             return ApiResponse.error("서류 업로드에 실패했습니다.");
+        }
+    }
+
+    @PutMapping("/documents/certificate-texts")
+    public ApiResponse<Void> updateCertificateTexts(
+        Authentication authentication,
+        @RequestBody(required = false) List<CertificateTextItem> items
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
+
+            String payload = objectMapper.writeValueAsString(items == null ? Collections.emptyList() : items);
+            replaceCertificateTextDocuments(userId, payload);
+            return ApiResponse.ok(SuccessCode.UPDATED);
+        } catch (Exception e) {
+            log.error("/api/tutors/documents/certificate-texts 저장 실패", e);
+            return ApiResponse.error("자격증 텍스트 저장에 실패했습니다.");
         }
     }
 
@@ -432,6 +519,7 @@ public class TutorController {
             @RequestParam(value = "bio", required = false) String bio,
             @RequestParam(value = "selfIntro", required = false) String selfIntro,
             @RequestParam(value = "videoUrl", required = false) String videoUrl,
+            @RequestParam(value = "defaultZoomUrl", required = false) String defaultZoomUrl,
             @RequestParam(value = "basicBankName", required = false) String basicBankName,
             @RequestParam(value = "basicAccountNumber", required = false) String basicAccountNumber,
             @RequestParam(value = "basicAccountHolder", required = false) String basicAccountHolder,
@@ -461,6 +549,7 @@ public class TutorController {
             profile.setBio(bio);
             profile.setSelfIntro(selfIntro);
             profile.setVideoUrl(videoUrl);
+            profile.setDefaultZoomUrl(defaultZoomUrl);
             profile.setPhone(phone);
             profile.setBankName(basicBankName);
             profile.setAccountNumber(basicAccountNumber);

@@ -17,24 +17,82 @@
     </resultMap>
 
     <select id="selectByUserId" resultMap="TutorTimeRangeMap">
-        SELECT no, user_id, id, start_at, end_at, day_of_week, created_at, updated_at
+        SELECT no,
+               user_id,
+               id,
+               start_at,
+               end_at,
+               CASE day_of_week
+                   WHEN '월' THEN 'MON'
+                   WHEN '화' THEN 'TUE'
+                   WHEN '수' THEN 'WED'
+                   WHEN '목' THEN 'THU'
+                   WHEN '금' THEN 'FRI'
+                   WHEN '토' THEN 'SAT'
+                   WHEN '일' THEN 'SUN'
+                   ELSE day_of_week
+               END AS day_of_week,
+               created_at,
+               updated_at
         FROM tutor_time_range
         WHERE user_id = #{userId}
-        ORDER BY 
-            FIELD(day_of_week, 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'),
+        ORDER BY
+            FIELD(
+                CASE day_of_week
+                    WHEN '월' THEN 'MON'
+                    WHEN '화' THEN 'TUE'
+                    WHEN '수' THEN 'WED'
+                    WHEN '목' THEN 'THU'
+                    WHEN '금' THEN 'FRI'
+                    WHEN '토' THEN 'SAT'
+                    WHEN '일' THEN 'SUN'
+                    ELSE day_of_week
+                END,
+                'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'
+            ),
             start_at
     </select>
 
     <insert id="insert">
         INSERT INTO tutor_time_range (user_id, id, start_at, end_at, day_of_week)
-        VALUES (#{userId}, #{id}, #{startAt}, #{endAt}, #{dayOfWeek})
+        VALUES (
+            #{userId},
+            #{id},
+            #{startAt},
+            #{endAt},
+            CASE #{dayOfWeek}
+                WHEN 'MON' THEN '월'
+                WHEN 'TUE' THEN '화'
+                WHEN 'WED' THEN '수'
+                WHEN 'THU' THEN '목'
+                WHEN 'FRI' THEN '금'
+                WHEN 'SAT' THEN '토'
+                WHEN 'SUN' THEN '일'
+                ELSE #{dayOfWeek}
+            END
+        )
     </insert>
 
     <insert id="insertBatch">
         INSERT INTO tutor_time_range (user_id, id, start_at, end_at, day_of_week)
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.userId}, #{item.id}, #{item.startAt}, #{item.endAt}, #{item.dayOfWeek})
+            (
+                #{item.userId},
+                #{item.id},
+                #{item.startAt},
+                #{item.endAt},
+                CASE #{item.dayOfWeek}
+                    WHEN 'MON' THEN '월'
+                    WHEN 'TUE' THEN '화'
+                    WHEN 'WED' THEN '수'
+                    WHEN 'THU' THEN '목'
+                    WHEN 'FRI' THEN '금'
+                    WHEN 'SAT' THEN '토'
+                    WHEN 'SUN' THEN '일'
+                    ELSE #{item.dayOfWeek}
+                END
+            )
         </foreach>
     </insert>
 
@@ -52,7 +110,16 @@
         UPDATE tutor_time_range
         SET start_at = #{startAt},
             end_at = #{endAt},
-            day_of_week = #{dayOfWeek}
+            day_of_week = CASE #{dayOfWeek}
+                WHEN 'MON' THEN '월'
+                WHEN 'TUE' THEN '화'
+                WHEN 'WED' THEN '수'
+                WHEN 'THU' THEN '목'
+                WHEN 'FRI' THEN '금'
+                WHEN 'SAT' THEN '토'
+                WHEN 'SUN' THEN '일'
+                ELSE #{dayOfWeek}
+            END
         WHERE id = #{id}
     </update>
 
