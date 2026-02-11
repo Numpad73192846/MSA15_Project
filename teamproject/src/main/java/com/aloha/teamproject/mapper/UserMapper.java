@@ -28,6 +28,7 @@ public interface UserMapper {
 	
 	// 회원 수정
 	public int update(Users user) throws Exception;
+	public int updateProfileImg(@Param("userId") String userId, @Param("profileImg") String profileImg) throws Exception;
 
 	// 회원 삭제
 	public int delete(Long no) throws Exception;
@@ -39,4 +40,3 @@ public interface UserMapper {
 	public int deleteAuth(@Param("userId") String userId, @Param("auth") String auth) throws Exception;
 
 }
-

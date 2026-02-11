@@ -7,7 +7,7 @@
 
 	<!-- ?뚯썝 湲곕낯 ?뺣낫 議고쉶 -->
 	<select id="selectMemberByUserId" resultType="com.aloha.teamproject.dto.MemberMyPage">
-		SELECT u.id AS userId, u.name, u.username AS email, u.nickname
+		SELECT u.id AS userId, u.name, u.username AS email, u.nickname, u.profile_img AS profileImg
 		FROM users u
 		WHERE u.id = #{userId}
 	</select>
@@ -42,7 +42,7 @@
 				   WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 				   ELSE 'PENDING'
 			   END AS status, 
-			   l.price AS price,
+			   (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
 			   COALESCE(b.paid_at, p.paid_at) AS paidAt,
 			   COALESCE(
 			       NULLIF(TRIM(b.zoom_join_url), ''),
@@ -76,7 +76,7 @@
 		           WHEN b.confirmed_at IS NOT NULL THEN 'CONFIRMED'
 		           ELSE 'PENDING'
 		       END AS status, 
-		       l.price AS price,
+		       (l.price * GREATEST(1, TIMESTAMPDIFF(MINUTE, ta.start_at, ta.end_at) / 30)) AS price,
 		       COALESCE(b.paid_at, p.paid_at) AS paidAt,
 		       COALESCE(
 		           NULLIF(TRIM(b.zoom_join_url), ''),
@@ -145,4 +145,3 @@
 	</select>
 
 </mapper>
-

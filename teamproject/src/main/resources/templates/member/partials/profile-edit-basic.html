@@ -8,17 +8,17 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">이메일</label>
-                            <input type="text" class="form-control" id="editEmail" name="email" required>
+                            <input type="text" class="form-control" id="editUsername" name="username" disabled>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">닉네임</label>
-                            <input type="text" class="form-control" id="editNickname" name="nickname" required>
+                            <input type="text" class="form-control" id="editNickname" name="nickname" disabled>
                         </div>
                     </div>
                 </div>
                 <div class="admin-box mb-3">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div>
                             <label class="form-label">이름 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="editName" name="name" required>
                         </div>                        
@@ -27,8 +27,8 @@
                 <div class="admin-box">
                     <div class="fw-semibold mb-2">프로필 이미지</div>
                     <div class="d-flex align-items-center gap-3">
-                        <div id="currentProfileImg" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:80px;height:80px;font-size:2rem;">
-                            👤
+                        <div id="currentProfileImg" class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width:80px;height:80px;font-size:2rem;">
+                            <span class="fs-4">👤</span>
                         </div>
                         <div class="flex-grow-1">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -42,13 +42,12 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
+                    </div>                  
                 </div>
             </div>
         </div>
     </section>
-    <div class="d-flex justify-content-end gap-2">
-        <a href="/member/mypage" class="btn btn-outline-secondary px-4">취소</a>
+    <div class="d-flex justify-content-end gap-2">        
         <button type="button" class="btn btn-primary px-4" onclick="saveSection('basic')">
             <i class="bi bi-check-lg me-1"></i> 기본 정보 저장
         </button>

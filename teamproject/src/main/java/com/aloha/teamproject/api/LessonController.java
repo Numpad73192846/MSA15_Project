@@ -3,6 +3,7 @@ package com.aloha.teamproject.api;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.Lesson;
 import com.aloha.teamproject.service.LessonService;
+import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class LessonController {
 
     private final LessonService lessonService;
+    private final UserService userService;
 
     @GetMapping
     public ApiResponse<List<Lesson>> getAllLessons() {
@@ -57,7 +60,12 @@ public class LessonController {
         }
 
         try {
-            List<Lesson> lessons = lessonService.selectByUserId(authentication.getName());
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
+
+            List<Lesson> lessons = lessonService.selectByUserId(userId);
             return ApiResponse.ok(lessons);
         } catch (Exception e) {
             log.error("내 수업 목록 조회 실패", e);
@@ -72,8 +80,13 @@ public class LessonController {
         }
 
         try {
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
+
             Lesson lesson = Lesson.builder()
-                .userId(authentication.getName())
+                .userId(userId)
                 .subjectId(request.getSubjectId())
                 .title(request.getTitle())
                 .description(request.getDescription())
@@ -96,11 +109,16 @@ public class LessonController {
         }
 
         try {
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
+
             Lesson existing = lessonService.selectById(id);
             if (existing == null) {
                 return ApiResponse.error("수업을 찾을 수 없습니다.");
             }
-            if (!authentication.getName().equals(existing.getUserId())) {
+            if (!userId.equals(existing.getUserId())) {
                 return ApiResponse.error("본인 수업만 수정할 수 있습니다.");
             }
 
@@ -128,11 +146,16 @@ public class LessonController {
         }
 
         try {
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
+
             Lesson existing = lessonService.selectById(id);
             if (existing == null) {
                 return ApiResponse.error("수업을 찾을 수 없습니다.");
             }
-            if (!authentication.getName().equals(existing.getUserId())) {
+            if (!userId.equals(existing.getUserId())) {
                 return ApiResponse.error("본인 수업만 삭제할 수 있습니다.");
             }
 
@@ -141,6 +164,23 @@ public class LessonController {
         } catch (Exception e) {
             log.error("수업 삭제 실패", e);
             return ApiResponse.error("수업을 삭제하지 못했습니다.");
+        }
+    }
+
+    private String resolveUserId(String authName) {
+        if (!StringUtils.hasText(authName)) {
+            return null;
+        }
+
+        try {
+            return userService.selectById(authName).getId();
+        } catch (Exception ignored) {
+            // fall through
+        }
+        try {
+            return userService.selectByUsername(authName).getId();
+        } catch (Exception ignored) {
+            return null;
         }
     }
 

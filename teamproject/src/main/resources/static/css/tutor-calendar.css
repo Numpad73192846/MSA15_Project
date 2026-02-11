@@ -284,9 +284,36 @@
   cursor: default;
   pointer-events: none;
 }
+.weekly_calendar_wrap.readonly .sch_time.booked a.booked-hover-enabled{
+  pointer-events: auto;
+  cursor: help;
+}
 .weekly_calendar_wrap.readonly .sch_time:not(.off):not(.selected):not(.booked) a:hover{
   background: var(--c-bg);
   border-color: var(--c-border);
+}
+
+/* readonly + DnD enabled (tutor weekly scheduler) */
+.weekly_calendar_wrap.readonly.allow-booked-dnd .sch_time a{
+  pointer-events: auto;
+}
+.weekly_calendar_wrap.readonly.allow-booked-dnd .sch_time{
+  pointer-events: auto;
+}
+.weekly_calendar_wrap.readonly.allow-booked-dnd .sch_time.booked a.booked-drag-source{
+  cursor: grab;
+}
+.weekly_calendar_wrap.readonly.allow-booked-dnd .sch_time.booked.dragging-source a{
+  opacity: 0.75;
+  transform: scale(1.02);
+}
+.weekly_calendar_wrap.readonly.allow-booked-dnd .sch_time.drag-over-valid a{
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.18);
+}
+.weekly_calendar_wrap.readonly.allow-booked-dnd .sch_time.drag-over-invalid a{
+  border-color: var(--c-danger);
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.16);
 }
 
 /* responsive - tablet */

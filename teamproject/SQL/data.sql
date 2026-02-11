@@ -53,6 +53,10 @@ VALUES
 ('u-tutor-19','tutor19@test.com', @pw, '김찬튜터', '화학전문', 'ACTIVE'),
 ('u-tutor-20','tutor20@test.com', @pw, '김태튜터', '생물전문', 'ACTIVE');
 
+UPDATE users
+SET profile_img = '/img/tutors/default.png'
+WHERE id LIKE 'u-tutor-%';
+
 -- Roles
 INSERT INTO user_auth (user_id, id, auth)
 VALUES
@@ -92,10 +96,10 @@ INSERT INTO subject_group (id, name, seq)
 VALUES
 ('sg-kor', '한국어', 1),
 ('sg-eng', '영어', 2),
-('sg-chn', '중국어', 3),
-('sg-jpn', '일본어', 4),
-('sg-spa', '스페인어', 5),
-('sg-fre', '불어', 6),
+('sg-jpn', '일본어', 3),
+('sg-chn', '중국어', 4),
+('sg-fra', '프랑스어', 5),
+('sg-spa', '스페인어', 6),
 ('sg-ger', '독일어', 7),
 ('sg-rus', '러시아어', 8);
 
@@ -118,21 +122,6 @@ VALUES
 -- Subjects
 INSERT INTO subject (group_id, id, name, seq_in_group)
 VALUES
-('sg-kor', 'sub-kor-1', '중등 한국어', 1),
-('sg-kor', 'sub-kor-2', '고등 한국어', 2),
-('sg-kor', 'sub-kor-3', '한국어', 3),
-('sg-eng', 'sub-eng-1', '중등 영어', 1),
-('sg-eng', 'sub-eng-2', '고등 영어', 2),
-('sg-eng', 'sub-eng-3', 'TOEIC', 3),
-('sg-eng', 'sub-eng-4', '영어', 4),
-('sg-chn', 'sub-chn-1', '중등 중국어', 1),
-('sg-chn', 'sub-chn-2', '고등 중국어', 2),
-('sg-chn', 'sub-chn-3', '중국어', 3),
-('sg-jpn', 'sub-jpn-1', '중등 일본어', 1),
-('sg-jpn', 'sub-jpn-2', '고등 일본어', 2),
-('sg-jpn', 'sub-jpn-3', '일본어', 3);
--- 테스트 튜터 과목 매핑 데이터 삽입 (20명 튜터 + 각 과목)
-INSERT INTO tutor_subject (user_id, subject_id, id, seq)
 ('sg-kor', 'sub-kor-basic', '기초 한국어', 1),
 ('sg-kor', 'sub-kor-mid', '중등 한국어', 2),
 ('sg-kor', 'sub-kor-high','고등 한국어', 3),
@@ -160,107 +149,107 @@ INSERT INTO tutor_subject (user_id, subject_id, id, seq)
 ('sg-rus', 'sub-rus-high','고등 러시아어', 3);
 
 INSERT INTO tutor_profile (
-    user_id, id, profile_img, phone, headline, bio, self_intro, video_url,
+    user_id, id, phone, headline, bio, self_intro, video_url,
     default_zoom_url, bank_name, account_number, account_holder,
     is_verified, rating_avg, review_count
 )
 VALUES
-('u-tutor-1','tp-1','/img/tutors/default.png','010-1111-1111',
+('u-tutor-1','tp-1','010-1111-1111',
  '국·영어 전문 튜터','시험 대비 중심 수업',
  '기초부터 심화까지 단계별로 이해시키는 체계적인 수업을 진행합니다.',NULL,
  'https://zoom.us/j/1111111111','KB','111-111-111111','김튜터',TRUE,4.80,12),
 
-('u-tutor-2','tp-2','/img/tutors/default.png','010-2222-2222',
+('u-tutor-2','tp-2','010-2222-2222',
  '비즈니스 영어 튜터','실무 영어 집중',
  '면접, 프레젠테이션, 이메일까지 실무에 바로 쓰는 영어를 알려드립니다.',NULL,
  'https://zoom.us/j/2222222222','Shinhan','222-222-222222','이튜터',TRUE,4.70,8),
 
-('u-tutor-3','tp-3','/img/tutors/default.png','010-3333-3333',
+('u-tutor-3','tp-3','010-3333-3333',
  '일본어 회화 튜터','기초부터 자연스럽게',
  '회화 위주로 일본어 감각을 빠르게 익히도록 도와드립니다.',NULL,
  'https://zoom.us/j/3333333333','Woori','333-333-333333','박튜터',TRUE,4.60,5),
 
-('u-tutor-4','tp-4','/img/tutors/default.png','010-4444-4444',
+('u-tutor-4','tp-4','010-4444-4444',
  '영어 발음 교정 튜터','발음·억양 집중',
  '원어민에 가까운 발음을 목표로 단계별 교정을 진행합니다.',NULL,
  'https://zoom.us/j/4444444444','Hana','444-444-444444','최튜터',TRUE,4.75,9),
 
-('u-tutor-5','tp-5','/img/tutors/default.png','010-5555-5555',
+('u-tutor-5','tp-5','010-5555-5555',
  '영어 문법 튜터','개념 중심 문법',
  '헷갈리는 문법을 예문과 구조로 명확하게 정리합니다.',NULL,
  'https://zoom.us/j/5555555555','KB','555-555-555555','정튜터',TRUE,4.68,7),
 
-('u-tutor-6','tp-6','/img/tutors/default.png','010-6666-6666',
+('u-tutor-6','tp-6','010-6666-6666',
  '토익 전문 튜터','점수 상승 전략',
  'LC/RC 유형 분석과 시간 관리 전략으로 목표 점수를 만듭니다.',NULL,
  'https://zoom.us/j/6666666666','Shinhan','666-666-666666','조튜터',TRUE,4.82,14),
 
-('u-tutor-7','tp-7','/img/tutors/default.png','010-7777-7777',
+('u-tutor-7','tp-7','010-7777-7777',
  '중국어 튜터','회화·HSK 대비',
  '실생활 회화와 시험 대비를 함께 진행합니다.',NULL,
  'https://zoom.us/j/7777777777','Woori','777-777-777777','윤튜터',TRUE,4.61,6),
 
-('u-tutor-8','tp-8','/img/tutors/default.png','010-8888-8888',
+('u-tutor-8','tp-8','010-8888-8888',
  '일본어 전문 튜터','JLPT·회화',
  '시험 대비와 실전 회화를 균형 있게 지도합니다.',NULL,
  'https://zoom.us/j/8888888888','Hana','888-888-888888','장튜터',TRUE,4.73,10),
 
-('u-tutor-9','tp-9','/img/tutors/default.png','010-9999-9999',
+('u-tutor-9','tp-9','010-9999-9999',
  '스페인어 튜터','기초·여행 회화',
  '여행에서 바로 쓸 수 있는 표현 위주로 수업합니다.',NULL,
  'https://zoom.us/j/9999999999','KB','999-999-999999','임튜터',TRUE,4.55,4),
 
-('u-tutor-10','tp-10','/img/tutors/default.png','010-1010-1010',
+('u-tutor-10','tp-10','010-1010-1010',
  '비즈니스 영어 튜터','실무 회화 중심',
  '회의, 협상, 이메일 상황별 영어를 연습합니다.',NULL,
  'https://zoom.us/j/1010101010','Shinhan','101-101-101010','하튜터',TRUE,4.79,11),
 
-('u-tutor-11','tp-11','/img/tutors/default.png','010-1112-1112',
+('u-tutor-11','tp-11','010-1112-1112',
  '드라마 영어 튜터','콘텐츠 기반 학습',
  '드라마 장면을 활용해 자연스러운 표현을 익힙니다.',NULL,
  'https://zoom.us/j/1112111211','Woori','111-211-121112','강튜터',TRUE,4.66,5),
 
-('u-tutor-12','tp-12','/img/tutors/default.png','010-1212-1212',
+('u-tutor-12','tp-12','010-1212-1212',
  '노래로 배우는 영어','리스닝·발음 강화',
  '영어 노래를 통해 발음과 표현을 자연스럽게 익힙니다.',NULL,
  'https://zoom.us/j/1212121212','Hana','121-212-121212','고튜터',TRUE,4.58,3),
 
-('u-tutor-13','tp-13','/img/tutors/default.png','010-1313-1313',
+('u-tutor-13','tp-13','010-1313-1313',
  '영어 문화 튜터','문화 이해 중심',
  '언어와 함께 문화적 배경까지 설명합니다.',NULL,
  'https://zoom.us/j/1313131313','KB','131-313-131313','곽튜터',TRUE,4.60,4),
 
-('u-tutor-14','tp-14','/img/tutors/default.png','010-1414-1414',
+('u-tutor-14','tp-14','010-1414-1414',
  '여행 영어 튜터','상황별 회화',
  '공항·호텔·식당 등 여행 필수 표현을 연습합니다.',NULL,
  'https://zoom.us/j/1414141414','Shinhan','141-414-141414','구튜터',TRUE,4.63,6),
 
-('u-tutor-15','tp-15','/img/tutors/default.png','010-1515-1515',
+('u-tutor-15','tp-15','010-1515-1515',
  '어린이 영어 튜터','놀이 중심 수업',
  '게임과 활동으로 영어에 대한 흥미를 키워줍니다.',NULL,
  'https://zoom.us/j/1515151515','Woori','151-515-151515','권튜터',TRUE,4.71,8),
 
-('u-tutor-16','tp-16','/img/tutors/default.png','010-1616-1616',
+('u-tutor-16','tp-16','010-1616-1616',
  '고등 영어 튜터','내신·수능 대비',
  '독해 구조와 문제 풀이 전략을 중심으로 지도합니다.',NULL,
  'https://zoom.us/j/1616161616','KB','161-616-161616','김동튜터',TRUE,4.74,9),
 
-('u-tutor-17','tp-17','/img/tutors/default.png','010-1717-1717',
+('u-tutor-17','tp-17','010-1717-1717',
  '중등 영어 튜터','기초부터 탄탄하게',
  '문법과 독해의 기본기를 확실히 잡아드립니다.',NULL,
  'https://zoom.us/j/1717171717','Shinhan','171-717-171717','김선튜터',TRUE,4.62,5),
 
-('u-tutor-18','tp-18','/img/tutors/default.png','010-1818-1818',
+('u-tutor-18','tp-18','010-1818-1818',
  '영어 회화 튜터','말하기 집중',
  '반복 연습으로 말이 자연스럽게 나오도록 합니다.',NULL,
  'https://zoom.us/j/1818181818','Woori','181-818-181818','김주튜터',TRUE,4.68,6),
 
-('u-tutor-19','tp-19','/img/tutors/default.png','010-1919-1919',
+('u-tutor-19','tp-19','010-1919-1919',
  '영어 시험 대비 튜터','유형별 문제 풀이',
  '시험에 자주 나오는 패턴을 집중 공략합니다.',NULL,
  'https://zoom.us/j/1919191919','Hana','191-919-191919','김찬튜터',TRUE,4.57,4),
 
-('u-tutor-20','tp-20','/img/tutors/default.png','010-2020-2020',
+('u-tutor-20','tp-20','010-2020-2020',
  '스페인어 회화 튜터','기초·일상 회화',
  '일상에서 바로 쓸 수 있는 회화를 중심으로 진행합니다.',NULL,
  'https://zoom.us/j/2020202020','KB','202-020-202020','김태튜터',TRUE,4.64,5);
@@ -402,15 +391,6 @@ VALUES
 -- Tutor career
 INSERT INTO tutor_career (user_id, id, company_name, job_category, job_role, start_year, end_year)
 VALUES
-('u-tutor-1', 'tc-1', '대학학원', '교육', '수학강사', '2016-01-01', NULL),
-('u-tutor-2', 'tc-2', '영어학원', '교육', '영어강사', '2021-01-01', NULL),
-('u-tutor-3', 'tc-3', '국제학교', '교육', '영어교사', '2019-01-01', NULL),
-('u-tutor-4', 'tc-4', '어학센터', '교육', '발음강사', '2018-01-01', NULL),
-('u-tutor-6', 'tc-6', '여행사', '관광', '가이드', '2014-01-01', '2019-12-31'),
-('u-tutor-10', 'tc-10', 'IT회사', '기술', 'PM', '2012-01-01', NULL),
-('u-tutor-16', 'tc-16', '학원', '교육', '수학강사', '2006-01-01', NULL),
-('u-tutor-18', 'tc-18', '학원', '교육', '과학강사', '2011-01-01', NULL),
-('u-tutor-20', 'tc-20', '의학원', '교육', '입시강사', '2015-01-01', NULL);
 ('u-tutor-1','tc-1-1','알파 아카데미','교육','강사',2019,NULL),
 ('u-tutor-1','tc-1-2','베타 학원','교육','국어/영어 튜터',2017,2019),
 
@@ -474,15 +454,6 @@ VALUES
 -- Tutor education
 INSERT INTO tutor_education (user_id, id, school_name, degree, start_year, graduated_year)
 VALUES
-('u-tutor-1', 'te-1', '서울대학교', '이학학사(수학)', '2012-10-01', '2016-02-28'),
-('u-tutor-2', 'te-2', 'UC Berkeley', '영문학 학사', '2014-09-01', '2018-05-31'),
-('u-tutor-3', 'te-3', '경희대학교', '영문과 학사', '2013-10-01', '2017-02-28'),
-('u-tutor-4', 'te-4', 'Georgetown University', '언어학 석사', '2017-09-01', '2019-05-31'),
-('u-tutor-6', 'te-6', '고려대학교', '영문과 학사', '2010-10-01', '2014-02-28'),
-('u-tutor-7', 'te-7', '北京大学', '중국어 학사', '2014-09-01', '2018-06-30'),
-('u-tutor-8', 'te-8', '東京大学', '일본어 석사', '2016-04-01', '2018-10-31'),
-('u-tutor-16', 'te-16', '서울대학교', '수학 박사', '2012-10-01', '2018-02-28'),
-('u-tutor-20', 'te-20', '서울의대', '의학 학사', '2010-10-01', '2016-02-28');
 ('u-tutor-1','te-1','서울대학교','국어교육학 학사',2012,2016),
 ('u-tutor-2','te-2','연세대학교','영어영문학 학사',2011,2015),
 ('u-tutor-3','te-3','오사카대학교','일본어 전공 학사',2014,2018),
@@ -859,6 +830,25 @@ VALUES
 
 ('tm-5-1','book-5','u-tutor-4','u-student-5','TUTOR','발음 교정은 녹음이 중요해요. 샘플 음성 30초만 보내도 좋습니다.',DATE_SUB(NOW(),INTERVAL 14 HOUR)),
 ('tm-5-2','book-5','u-tutor-4','u-student-5','STUDENT','네! 오늘 연습한 걸 녹음해서 보내볼게요.',DATE_SUB(NOW(),INTERVAL 13 HOUR));
+
+-- Admin inquiries
+INSERT INTO admin_inquiry (
+    id, user_id, category, title, contact_name, contact_email, contact_phone, status, created_at, updated_at
+)
+VALUES
+('inq-1','u-student-1','PAYMENT','결제 완료 확인 요청','박학생','student1@test.com','010-1111-1111','IN_PROGRESS',DATE_SUB(NOW(), INTERVAL 2 DAY),DATE_SUB(NOW(), INTERVAL 1 DAY)),
+('inq-2','u-student-4','INQUIRY','예약 시간 변경 문의','최학생','student4@test.com','010-4444-4444','OPEN',DATE_SUB(NOW(), INTERVAL 18 HOUR),DATE_SUB(NOW(), INTERVAL 18 HOUR)),
+('inq-3','u-student-8','REPORT','수업 품질 관련 문의','장학생','student8@test.com','010-8888-8888','DONE',DATE_SUB(NOW(), INTERVAL 5 DAY),DATE_SUB(NOW(), INTERVAL 4 DAY));
+
+INSERT INTO admin_inquiry_message (
+    id, inquiry_id, sender_id, sender_role, content, created_at
+)
+VALUES
+('inq-msg-1','inq-1','u-student-1','USER','결제가 완료됐는데 마이페이지 상태가 늦게 바뀌는 것 같습니다.',DATE_SUB(NOW(), INTERVAL 2 DAY)),
+('inq-msg-2','inq-1',@admin_id,'ADMIN','확인 후 상태 동기화 처리했습니다. 새로고침 후 다시 확인 부탁드립니다.',DATE_SUB(NOW(), INTERVAL 1 DAY)),
+('inq-msg-3','inq-2','u-student-4','USER','이미 예약된 수업의 시간 변경 가능 범위를 알고 싶습니다.',DATE_SUB(NOW(), INTERVAL 18 HOUR)),
+('inq-msg-4','inq-3','u-student-8','USER','수업 품질 관련으로 문의드립니다. 환불 기준 안내 부탁드립니다.',DATE_SUB(NOW(), INTERVAL 5 DAY)),
+('inq-msg-5','inq-3',@admin_id,'ADMIN','관련 규정과 절차를 안내드렸습니다. 추가 문의는 같은 스레드로 남겨주세요.',DATE_SUB(NOW(), INTERVAL 4 DAY));
 
 -- Korean proverb game seed
 INSERT INTO korean_proverb (

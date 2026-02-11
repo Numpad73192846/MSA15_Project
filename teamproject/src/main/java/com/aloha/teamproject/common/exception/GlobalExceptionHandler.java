@@ -1,6 +1,9 @@
 package com.aloha.teamproject.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,6 +20,19 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ex.getErrorCode();
         return ResponseEntity.status(errorCode.getStatus().value())
                              .body(ApiError.of(errorCode.getCode(), ex.getMessage()));    
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNoResourceFound(
+        NoResourceFoundException ex,
+        HttpServletRequest request
+    ) {
+        String path = request != null ? request.getRequestURI() : null;
+        log.debug("Resource not found: {}", path);
+
+        ErrorCode errorCode = ErrorCode.NOT_FOUND;
+        return ResponseEntity.status(errorCode.getStatus().value())
+                             .body(ApiError.of(errorCode.getCode(), errorCode.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

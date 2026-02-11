@@ -25,6 +25,13 @@
         ORDER BY start_at
     </select>
 
+    <select id="selectById" resultMap="TutorAvailabilityMap">
+        SELECT no, user_id, id, start_at, end_at, status, created_at, updated_at
+        FROM tutor_availability
+        WHERE id = #{id}
+        LIMIT 1
+    </select>
+
     <insert id="insert">
         INSERT INTO tutor_availability (user_id, id, start_at, end_at, status)
         VALUES (#{userId}, #{id}, #{startAt}, #{endAt}, #{status})
@@ -42,6 +49,23 @@
         UPDATE tutor_availability
         SET status = #{status}
         WHERE id = #{id}
+    </update>
+
+    <update id="updateRangeAndStatus">
+        UPDATE tutor_availability
+        SET start_at = #{startAt},
+            end_at = #{endAt},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatusBatch">
+        UPDATE tutor_availability
+        SET status = #{status}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </update>
 
     <delete id="deleteById">

@@ -28,22 +28,22 @@
 
     <insert id="upsertProfile">
         INSERT INTO tutor_profile (
-            id, user_id, phone, profile_img, headline, bio, self_intro, video_url, 
+            id, user_id, phone, headline, bio, self_intro, video_url, default_zoom_url,
             bank_name, account_number, account_holder,
             is_verified, rating_avg, review_count
         )
         VALUES (
-            #{id}, #{userId}, #{phone}, #{profileImg}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl},
+            #{id}, #{userId}, #{phone}, #{headline}, #{bio}, #{selfIntro}, #{videoUrl}, #{defaultZoomUrl},
             #{bankName}, #{accountNumber}, #{accountHolder},
             #{verified}, #{ratingAvg}, #{reviewCount}
         )
         ON DUPLICATE KEY UPDATE
             phone = VALUES(phone),
-            profile_img = VALUES(profile_img),
             headline = VALUES(headline),
             bio = VALUES(bio),
             self_intro = VALUES(self_intro),
             video_url = VALUES(video_url),
+            default_zoom_url = VALUES(default_zoom_url),
             bank_name = VALUES(bank_name),
             account_number = VALUES(account_number),
             account_holder = VALUES(account_holder),
@@ -51,9 +51,28 @@
     </insert>
 
     <select id="selectByUserId" resultMap="tutorProfileMap">
-        SELECT *
-        FROM tutor_profile
-        WHERE user_id = #{userId}
+        SELECT
+            tp.no,
+            tp.user_id,
+            tp.id,
+            tp.phone,
+            u.profile_img AS profile_img,
+            tp.headline,
+            tp.bio,
+            tp.self_intro,
+            tp.video_url,
+            tp.default_zoom_url,
+            tp.bank_name,
+            tp.account_number,
+            tp.account_holder,
+            tp.is_verified,
+            tp.rating_avg,
+            tp.review_count,
+            tp.created_at,
+            tp.updated_at
+        FROM tutor_profile tp
+        JOIN users u ON tp.user_id = u.id
+        WHERE tp.user_id = #{userId}
     </select>
 
 </mapper>

@@ -292,9 +292,6 @@ public class LoginServiceImpl extends BaseServiceImpl implements LoginService {
 
 	private String resolveAvailableNickname(String baseNickname) throws Exception {
 		String safeBase = (baseNickname == null || baseNickname.isBlank()) ? "social_user" : baseNickname.trim();
-		if (userMapper.selectByNickname(safeBase) == null) {
-			return safeBase;
-		}
 
 		for (int i = 0; i < 1000; i++) {
 			int randomSuffix = ThreadLocalRandom.current().nextInt(1000, 10000);

@@ -111,6 +111,8 @@ public class SecurityConfig {
             "/api/reviews/**",
             "/api/bookings/**",
             "/api/payments/**",
+            "/api/lessons/**",
+            "/api/inquiries/**",
             "/api/tutor/messages",
             "/api/tutor/messages/**",
             "/api/tutor/students/**",
@@ -137,6 +139,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
                 .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/payments/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
+                .requestMatchers("/api/inquiries/**").hasAnyRole("USER", "TUTOR", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/tutor/messages/thread/member").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/tutor/messages/reply-writable").hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/tutor/messages/reply").hasAnyRole("USER", "ADMIN")

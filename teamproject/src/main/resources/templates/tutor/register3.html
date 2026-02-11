@@ -254,6 +254,49 @@
                 };
             }
 
+            function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (!matched) return '';
+                const hour = Number(matched[1]);
+                const minute = Number(matched[2]);
+                const second = Number(matched[3] || '0');
+                if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                if (minute % stepMinutes !== 0 || second !== 0) return '';
+                return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            }
+
+            function toLocalDateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function expandAvailabilityToSlots(item, stepMinutes = 30) {
+                if (!item?.startAt) return [];
+                const start = new Date(item.startAt);
+                if (Number.isNaN(start.getTime())) return [];
+
+                const endParsed = item.endAt ? new Date(item.endAt) : null;
+                const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+                    ? endParsed
+                    : new Date(start.getTime() + (stepMinutes * 60000));
+
+                const slots = [];
+                for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                    const time = normalizeTimeToStep(
+                        `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                        stepMinutes
+                    );
+                    if (!time) continue;
+                    slots.push({
+                        date: toLocalDateKey(cursor),
+                        time
+                    });
+                }
+                return slots;
+            }
+
             let baseTimeRanges = JSON.parse(JSON.stringify(DEFAULT_BASE_TIME_RANGES));
 
             async function getBaseTimeRanges() {
@@ -405,12 +448,13 @@
                     if (result.success && result.data) {
                         const grouped = new Map();
                         result.data.forEach(item => {
-                            if (!item.startAt) return;
-                            const [datePart, timePart] = item.startAt.split('T');
-                            const time = timePart?.substring(0, 5);
-                            if (!datePart || !time) return;
-                            if (!grouped.has(datePart)) grouped.set(datePart, []);
-                            grouped.get(datePart).push(time);
+                            const status = String(item.status || '').toUpperCase();
+                            if (status && status !== 'OPEN' && status !== 'BOOKED') return;
+                            const slots = expandAvailabilityToSlots(item, 30);
+                            slots.forEach(slot => {
+                                if (!grouped.has(slot.date)) grouped.set(slot.date, []);
+                                grouped.get(slot.date).push(slot.time);
+                            });
                         });
                         return Array.from(grouped.entries()).map(([date, slots]) => ({ date, slots }));
                     }
@@ -563,7 +607,7 @@
                     formData.append('profileImg', profileImgFile);
                 }
 
-                // Step 2: 근무 경력
+                // Step 2: 학력 및 경력
                 formData.append('career', step2Data.career || '');
                 const normalizeCareerYear = (value) => {
                     if (value === null || value === undefined) return null;
@@ -580,7 +624,9 @@
                     endYear: normalizeCareerYear(career.endYear)
                 }));
                 formData.append('careersJson', JSON.stringify(careersPayload));
-<<<<<<< HEAD
+                formData.append('educationsJson', JSON.stringify(step2Data.educations || []));
+                formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
+                formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
 
                 (step2Data.academicCertificates || []).forEach(id =>
                     formData.append('academicCertificates', id)
@@ -588,11 +634,6 @@
                 (step2Data.educationCertificates || []).forEach(id =>
                     formData.append('educationCertificates', id)
                 );
-=======
-                formData.append('educationsJson', JSON.stringify(step2Data.educations || []));
-                formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
-                formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
->>>>>>> 61fdc8838653fa98f36a74e6995bdfc0e18d1a60
 
                 
                 // Step 3
@@ -627,6 +668,30 @@
                         return;
                     }
 
+                    // Final submit should always persist base time ranges.
+                    const timeRangeSaved = await persistBaseTimeRanges();
+                    if (!timeRangeSaved) {
+                        return;
+                    }
+
+                    const certificateTextResponse = await fetch('/api/tutors/documents/certificate-texts', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${accessToken}`
+                        },
+                        body: JSON.stringify(Array.isArray(step2Data.certificateTexts) ? step2Data.certificateTexts : [])
+                    });
+                    let certificateTextResult = null;
+                    try {
+                        certificateTextResult = await certificateTextResponse.json();
+                    } catch (_) {
+                        certificateTextResult = null;
+                    }
+                    if (!certificateTextResponse.ok || (certificateTextResult && certificateTextResult.success === false)) {
+                        throw new Error((certificateTextResult && certificateTextResult.message) || 'Failed to save certificate texts');
+                    }
+
                     await uploadTutorDocuments(accessToken, step2Data.academicCertificates, 'EDUCATION');
                     await uploadTutorDocuments(accessToken, step2Data.educationCertificates, 'DEGREE');
                     await uploadTutorDocuments(accessToken, step2Data.certificateFiles, 'CERTIFICATE');
@@ -645,7 +710,7 @@
                             };
                         });
 
-                        await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                        const availabilityResponse = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -653,6 +718,16 @@
                             },
                             body: JSON.stringify(availabilityPayload)
                         });
+
+                        let availabilityResult = null;
+                        try {
+                            availabilityResult = await availabilityResponse.json();
+                        } catch (_) {
+                            availabilityResult = null;
+                        }
+                        if (!availabilityResponse.ok || (availabilityResult && availabilityResult.success === false)) {
+                            throw new Error((availabilityResult && availabilityResult.message) || 'Failed to save availability');
+                        }
                     }
 
                     // 성공 시 세션 스토리지 클리어

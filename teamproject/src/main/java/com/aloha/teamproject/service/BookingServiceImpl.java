@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.aloha.teamproject.common.service.BaseServiceImpl;
 import com.aloha.teamproject.dto.Booking;
 import com.aloha.teamproject.dto.Payment;
+import com.aloha.teamproject.dto.TutorAvailability;
 import com.aloha.teamproject.mapper.BookingMapper;
 import com.aloha.teamproject.mapper.PaymentMapper;
 
@@ -21,6 +22,7 @@ public class BookingServiceImpl extends BaseServiceImpl implements BookingServic
 
     private final BookingMapper bookingMapper;
     private final PaymentMapper paymentMapper;
+    private final TutorAvailabilityService tutorAvailabilityService;
 
     @Override
     public List<Booking> selectAll() throws Exception {
@@ -69,6 +71,35 @@ public class BookingServiceImpl extends BaseServiceImpl implements BookingServic
     @Override
     @Transactional
     public int cancelBooking(String id) throws Exception {
+        Booking booking = bookingMapper.selectById(id);
+        if (booking == null) {
+            throw new IllegalStateException("예약 정보를 찾을 수 없습니다.");
+        }
+
+        if (booking.getCanceledAt() != null) {
+            return 1;
+        }
+
+        Payment payment = paymentMapper.selectByBookingId(id);
+        boolean paid = payment != null && "PAID".equalsIgnoreCase(payment.getStatus());
+
+        if (paid) {
+            TutorAvailability availability = tutorAvailabilityService.selectById(booking.getAvailabilityId());
+            if (availability != null && availability.getStartAt() != null) {
+                LocalDateTime cancelDeadline = availability.getStartAt().minusDays(3);
+                if (LocalDateTime.now().isAfter(cancelDeadline)) {
+                    throw new IllegalStateException("수업 3일 전까지만 취소할 수 있습니다.");
+                }
+            }
+
+            if (paid) {
+                payment.setStatus("REFUNDED");
+                paymentMapper.update(payment);
+            }
+
+            bookingMapper.clearPaidAt(id);
+        }
+
         return bookingMapper.cancelBooking(id);
     }
 
@@ -106,7 +137,13 @@ public class BookingServiceImpl extends BaseServiceImpl implements BookingServic
         int result = paymentMapper.insert(payment);
         bookingMapper.updatePaidAt(id);
         return result;
-        
+
+    }
+
+    @Override
+    @Transactional
+    public int updateAvailabilityId(String id, String availabilityId) throws Exception {
+        return bookingMapper.updateAvailabilityId(id, availabilityId);
     }
 
 }

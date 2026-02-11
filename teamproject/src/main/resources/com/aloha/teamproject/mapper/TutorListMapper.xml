@@ -9,6 +9,7 @@
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="name" column="name"/>
+        <result property="nickname" column="nickname"/>
         <result property="bio" column="bio"/>
         <result property="selfIntro" column="self_intro"/>
         <result property="ratingAvg" column="rating_avg"/>
@@ -17,8 +18,10 @@
         <result property="subjects" column="subjects"/>
         <result property="price" column="price"/>
         <result property="experience" column="experience"/>
+        <result property="careerTimeline" column="career_timeline"/>
         <result property="educationSchools" column="education_schools"/>
         <result property="educationDegrees" column="education_degrees"/>
+        <result property="educationTimeline" column="education_timeline"/>
         <result property="educationDocuments" column="education_documents"/>
         <result property="degreeDocuments" column="degree_documents"/>
         <result property="certificates" column="certificates"/>
@@ -28,10 +31,11 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
-            tp.profile_img,
+            u.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
                  FROM review r 
@@ -80,10 +84,11 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
-            tp.profile_img,
+            u.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
                  FROM review r 
@@ -122,6 +127,22 @@
                 ''
             ) AS experience,
             COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT CONCAT(
+                            CASE
+                                WHEN tc.end_year IS NULL THEN CONCAT(tc.start_year, ' - 현재')
+                                ELSE CONCAT(tc.start_year, ' - ', tc.end_year)
+                            END,
+                            ':::',
+                            CONCAT(tc.company_name, ' - ', tc.job_role)
+                        )
+                        ORDER BY COALESCE(tc.end_year, 9999) DESC, tc.start_year DESC SEPARATOR ' ||| '
+                    )
+                 FROM tutor_career tc
+                 WHERE tc.user_id = tp.user_id),
+                ''
+            ) AS career_timeline,
+            COALESCE(
                 (SELECT GROUP_CONCAT(DISTINCT te.school_name ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' | ')
                  FROM tutor_education te
                  WHERE te.user_id = tp.user_id
@@ -135,6 +156,24 @@
                    AND te.degree != '학위 미기입력'),
                 ''
             ) AS education_degrees,
+            COALESCE(
+                (SELECT GROUP_CONCAT(
+                        DISTINCT CONCAT(
+                            CASE
+                                WHEN te.graduated_year IS NULL THEN CONCAT(te.start_year, ' - 현재')
+                                ELSE CONCAT(te.start_year, ' - ', te.graduated_year)
+                            END,
+                            ':::',
+                            CONCAT(te.school_name, ' - ', te.degree)
+                        )
+                        ORDER BY te.graduated_year DESC, te.start_year DESC SEPARATOR ' ||| '
+                    )
+                 FROM tutor_education te
+                 WHERE te.user_id = tp.user_id
+                   AND te.school_name != '학위 정보'
+                   AND te.degree != '학위 미기입력'),
+                ''
+            ) AS education_timeline,
             COALESCE(
                 (SELECT GROUP_CONCAT(
                         DISTINCT COALESCE(NULLIF(TRIM(td.original_name), ''), '학력 증명서')
@@ -175,12 +214,13 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
-            tp.profile_img,
+            u.profile_img,
             GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
             AVG(l.price) AS price,
             GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
@@ -195,7 +235,7 @@
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND sg.name = #{subject}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, tp.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, u.nickname, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -203,12 +243,13 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
             COALESCE(AVG(r.rating), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
-            tp.profile_img,
+            u.profile_img,
             GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
             AVG(l.price) AS price,
             GROUP_CONCAT(DISTINCT CONCAT(tc.company_name, ' - ', tc.job_role) SEPARATOR ' | ') AS experience
@@ -224,7 +265,7 @@
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND l.price &gt;= #{minPrice} 
           AND l.price &lt;= #{maxPrice}
-        GROUP BY tp.id, tp.user_id, u.name, tp.bio, tp.self_intro, tp.profile_img
+        GROUP BY tp.id, tp.user_id, u.name, u.nickname, tp.bio, tp.self_intro, tp.profile_img
         ORDER BY rating_avg DESC, review_count DESC
     </select>
 
@@ -232,10 +273,11 @@
         SELECT 
             tp.id, 
             tp.user_id, 
-            u.name, 
+            u.name,
+            u.nickname, 
             tp.bio, 
             tp.self_intro,
-            tp.profile_img,
+            u.profile_img,
             COALESCE(
                 (SELECT AVG(r.rating) 
                  FROM review r 
@@ -278,6 +320,7 @@
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
           AND (u.name LIKE CONCAT('%', #{searchTerm}, '%') 
+               OR u.nickname LIKE CONCAT('%', #{searchTerm}, '%')
                OR tp.bio LIKE CONCAT('%', #{searchTerm}, '%'))
         ORDER BY rating_avg DESC, review_count DESC
     </select>

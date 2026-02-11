@@ -16,6 +16,7 @@ public class TutorList {
     private String id;
     private String userId;
     private String name;
+    private String nickname;
     private String bio;
     private String selfIntro;
     private BigDecimal ratingAvg;
@@ -24,8 +25,10 @@ public class TutorList {
     private String subjects;
     private BigDecimal price;
     private String experience;
+    private String careerTimeline;
     private String educationSchools;
     private String educationDegrees;
+    private String educationTimeline;
     private String educationDocuments;
     private String degreeDocuments;
     private String certificates;

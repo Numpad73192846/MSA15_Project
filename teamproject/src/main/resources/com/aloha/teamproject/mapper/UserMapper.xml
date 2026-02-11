@@ -8,9 +8,11 @@
 	<resultMap id="userMap" type="Users">
 		<id property="id" column="id" />
 		<result property="username" column="username" />
+		<result property="profileImg" column="profile_img" />
 		<result property="password" column="password" />
 		<result property="name" column="name" />
 		<result property="nickname" column="nickname" />
+		<result property="profileImg" column="profile_img" />
 		<result property="status" column="status" />
 		<result property="createdAt" column="created_at" />
 		<result property="updatedAt" column="updated_at" />
@@ -30,13 +32,13 @@
 		<result property="updatedAt" column="updated_at" />
 	</resultMap>
 
-	<insert id="join">
+	<insert id="join"> 
 		INSERT INTO users ( id, username, password, name, nickname )
 		VALUES ( #{id}, #{username}, #{password}, #{name}, #{nickname} )
     </insert>
 
 	<insert id="insertAuth">
-        INSERT INTO user_auth ( id, user_id, auth )
+        INSERT INTO user_auth ( id, user_id, auth ) 
         VALUES ( #{id}, #{userId}, #{auth} )
     </insert>
 
@@ -80,12 +82,24 @@
 		UPDATE users
 		SET
 			username = #{username},
-			password = #{password},
 			name = #{name},
 			nickname = #{nickname},
 			status = #{status},
+			<if test="password != null">
+				password = #{password},
+			</if>
+			<if test="profileImg != null">
+				profile_img = #{profileImg},
+			</if>
 			updated_at = NOW()
 		WHERE no = #{no}
+	</update>
+
+	<update id="updateProfileImg">
+		UPDATE users
+		SET profile_img = #{profileImg},
+			updated_at = NOW()
+		WHERE id = #{userId}
 	</update>
 
 	<delete id="delete">

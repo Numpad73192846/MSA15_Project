@@ -39,7 +39,7 @@ public class MyPageController {
     @GetMapping("/tutor/profile-edit/partial/{section}")
     public String tutorProfileEditPartial(@PathVariable("section") String section) {
         String safe = switch (section) {
-            case "basic", "profile", "account", "documents", "lessons", "schedule", "security" -> section;
+            case "basic", "profile", "employment", "account", "documents", "lessons", "schedule", "zoom", "security" -> section;
             default -> "basic";
         };
         return "tutor/partials/profile-edit-" + safe;

@@ -1,6 +1,7 @@
 package com.aloha.teamproject.service.auth;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -113,9 +114,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private String resolveAvailableNickname(String baseNickname) throws Exception {
         String safeBase = (baseNickname == null || baseNickname.isBlank()) ? "social_user" : baseNickname.trim();
-        if (userMapper.selectByNickname(safeBase) == null) {
-            return safeBase;
-        }
 
         for (int i = 0; i < 1000; i++) {
             int randomSuffix = ThreadLocalRandom.current().nextInt(1000, 10000);
@@ -144,27 +142,44 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private String extractEmail(String registrationId, Map<String, Object> attributes) {
         if ("google".equals(registrationId)) {
-            return (String) attributes.get("email");
+            return asString(attributes.get("email"));
         } else if ("naver".equals(registrationId)) {
-            Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return response != null ? (String) response.get("email") : null;
+            Map<String, Object> response = asStringKeyMap(attributes.get("response"));
+            return asString(response.get("email"));
         } else if ("kakao".equals(registrationId)) {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            return kakaoAccount != null ? (String) kakaoAccount.get("email") : null;
+            Map<String, Object> kakaoAccount = asStringKeyMap(attributes.get("kakao_account"));
+            return asString(kakaoAccount.get("email"));
         }
         return null;
     }
 
     private String extractName(String registrationId, Map<String, Object> attributes) {
         if ("google".equals(registrationId)) {
-            return (String) attributes.get("name");
+            return asString(attributes.get("name"));
         } else if ("naver".equals(registrationId)) {
-            Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return response != null ? (String) response.get("name") : null;
+            Map<String, Object> response = asStringKeyMap(attributes.get("response"));
+            return asString(response.get("name"));
         } else if ("kakao".equals(registrationId)) {
-            Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
-            return properties != null ? (String) properties.get("nickname") : null;
+            Map<String, Object> properties = asStringKeyMap(attributes.get("properties"));
+            return asString(properties.get("nickname"));
         }
         return null;
+    }
+
+    private String asString(Object value) {
+        return value instanceof String str ? str : null;
+    }
+
+    private Map<String, Object> asStringKeyMap(Object value) {
+        if (!(value instanceof Map<?, ?> rawMap)) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> converted = new HashMap<>();
+        for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+            if (entry.getKey() instanceof String key) {
+                converted.put(key, entry.getValue());
+            }
+        }
+        return converted;
     }
 }

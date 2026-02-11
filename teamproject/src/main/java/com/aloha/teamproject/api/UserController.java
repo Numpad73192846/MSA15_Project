@@ -1,6 +1,8 @@
 package com.aloha.teamproject.api;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
@@ -33,9 +36,6 @@ import java.util.Set;
 import org.springframework.validation.FieldError;
 
 
-
-
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -44,6 +44,7 @@ public class UserController {
 	
 	private final UserService userService;
 	private final MemberMyPageService memberMyPageService;
+	private final PasswordEncoder passwordEncoder;
 
 	@GetMapping()
 	public ApiResponse<String> home() {
@@ -177,11 +178,66 @@ public class UserController {
 		return ApiResponse.ok(errorMap, SuccessCode.OK);
 	}
 
-	@PutMapping()
-	public ApiResponse<Void> update(@RequestBody Users user) throws Exception {
-		log.info("[Put] - update");
-		userService.update(user);
-		return ApiResponse.ok(SuccessCode.UPDATED);
+	// @PutMapping()
+	// public ApiResponse<Void> update(@RequestBody Users user) throws Exception {
+	// 	log.info("[Put] - update");
+	// 	userService.update(user);
+	// 	return ApiResponse.ok(SuccessCode.UPDATED);
+	// }
+
+	@PutMapping(
+		consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+	)
+	public ApiResponse<Void> updateMemberProfile(
+			Authentication authentication,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "password", required = false) String password,
+			@RequestParam(value = "passwordConfirm", required = false) String passwordConfirm,
+			@RequestParam(value = "profileImg", required = false) MultipartFile profileImg
+	) throws Exception {
+		if (authentication == null || !authentication.isAuthenticated()) {
+			return ApiResponse.error("로그인이 필요합니다.");
+		}
+
+		try {
+			String userId = authentication.getName();
+			Users user = userService.selectById(userId);
+			if (user == null) {
+				return ApiResponse.error("사용자를 찾을 수 없습니다.");
+			}
+
+			// 프로필 이미지 저장
+            if (profileImg != null && !profileImg.isEmpty()) {
+                String imgPath = userService.saveProfileImg(profileImg);
+                user.setProfileImg(imgPath);
+                log.info("프로필 이미지 저장 완료: {}", imgPath);
+            }
+
+			// 비밀번호 변경 여부에 따라 처리
+			if (password != null && !password.isBlank()) {
+				// 새 비밀번호가 현재 비밀번호와 같은지 확인
+				if (passwordEncoder.matches(password, user.getPassword())) {
+					return ApiResponse.error("현재 비밀번호와 같습니다");
+				}
+				// 비밀번호 변경: updateMyInfo 사용
+				userService.updateMyInfo(userId, name, password, passwordConfirm);
+				log.info("회원 비밀번호 업데이트 완료. userId: {}", userId);
+			}
+			// 비밀번호 변경 없이 기본 정보만 수정
+			else {
+				if (name != null && !name.isBlank()) {
+					user.setName(name);
+				}
+				user.setPassword(null); // 🔥 기존 비밀번호 재인코딩 방지
+				userService.update(user);
+				log.info("회원 정보 업데이트 완료. userId: {}", userId);
+			}
+
+			return ApiResponse.ok(SuccessCode.UPDATED);
+		} catch (Exception e) {
+			log.error("/api/users PUT 요청 실패", e);
+			return ApiResponse.error("프로필 업데이트에 실패했습니다.");
+		}
 	}
 	
 	@DeleteMapping("/{no}")
