@@ -31,4 +31,6 @@ public class TutorDocument {
     
     // For joining with users
     private String userName;
+    private String userNickname;
+    private String status;
 }
