@@ -135,9 +135,8 @@ public class TutorController {
 
     @PostMapping("/careers")
     public ApiResponse<Void> careers(
-        Authentication authentication,
-        @RequestBody List<TutorCareer.Request.CareerItem> items
-    ) {
+            Authentication authentication,
+            @RequestBody List<TutorCareer.Request.CareerItem> items) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -169,9 +168,8 @@ public class TutorController {
 
     @PostMapping("/educations")
     public ApiResponse<Void> educations(
-        Authentication authentication,
-        @RequestBody List<TutorEducation.Request.EducationItem> items
-    ) {
+            Authentication authentication,
+            @RequestBody List<TutorEducation.Request.EducationItem> items) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -251,9 +249,8 @@ public class TutorController {
 
     @PutMapping("/documents/certificate-texts")
     public ApiResponse<Void> updateCertificateTexts(
-        Authentication authentication,
-        @RequestBody(required = false) List<CertificateTextItem> items
-    ) {
+            Authentication authentication,
+            @RequestBody(required = false) List<CertificateTextItem> items) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ApiResponse.error("로그인이 필요합니다.");
         }
@@ -273,10 +270,7 @@ public class TutorController {
         }
     }
 
-    @PostMapping(
-        value = "/profile",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
+    @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> profile(
             @ModelAttribute TutorProfile.Request request,
             Authentication authentication) throws Exception {
@@ -291,23 +285,29 @@ public class TutorController {
                 return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
             }
 
+            // 프로필 이미지 처리: 업로드된 이미지가 있으면 저장, 없으면 랜덤 이미지 할당
             String profileImgPath = null;
             if (request.getProfileImg() != null && !request.getProfileImg().isEmpty()) {
                 profileImgPath = tutorProfileService.saveProfileImg(request.getProfileImg());
                 userService.updateProfileImg(userId, profileImgPath);
+            } else {
+                // 프로필 이미지가 업로드되지 않은 경우 랜덤 이미지 할당
+                profileImgPath = tutorProfileService.getRandomProfileImg();
+                userService.updateProfileImg(userId, profileImgPath);
+                log.info("랜덤 프로필 이미지 할당: {}", profileImgPath);
             }
 
             TutorProfile profile = TutorProfile.builder()
-                                               .userId(userId)
-                                               .phone(request.getBasicPhone())
-                                               .bankName(request.getBasicBankName())
-                                               .accountNumber(request.getBasicAccountNumber())
-                                               .accountHolder(request.getBasicAccountHolder())
-                                               .headline(request.getHeadline())
-                                               .bio(request.getBio())
-                                               .selfIntro(request.getSelfIntro())
-                                               .videoUrl(request.getVideoUrl())
-                                               .build();
+                    .userId(userId)
+                    .phone(request.getBasicPhone())
+                    .bankName(request.getBasicBankName())
+                    .accountNumber(request.getBasicAccountNumber())
+                    .accountHolder(request.getBasicAccountHolder())
+                    .headline(request.getHeadline())
+                    .bio(request.getBio())
+                    .selfIntro(request.getSelfIntro())
+                    .videoUrl(request.getVideoUrl())
+                    .build();
 
             List<LessonCardItem> lessonCards;
             if (!StringUtils.hasText(request.getLessonCardsJson())) {
@@ -530,15 +530,15 @@ public class TutorController {
             // 1️⃣ Users 정보 수정: 비밀번호 여부에 따라 처리
             if (password != null && !password.isBlank()) {
                 // 새 비밀번호가 현재 비밀번호와 같은지 확인
-				if (passwordEncoder.matches(password, user.getPassword())) {
-					return ApiResponse.error("현재 비밀번호와 같습니다");
-				}
+                if (passwordEncoder.matches(password, user.getPassword())) {
+                    return ApiResponse.error("현재 비밀번호와 같습니다");
+                }
                 // 비밀번호 변경: updateMyInfo 사용 (이름도 포함)
                 userService.updateMyInfo(userId, name, password, passwordConfirm);
                 log.info("튜터 비밀번호 업데이트 완료. userId: {}", userId);
             } else {
                 // 비밀번호 변경 없이 기본 정보만 수정
-                if (name != null && !name.isBlank()) {                    
+                if (name != null && !name.isBlank()) {
                     user.setName(name);
                     user.setPassword(null); // 🔥 기존 비밀번호 재인코딩 방지
                     userService.update(user);
@@ -563,12 +563,13 @@ public class TutorController {
             profile.setAccountNumber(basicAccountNumber);
             profile.setAccountHolder(basicAccountHolder);
 
-            // 프로필 이미지
+            // 프로필 이미지 처리
             if (profileImg != null && !profileImg.isEmpty()) {
                 String imgPath = tutorProfileService.saveProfileImg(profileImg);
                 userService.updateProfileImg(userId, imgPath);
                 log.info("프로필 이미지 저장 완료: {}", imgPath);
             }
+            // 참고: 프로필 수정 시에는 기존 이미지를 유지하므로 랜덤 이미지를 할당하지 않습니다.
 
             tutorProfileService.upsertProfile(profile);
             log.info("TutorProfile 업데이트 완료. userId: {}", userId);

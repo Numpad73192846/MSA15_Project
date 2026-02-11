@@ -14,4 +14,7 @@ public interface TutorProfileService {
 
     // 프로필 이미지
     String saveProfileImg(MultipartFile file) throws IOException;
+
+    // 랜덤 기본 프로필 이미지
+    String getRandomProfileImg();
 }

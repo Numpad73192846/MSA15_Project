@@ -53,9 +53,28 @@ VALUES
 ('u-tutor-19','tutor19@test.com', @pw, '김찬튜터', '화학전문', 'ACTIVE'),
 ('u-tutor-20','tutor20@test.com', @pw, '김태튜터', '생물전문', 'ACTIVE');
 
-UPDATE users
-SET profile_img = '/img/tutors/default.png'
-WHERE id LIKE 'u-tutor-%';
+-- 각 튜터에게 랜덤한 프로필 이미지 할당 (16개의 동물 이미지)
+UPDATE users SET profile_img = '/img/profil/bear.svg' WHERE id = 'u-tutor-1';
+UPDATE users SET profile_img = '/img/profil/cat.svg' WHERE id = 'u-tutor-2';
+UPDATE users SET profile_img = '/img/profil/panda.svg' WHERE id = 'u-tutor-3';
+UPDATE users SET profile_img = '/img/profil/dog.svg' WHERE id = 'u-tutor-4';
+UPDATE users SET profile_img = '/img/profil/fox.svg' WHERE id = 'u-tutor-5';
+UPDATE users SET profile_img = '/img/profil/lion.svg' WHERE id = 'u-tutor-6';
+UPDATE users SET profile_img = '/img/profil/tiger.svg' WHERE id = 'u-tutor-7';
+UPDATE users SET profile_img = '/img/profil/koala.svg' WHERE id = 'u-tutor-8';
+UPDATE users SET profile_img = '/img/profil/rabbit.svg' WHERE id = 'u-tutor-9';
+UPDATE users SET profile_img = '/img/profil/deer.svg' WHERE id = 'u-tutor-10';
+UPDATE users SET profile_img = '/img/profil/raccoon.svg' WHERE id = 'u-tutor-11';
+UPDATE users SET profile_img = '/img/profil/monkey.svg' WHERE id = 'u-tutor-12';
+UPDATE users SET profile_img = '/img/profil/giraffe.svg' WHERE id = 'u-tutor-13';
+UPDATE users SET profile_img = '/img/profil/cow.svg' WHERE id = 'u-tutor-14';
+UPDATE users SET profile_img = '/img/profil/sloth.svg' WHERE id = 'u-tutor-15';
+UPDATE users SET profile_img = '/img/profil/koala2.svg' WHERE id = 'u-tutor-16';
+UPDATE users SET profile_img = '/img/profil/bear.svg' WHERE id = 'u-tutor-17';
+UPDATE users SET profile_img = '/img/profil/cat.svg' WHERE id = 'u-tutor-18';
+UPDATE users SET profile_img = '/img/profil/panda.svg' WHERE id = 'u-tutor-19';
+UPDATE users SET profile_img = '/img/profil/dog.svg' WHERE id = 'u-tutor-20';
+
 
 -- Roles
 INSERT INTO user_auth (user_id, id, auth)

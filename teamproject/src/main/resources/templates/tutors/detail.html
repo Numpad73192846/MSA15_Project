@@ -1,6 +1,7 @@
 ﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layouts/main_layout}">
+
 <head>
     <title>튜터 상세</title>
     <th:block layout:fragment="extra-css">
@@ -17,10 +18,12 @@
                 overflow: hidden;
                 background: linear-gradient(180deg, #f8fbff 0%, #f1f5f9 100%);
             }
+
             .tutor-info-tabs .nav-item {
                 flex: 1 1 0;
                 min-width: 0;
             }
+
             .tutor-info-tabs .nav-link {
                 width: 100%;
                 border-radius: 0;
@@ -35,18 +38,22 @@
                 text-align: center;
                 transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
             }
+
             .tutor-info-tabs .nav-item:last-child .nav-link {
                 border-right: none;
             }
+
             .tutor-info-tabs .nav-link:hover {
                 background: #eef4ff;
                 color: #1e3a8a;
             }
+
             .tutor-info-tabs .nav-link.active {
                 background: #fff;
                 color: #1d4ed8;
                 box-shadow: inset 0 -3px 0 #2563eb;
             }
+
             .tutor-info-tab-content {
                 border: 1px solid #dbe4f0;
                 border-top: none;
@@ -55,16 +62,19 @@
                 padding: 1.15rem 1.1rem;
                 min-height: 164px;
             }
+
             .tutor-info-tab-content .tab-pane {
                 color: #334155;
                 line-height: 1.7;
             }
+
             .timeline-list {
                 display: flex;
                 flex-direction: column;
                 gap: .45rem;
                 margin-top: .1rem;
             }
+
             .timeline-item {
                 display: grid;
                 grid-template-columns: 104px 1fr;
@@ -72,9 +82,11 @@
                 align-items: start;
                 padding: .08rem 0;
             }
-            .timeline-item + .timeline-item {
+
+            .timeline-item+.timeline-item {
                 margin-top: .1rem;
             }
+
             .timeline-year {
                 font-size: .85rem;
                 font-weight: 700;
@@ -82,28 +94,34 @@
                 white-space: nowrap;
                 line-height: 1.7;
             }
+
             .timeline-text {
                 color: #0f172a;
                 font-size: .95rem;
                 font-weight: 500;
                 line-height: 1.65;
             }
+
             @media (max-width: 576px) {
                 .tutor-info-tabs .nav-link {
                     font-size: .85rem;
                     padding: .7rem .4rem;
                 }
+
                 .tutor-info-tab-content {
                     padding: .95rem .85rem;
                     border-radius: 0 0 12px 12px;
                 }
+
                 .timeline-item {
                     grid-template-columns: 82px 1fr;
                     gap: .55rem;
                 }
+
                 .timeline-year {
                     font-size: .78rem;
                 }
+
                 .timeline-text {
                     font-size: .9rem;
                 }
@@ -111,10 +129,12 @@
         </style>
     </th:block>
 </head>
+
 <body>
     <div layout:fragment="content">
         <div class="container py-5">
-            <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 mb-3" onclick="location.href='/tutors'">
+            <button type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 mb-3"
+                onclick="location.href='/tutors'">
                 <i class="bi bi-arrow-left me-2"></i>목록으로
             </button>
 
@@ -134,7 +154,8 @@
                                                 <span class="me-1">⭐</span>
                                                 <span class="fw-semibold" th:text="${avgRating}">4.9</span>
                                                 <span class="text-muted">(</span><span class="text-muted"
-                                                    th:text="${reviewCount}">127</span><span class="text-muted">개의리뷰)</span>
+                                                    th:text="${reviewCount}">127</span><span
+                                                    class="text-muted">개의리뷰)</span>
                                             </div>
                                             <div class="text-muted mb-2" th:if="${reviewCount == 0}">
                                                 <span class="me-1">⭐</span>
@@ -144,7 +165,8 @@
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-1 mb-3">
-                                        <span class="badge text-bg-light" th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                        <span class="badge text-bg-light"
+                                            th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
                                             th:text="${#strings.trim(s)}">영어</span>
                                     </div>
 
@@ -160,68 +182,63 @@
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-3">튜터 정보</h3>
 
-                    <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
-                                data-bs-target="#intro-pane" type="button" role="tab"
-                                aria-controls="intro-pane" aria-selected="true">자기소개</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="education-tab" data-bs-toggle="tab"
-                                data-bs-target="#education-pane" type="button" role="tab"
-                                aria-controls="education-pane" aria-selected="false">학력</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="career-tab" data-bs-toggle="tab"
-                                data-bs-target="#career-pane" type="button" role="tab"
-                                aria-controls="career-pane" aria-selected="false">근무경력</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
-                                data-bs-target="#certificate-pane" type="button" role="tab"
-                                aria-controls="certificate-pane" aria-selected="false">자격증</button>
-                        </li>
-                    </ul>
+                            <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
+                                        data-bs-target="#intro-pane" type="button" role="tab" aria-controls="intro-pane"
+                                        aria-selected="true">자기소개</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="education-tab" data-bs-toggle="tab"
+                                        data-bs-target="#education-pane" type="button" role="tab"
+                                        aria-controls="education-pane" aria-selected="false">학력</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="career-tab" data-bs-toggle="tab"
+                                        data-bs-target="#career-pane" type="button" role="tab"
+                                        aria-controls="career-pane" aria-selected="false">근무경력</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
+                                        data-bs-target="#certificate-pane" type="button" role="tab"
+                                        aria-controls="certificate-pane" aria-selected="false">자격증</button>
+                                </li>
+                            </ul>
 
-                    <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
-                        <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
-                            aria-labelledby="intro-tab" tabindex="0">
-                            <div class="mb-3">
-                                <div class="small fw-semibold text-muted mb-1">소개</div>
-                                <div class="text-muted"
-                                    th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
-                                    등록된 자기소개가 없습니다.
-                                </div>
-                            </div>
-                            <div>
-                                <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
-                            <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
-                                th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
-                                <div class="text-muted"
-                                    th:each="line : ${lines}"
-                                    th:if="${!#strings.isEmpty(#strings.trim(line))}"
-                                    th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
-                                    - 학생 수준에 맞춘 맞춤형 커리큘럼
-                                </div>
-                            </div>
+                            <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
+                                <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
+                                    aria-labelledby="intro-tab" tabindex="0">
+                                    <div class="mb-3">
+                                        <div class="small fw-semibold text-muted mb-1">소개</div>
+                                        <div class="text-muted"
+                                            th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
+                                            등록된 자기소개가 없습니다.
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
+                                        <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
+                                            th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
+                                            <div class="text-muted" th:each="line : ${lines}"
+                                                th:if="${!#strings.isEmpty(#strings.trim(line))}"
+                                                th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
+                                                - 학생 수준에 맞춘 맞춤형 커리큘럼
+                                            </div>
+                                        </div>
 
-                            <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
-                               등록된 강의 스타일 정보가 없습니다.
+                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
+                                            등록된 강의 스타일 정보가 없습니다.
                                         </div>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="education-pane" role="tabpanel"
                                     aria-labelledby="education-tab" tabindex="0">
-                                    <div th:if="${!#lists.isEmpty(tutor.educationTimelineItems)}"
-                                        class="timeline-list">
-                                        <div class="timeline-item"
-                                            th:each="item : ${tutor.educationTimelineItems}">
-                                            <div class="timeline-year"
-                                                th:text="${item.year}">
+                                    <div th:if="${!#lists.isEmpty(tutor.educationTimelineItems)}" class="timeline-list">
+                                        <div class="timeline-item" th:each="item : ${tutor.educationTimelineItems}">
+                                            <div class="timeline-year" th:text="${item.year}">
                                                 2018 - 2022
                                             </div>
-                                            <div class="timeline-text"
-                                                th:text="${item.text}">
+                                            <div class="timeline-text" th:text="${item.text}">
                                                 서울대학교 · 영어영문학 학사
                                             </div>
                                         </div>
@@ -230,18 +247,14 @@
                                         등록된 학력 정보가 없습니다.
                                     </div>
                                 </div>
-                                <div class="tab-pane fade" id="career-pane" role="tabpanel"
-                                    aria-labelledby="career-tab" tabindex="0">
-                                    <div th:if="${!#lists.isEmpty(tutor.careerTimelineItems)}"
-                                        class="timeline-list">
-                                        <div class="timeline-item"
-                                            th:each="item : ${tutor.careerTimelineItems}">
-                                            <div class="timeline-year"
-                                                th:text="${item.year}">
+                                <div class="tab-pane fade" id="career-pane" role="tabpanel" aria-labelledby="career-tab"
+                                    tabindex="0">
+                                    <div th:if="${!#lists.isEmpty(tutor.careerTimelineItems)}" class="timeline-list">
+                                        <div class="timeline-item" th:each="item : ${tutor.careerTimelineItems}">
+                                            <div class="timeline-year" th:text="${item.year}">
                                                 2021 - 현재
                                             </div>
-                                            <div class="timeline-text"
-                                                th:text="${item.text}">
+                                            <div class="timeline-text" th:text="${item.text}">
                                                 어학원 · 영어강사
                                             </div>
                                         </div>
@@ -268,12 +281,13 @@
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-4">
                                 수강 후기 (<span th:text="${#lists.size(reviews)}">3</span>)
-                                <button type="button" class="btn btn-sm btn-primary float-end" id="btnOpenReviewModal" onclick="openReviewModal()"
-                                    th:if="${!isTutorViewer}">리뷰 작성</button>
+                                <button type="button" class="btn btn-sm btn-primary float-end" id="btnOpenReviewModal"
+                                    onclick="openReviewModal()" th:if="${!isTutorViewer}">리뷰 작성</button>
                             </h3>
-                            
+
                             <div th:each="r : ${reviews}" class="mb-3">
-                                <div class="card border review-item" th:attr="data-review-id=${r.id},data-student-id=${r.studentId},data-booking-id=${r.bookingId},data-rating=${r.rating},data-content=${r.content}">
+                                <div class="card border review-item"
+                                    th:attr="data-review-id=${r.id},data-student-id=${r.studentId},data-booking-id=${r.bookingId},data-rating=${r.rating},data-content=${r.content}">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
@@ -289,11 +303,14 @@
                                         </div>
                                         <p class="mb-2 text-dark" th:text="${r.content}">후기 내용</p>
                                         <div class="small text-muted">
-                                            <span th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
+                                            <span
+                                                th:text="${#temporals.format(r.createdAt, 'yyyy-MM-dd')}">2026-01-20</span>
                                         </div>
                                         <div class="review-actions mt-2 gap-2 d-none">
-                                            <button type="button" class="btn btn-sm btn-outline-primary btn-edit-review">수정</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete-review">삭제</button>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-primary btn-edit-review">수정</button>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger btn-delete-review">삭제</button>
                                         </div>
                                     </div>
                                 </div>
@@ -316,12 +333,16 @@
                             <div class="mb-3">
                                 <div class="tc-toolbar mb-3">
                                     <button type="button" class="tc-iconbtn" id="btnPrevWeek" aria-label="이전 주">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 5.5 9 12l6.5 6.5"/></svg>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M15.5 5.5 9 12l6.5 6.5" />
+                                        </svg>
                                         <span class="sr-only"></span>
                                     </button>
                                     <div class="tc-range" id="weekRangeLabel">2026.02.02 ~ 02.08</div>
                                     <button type="button" class="tc-iconbtn" id="btnNextWeek" aria-label="다음 주">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 18.5 15 12 8.5 5.5"/></svg>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M8.5 18.5 15 12 8.5 5.5" />
+                                        </svg>
                                         <span class="sr-only"></span>
                                     </button>
                                 </div>
@@ -403,7 +424,7 @@
                                 </div>
 
                                 <small class="text-muted d-block mt-2">
-                                    <span class="badge bg-primary">●</span> 수업 가능 
+                                    <span class="badge bg-primary">●</span> 수업 가능
                                     <span class="badge bg-danger ms-2">●</span> 예약됨
                                 </small>
                             </div>
@@ -423,7 +444,8 @@
                                     <label class="form-label">과목 *</label>
                                     <select name="subject" class="form-select" required>
                                         <option value="" selected>선택</option>
-                                        <option th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}" th:value="${#strings.trim(s)}" th:text="${#strings.trim(s)}">영어</option>
+                                        <option th:each="s : ${#strings.arraySplit(tutor.subjects, ',')}"
+                                            th:value="${#strings.trim(s)}" th:text="${#strings.trim(s)}">영어</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -673,7 +695,7 @@
                     if (bookingSelect) {
                         bookingSelect.disabled = false;
                     }
-                    
+
                     // 현재 튜터와의 과거 예약 목록 로드
                     const tutorId = document.getElementById('bookingForm')?.dataset?.tutorId;
                     if (tutorId) {
@@ -720,7 +742,7 @@
                             console.warn('Failed to load bookings', e);
                         }
                     }
-                    
+
                     reviewModal.show();
                 }
 
@@ -911,19 +933,19 @@
 
                             const token = localStorage.getItem('accessToken');
 
-                            if ( !token ) {
+                            if (!token) {
                                 alert('로그인이 필요합니다.');
                                 location.href = '/login';
                                 return;
                             }
 
-                            const body = reviewId 
+                            const body = reviewId
                                 ? { rating: parseInt(rating), content: content }
                                 : { bookingId: bookingId, rating: parseInt(rating), content: content };
 
                             const response = await fetch(url, {
                                 method: method,
-                                headers: { 
+                                headers: {
                                     'Content-Type': 'application/json',
                                     'Authorization': `Bearer ${token}`
                                 },
@@ -1041,7 +1063,8 @@
                         <input type="hidden" id="reviewId">
                         <input type="hidden" id="bookingId">
                         <div class="mb-3">
-                            <label for="bookingSelect" class="form-label fw-semibold">수업 선택 <span class="text-danger">*</span></label>
+                            <label for="bookingSelect" class="form-label fw-semibold">수업 선택 <span
+                                    class="text-danger">*</span></label>
                             <select class="form-select" id="bookingSelect" required>
                                 <option value="">수업을 선택해주세요</option>
                             </select>
@@ -1049,17 +1072,23 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">평점 <span class="text-danger">*</span></label>
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="1">★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="2">★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="3">★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="4">★★★★</button>
-                                <button type="button" class="btn btn-outline-warning rating-btn" data-rating="5">★★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="1">★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="2">★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="3">★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="4">★★★★</button>
+                                <button type="button" class="btn btn-outline-warning rating-btn"
+                                    data-rating="5">★★★★★</button>
                             </div>
                             <input type="hidden" id="reviewRating" required>
                         </div>
                         <div class="mb-3">
-                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="reviewComment" rows="5" 
+                            <label for="reviewComment" class="form-label fw-semibold">후기 내용 <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reviewComment" rows="5"
                                 placeholder="수업에 대한 솔직한 후기를 작성해주세요." required></textarea>
                         </div>
                     </div>
@@ -1072,4 +1101,5 @@
         </div>
     </div>
 </body>
+
 </html>
