@@ -31,6 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthApiController {
+
+	private static final long REMEMBER_ME_COOKIE_AGE_SECONDS = 60L * 60L * 24L * 30L;
 	
 	private final LoginService loginService;
 
@@ -50,7 +52,8 @@ public class AuthApiController {
 			return ApiResponse.error("로그인에 실패했습니다.");
 		}
 		
-		setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+		boolean rememberMe = Boolean.TRUE.equals(user.getRememberMe());
+		setTokenCookies(response, result.getAccessToken(), result.getRefreshToken(), rememberMe);
 		setSessionAuthentication(httpRequest, result);
 		return ApiResponse.ok(result, SuccessCode.OK);
 
@@ -69,7 +72,11 @@ public class AuthApiController {
 				refreshToken = getCookieValue(httpRequest, "refreshToken");
 			}
 			result = loginService.tokenRefresh(refreshToken);
-			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			Boolean rememberMeRequest = (request != null) ? request.getRememberMe() : null;
+			boolean rememberMe = (rememberMeRequest != null)
+					? rememberMeRequest.booleanValue()
+					: Boolean.parseBoolean(getCookieValue(httpRequest, "rememberMe"));
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken(), rememberMe);
 			return ApiResponse.ok(result, SuccessCode.OK);
 		} catch (AppException e) {
 			log.error("토큰 갱신 실패: {}", e.getMessage());
@@ -117,7 +124,7 @@ public class AuthApiController {
 			log.info("소셜 로그인 요청: provider={}, role={}", provider, role);
 			
 			result = loginService.socialLogin(provider, role);
-			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken(), false);
 			setSessionAuthentication(httpRequest, result);
 			
 			return ApiResponse.ok(result, SuccessCode.OK);
@@ -142,7 +149,7 @@ public class AuthApiController {
 			}
 			CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
 			Auth.TokenResponse result = loginService.assignOAuthRole(oauth2User.getUserId(), role);
-			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken(), false);
 			setSessionAuthentication(httpRequest, result);
 			return ApiResponse.ok(result, SuccessCode.OK);
 		} catch (AppException e) {
@@ -164,7 +171,7 @@ public class AuthApiController {
 			}
 			CustomOAuth2User oauth2User = (CustomOAuth2User) authentication.getPrincipal();
 			Auth.TokenResponse result = loginService.issueTokensForUserId(oauth2User.getUserId());
-			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken());
+			setTokenCookies(response, result.getAccessToken(), result.getRefreshToken(), false);
 			setSessionAuthentication(httpRequest, result);
 			return ApiResponse.ok(result, SuccessCode.OK);
 		} catch (AppException e) {
@@ -199,19 +206,32 @@ public class AuthApiController {
 	// 	}
 	// }
 
-	private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-		ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+	private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken, boolean rememberMe) {
+		ResponseCookie.ResponseCookieBuilder accessBuilder = ResponseCookie.from("accessToken", accessToken)
 				.httpOnly(true)
 				.path("/")
-				.sameSite("Lax")
-				.build();
-		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+				.sameSite("Lax");
+		ResponseCookie.ResponseCookieBuilder refreshBuilder = ResponseCookie.from("refreshToken", refreshToken)
 				.httpOnly(true)
 				.path("/")
-				.sameSite("Lax")
-				.build();
+				.sameSite("Lax");
+		ResponseCookie.ResponseCookieBuilder rememberMeBuilder = ResponseCookie.from("rememberMe", String.valueOf(rememberMe))
+				.httpOnly(true)
+				.path("/")
+				.sameSite("Lax");
+
+		if (rememberMe) {
+			accessBuilder.maxAge(REMEMBER_ME_COOKIE_AGE_SECONDS);
+			refreshBuilder.maxAge(REMEMBER_ME_COOKIE_AGE_SECONDS);
+			rememberMeBuilder.maxAge(REMEMBER_ME_COOKIE_AGE_SECONDS);
+		}
+
+		ResponseCookie accessCookie = accessBuilder.build();
+		ResponseCookie refreshCookie = refreshBuilder.build();
+		ResponseCookie rememberMeCookie = rememberMeBuilder.build();
 		response.addHeader("Set-Cookie", accessCookie.toString());
 		response.addHeader("Set-Cookie", refreshCookie.toString());
+		response.addHeader("Set-Cookie", rememberMeCookie.toString());
 	}
 
 	private void clearTokenCookies(HttpServletResponse response) {
@@ -227,8 +247,15 @@ public class AuthApiController {
 				.sameSite("Lax")
 				.maxAge(0)
 				.build();
+		ResponseCookie rememberMeCookie = ResponseCookie.from("rememberMe", "")
+				.httpOnly(true)
+				.path("/")
+				.sameSite("Lax")
+				.maxAge(0)
+				.build();
 		response.addHeader("Set-Cookie", accessCookie.toString());
 		response.addHeader("Set-Cookie", refreshCookie.toString());
+		response.addHeader("Set-Cookie", rememberMeCookie.toString());
 	}
 
 	private String getCookieValue(HttpServletRequest request, String name) {

@@ -488,6 +488,13 @@
             let currentSection = "basic";
             let securityVerified = false;
 
+            function reloadProfileEditSection(sectionType) {
+                const safeKey = sections.includes(sectionType) ? sectionType : (currentSection || 'basic');
+                window.location.href = `${window.location.pathname}?section=${encodeURIComponent(safeKey)}`;
+            }
+
+            window.reloadProfileEditSection = reloadProfileEditSection;
+
             async function verifySecurityAccessInline(){
                 if (!profileState.loginId) {
                     alert('아이디 정보를 불러오지 못했습니다.');
@@ -886,23 +893,8 @@
                     if (result.success) {
                         // 저장 완료
                         alert(`${sectionNames[sectionType] || '섹션'}이(가) 저장되었습니다.`);
-
-                        // 보안 섹션 저장 후 마이페이지로 이동
-                        if (sectionType === 'security') {
-                            location.href = '/tutor/mypage';
-                            return;
-                        }
-                        
-                        // 사이드바 프로필 이미지 업데이트 (basic 섹션 저장 시)
-                        if (sectionType === 'basic' && profileState.profileImgFile) {
-                            const previewUrl = URL.createObjectURL(profileState.profileImgFile);
-                            const sidebarProfileImg = document.getElementById('sidebarProfileImg');
-                            if (sidebarProfileImg) {
-                                sidebarProfileImg.classList.remove('bg-primary');
-                                sidebarProfileImg.innerHTML = `<img src="${previewUrl}" class="rounded-circle w-100 h-100 object-fit-cover" alt="프로필">`;
-                            }
-                        } 
-                        
+                        reloadProfileEditSection(sectionType);
+                        return;
                     } else {
                         alert(result.message || `${sectionNames[sectionType] || '섹션'} 저장에 실패했습니다.`);
                     }
@@ -1160,6 +1152,13 @@
                 return true;
 
             }
+
+            window.saveEmploymentSection = async function saveEmploymentSection() {
+                const ok = await saveCareersToApi(true);
+                if (ok) {
+                    reloadProfileEditSection('employment');
+                }
+            };
 
             async function saveEducationsToApi(showSuccess = false) {
                 const payload = buildEducationPayload();
@@ -1651,8 +1650,9 @@
                         }
 
                         documentTextsInitialized = false;
-                        await loadDocumentList();
                         alert('서류 정보가 저장되었습니다.');
+                        reloadProfileEditSection('documents');
+                        return;
                     } catch (e) {
                         console.error(e);
                         alert(e.message || '서류 저장 중 오류가 발생했습니다.');

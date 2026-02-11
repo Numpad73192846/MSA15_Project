@@ -18,6 +18,7 @@ public class Users {
 	private String id = UUID.randomUUID().toString();
 	private String username;
 	private String password;
+	private Boolean rememberMe;
 	private String name;
 	private String nickname;
 	private String profileImg;

@@ -13,7 +13,7 @@
     <update id="updateDocumentStatus">
         UPDATE tutor_document
         SET reviewed_by = #{adminId},
-            reviewed_at = NOW(),
+            reviewed_at = NOW(),\
             reject_reason = CASE
                 WHEN UPPER(#{status}) = 'APPROVED' THEN NULL
                 ELSE COALESCE(NULLIF(#{rejectReason}, ''), 'REJECTED')

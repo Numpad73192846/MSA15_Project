@@ -33,12 +33,9 @@ public class TutorAvailabilityController {
     private final TutorAvailabilityService tutorAvailabilityService;
     private final UserService userService;
 
-    /**
-     * 내 가용 시간 조회 (기간별)
-     */
     @GetMapping("/me/availability")
     public ApiResponse<List<TutorAvailability>> getMyAvailability(
-            @RequestParam("start") String start, // ISO format: "2026-02-01T00:00:00"
+            @RequestParam("start") String start,
             @RequestParam("end") String end,
             Authentication authentication
     ) {
@@ -51,25 +48,22 @@ public class TutorAvailabilityController {
             if (!StringUtils.hasText(userId)) {
                 return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
             }
+
             LocalDateTime startDate = parseDateTimeOrNull(start);
             LocalDateTime endDate = parseDateTimeOrNull(end);
             if (startDate == null || endDate == null) {
                 return ApiResponse.error("잘못된 날짜 형식입니다.");
             }
 
-                List<TutorAvailability> availabilities = tutorAvailabilityService
-                    .selectByUserIdAndDateRange(userId, startDate, endDate);
-
-                return ApiResponse.ok(availabilities);
+            List<TutorAvailability> availabilities =
+                    tutorAvailabilityService.selectByUserIdAndDateRange(userId, startDate, endDate);
+            return ApiResponse.ok(availabilities);
         } catch (Exception e) {
             log.error("가용 시간 조회 실패", e);
             return ApiResponse.error("가용 시간을 조회하지 못했습니다.");
         }
     }
 
-    /**
-     * 특정 튜터의 가용 시간 조회 (학생용)
-     */
     @GetMapping("/{tutorId}/availability")
     public ApiResponse<List<TutorAvailability>> getTutorAvailability(
             @PathVariable("tutorId") String tutorId,
@@ -83,11 +77,10 @@ public class TutorAvailabilityController {
                 return ApiResponse.error("잘못된 날짜 형식입니다.");
             }
 
-                List<TutorAvailability> availabilities = tutorAvailabilityService
-                    .selectByUserIdAndDateRange(tutorId, startDate, endDate);
-            
-            // OPEN 상태만 필터링 (학생에게는 예약 가능한 시간만 보여줌)
-                List<TutorAvailability> dtoList = availabilities.stream()
+            List<TutorAvailability> availabilities =
+                    tutorAvailabilityService.selectByUserIdAndDateRange(tutorId, startDate, endDate);
+
+            List<TutorAvailability> dtoList = availabilities.stream()
                     .filter(av -> av.getStatus() == TutorAvailability.Status.OPEN
                             || av.getStatus() == TutorAvailability.Status.BOOKED)
                     .toList();
@@ -99,14 +92,11 @@ public class TutorAvailabilityController {
         }
     }
 
-    /**
-     * 내 가용 시간 일괄 저장 (기간별 삭제 후 재생성)
-     */
     @PostMapping("/me/availability")
     public ApiResponse<Void> saveMyAvailability(
             @RequestParam("start") String start,
             @RequestParam("end") String end,
-                @RequestBody List<TutorAvailability> availabilityDTOs,
+            @RequestBody List<TutorAvailability> availabilityDTO,
             Authentication authentication
     ) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -118,13 +108,14 @@ public class TutorAvailabilityController {
             if (!StringUtils.hasText(userId)) {
                 return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
             }
+
             LocalDateTime startDate = parseDateTimeOrNull(start);
             LocalDateTime endDate = parseDateTimeOrNull(end);
             if (startDate == null || endDate == null) {
                 return ApiResponse.error("잘못된 날짜 형식입니다.");
             }
 
-            List<TutorAvailability> availabilities = availabilityDTOs.stream()
+            List<TutorAvailability> availabilities = availabilityDTO.stream()
                     .peek(dto -> {
                         dto.setUserId(userId);
                         if (dto.getStatus() == null) {
@@ -134,7 +125,6 @@ public class TutorAvailabilityController {
                     .toList();
 
             tutorAvailabilityService.replaceAvailabilities(userId, startDate, endDate, availabilities);
-
             return ApiResponse.ok(SuccessCode.CREATED);
         } catch (Exception e) {
             log.error("가용 시간 저장 실패", e);
@@ -142,9 +132,6 @@ public class TutorAvailabilityController {
         }
     }
 
-    /**
-     * 가용 시간 상태 변경 (예약 처리 등)
-     */
     @PatchMapping("/me/availability/{id}/status")
     public ApiResponse<Void> updateAvailabilityStatus(
             @PathVariable("id") String id,
@@ -164,9 +151,6 @@ public class TutorAvailabilityController {
         }
     }
 
-    /**
-     * 가용 시간 삭제
-     */
     @DeleteMapping("/me/availability/{id}")
     public ApiResponse<Void> deleteAvailability(
             @PathVariable("id") String id,
@@ -204,6 +188,7 @@ public class TutorAvailabilityController {
         } catch (Exception ignored) {
             // fall through
         }
+
         try {
             return userService.selectByUsername(authName).getId();
         } catch (Exception ignored) {
