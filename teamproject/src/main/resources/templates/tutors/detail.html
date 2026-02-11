@@ -308,6 +308,12 @@
 
                 <div class="col-lg-4">
                     <div class="card shadow-sm sticky-top" style="top:90px;">
+                        <div class="tutorVideo-wrap" id="videoWrap"
+                            th:if="${!#strings.isEmpty(tutor.videoUrl)}">
+                            <div class="resize">
+                                <iframe id="tutorVideo" th:src="${tutor.videoUrl}" class="re" width="100%" height="100%" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>    
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="fw-bold">수업 예약</div>

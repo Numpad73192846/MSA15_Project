@@ -115,6 +115,7 @@ public class TutorsPageController {
             tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects() : "");
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
             tutorMap.put("selfIntro", tutor.getSelfIntro() != null ? tutor.getSelfIntro() : "");
+            tutorMap.put("videoUrl", tutor.getVideoUrl() != null ? tutor.getVideoUrl() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
             tutorMap.put("careerTimeline", tutor.getCareerTimeline() != null ? tutor.getCareerTimeline() : "");
             tutorMap.put("careerTimelineItems", toTimelineItems(tutor.getCareerTimeline()));
@@ -129,6 +130,8 @@ public class TutorsPageController {
             tutorMap.put("availability", "평일 저녁, 주말");
 
             List<Review> reviews = reviewService.selectReviewsByTutor(tutor.getUserId());
+
+            log.info("튜터 비디오 URL: {}", tutor.getVideoUrl());
 
             double avgRating = 0.0;
             if (!reviews.isEmpty()) {
