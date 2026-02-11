@@ -59,6 +59,35 @@
                 color: #334155;
                 line-height: 1.7;
             }
+            .timeline-list {
+                display: flex;
+                flex-direction: column;
+                gap: .45rem;
+                margin-top: .1rem;
+            }
+            .timeline-item {
+                display: grid;
+                grid-template-columns: 104px 1fr;
+                gap: .8rem;
+                align-items: start;
+                padding: .08rem 0;
+            }
+            .timeline-item + .timeline-item {
+                margin-top: .1rem;
+            }
+            .timeline-year {
+                font-size: .85rem;
+                font-weight: 700;
+                color: #64748b;
+                white-space: nowrap;
+                line-height: 1.7;
+            }
+            .timeline-text {
+                color: #0f172a;
+                font-size: .95rem;
+                font-weight: 500;
+                line-height: 1.65;
+            }
             @media (max-width: 576px) {
                 .tutor-info-tabs .nav-link {
                     font-size: .85rem;
@@ -67,6 +96,16 @@
                 .tutor-info-tab-content {
                     padding: .95rem .85rem;
                     border-radius: 0 0 12px 12px;
+                }
+                .timeline-item {
+                    grid-template-columns: 82px 1fr;
+                    gap: .55rem;
+                }
+                .timeline-year {
+                    font-size: .78rem;
+                }
+                .timeline-text {
+                    font-size: .9rem;
                 }
             }
         </style>
@@ -121,85 +160,93 @@
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-3">튜터 정보</h3>
 
-                            <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
-                                        data-bs-target="#intro-pane" type="button" role="tab"
-                                        aria-controls="intro-pane" aria-selected="true">자기소개</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="education-tab" data-bs-toggle="tab"
-                                        data-bs-target="#education-pane" type="button" role="tab"
-                                        aria-controls="education-pane" aria-selected="false">학력</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="career-tab" data-bs-toggle="tab"
-                                        data-bs-target="#career-pane" type="button" role="tab"
-                                        aria-controls="career-pane" aria-selected="false">근무경력</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
-                                        data-bs-target="#certificate-pane" type="button" role="tab"
-                                        aria-controls="certificate-pane" aria-selected="false">자격증</button>
-                                </li>
-                            </ul>
+                    <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
+                                data-bs-target="#intro-pane" type="button" role="tab"
+                                aria-controls="intro-pane" aria-selected="true">자기소개</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="education-tab" data-bs-toggle="tab"
+                                data-bs-target="#education-pane" type="button" role="tab"
+                                aria-controls="education-pane" aria-selected="false">학력</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="career-tab" data-bs-toggle="tab"
+                                data-bs-target="#career-pane" type="button" role="tab"
+                                aria-controls="career-pane" aria-selected="false">근무경력</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
+                                data-bs-target="#certificate-pane" type="button" role="tab"
+                                aria-controls="certificate-pane" aria-selected="false">자격증</button>
+                        </li>
+                    </ul>
 
-                            <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
-                                <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
-                                    aria-labelledby="intro-tab" tabindex="0">
-                                    <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">소개</div>
-                                        <div class="text-muted"
-                                            th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
-                                            등록된 자기소개가 없습니다.
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
-                                            th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
-                                            <div class="text-muted"
-                                                th:each="line : ${lines}"
-                                                th:if="${!#strings.isEmpty(#strings.trim(line))}"
-                                                th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
-                                                - 학생 수준에 맞춘 맞춤형 커리큘럼
-                                            </div>
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
-                                            등록된 강의 스타일 정보가 없습니다.
+                    <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
+                        <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
+                            aria-labelledby="intro-tab" tabindex="0">
+                            <div class="mb-3">
+                                <div class="small fw-semibold text-muted mb-1">소개</div>
+                                <div class="text-muted"
+                                    th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
+                                    등록된 자기소개가 없습니다.
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
+                            <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
+                                th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
+                                <div class="text-muted"
+                                    th:each="line : ${lines}"
+                                    th:if="${!#strings.isEmpty(#strings.trim(line))}"
+                                    th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
+                                    - 학생 수준에 맞춘 맞춤형 커리큘럼
+                                </div>
+                            </div>
+
+                            <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
+                               등록된 강의 스타일 정보가 없습니다.
                                         </div>
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="education-pane" role="tabpanel"
                                     aria-labelledby="education-tab" tabindex="0">
-                                    <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">학교</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.educationSchools)}"
-                                            th:utext="${#strings.replace(tutor.educationSchools, ' | ', '<br/>')}">
-                                            서울대학교
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.educationSchools)}">
-                                            등록된 학력 정보가 없습니다.
+                                    <div th:if="${!#lists.isEmpty(tutor.educationTimelineItems)}"
+                                        class="timeline-list">
+                                        <div class="timeline-item"
+                                            th:each="item : ${tutor.educationTimelineItems}">
+                                            <div class="timeline-year"
+                                                th:text="${item.year}">
+                                                2018 - 2022
+                                            </div>
+                                            <div class="timeline-text"
+                                                th:text="${item.text}">
+                                                서울대학교 · 영어영문학 학사
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <div class="small fw-semibold text-muted mb-1">학위</div>
-                                        <div th:if="${!#strings.isEmpty(tutor.educationDegrees)}"
-                                            th:utext="${#strings.replace(tutor.educationDegrees, ' | ', '<br/>')}">
-                                            학사
-                                        </div>
-                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.educationDegrees)}">
-                                            등록된 학위 정보가 없습니다.
-                                        </div>
+                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.educationTimelineItems)}">
+                                        등록된 학력 정보가 없습니다.
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="career-pane" role="tabpanel"
                                     aria-labelledby="career-tab" tabindex="0">
-                                    <div th:if="${!#strings.isEmpty(tutor.experience)}"
-                                        th:utext="${#strings.replace(tutor.experience, ' | ', '<br/>')}">
-                                        어학원 - 영어강사
+                                    <div th:if="${!#lists.isEmpty(tutor.careerTimelineItems)}"
+                                        class="timeline-list">
+                                        <div class="timeline-item"
+                                            th:each="item : ${tutor.careerTimelineItems}">
+                                            <div class="timeline-year"
+                                                th:text="${item.year}">
+                                                2021 - 현재
+                                            </div>
+                                            <div class="timeline-text"
+                                                th:text="${item.text}">
+                                                어학원 · 영어강사
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-muted" th:if="${#strings.isEmpty(tutor.experience)}">
+                                    <div class="text-muted" th:if="${#lists.isEmpty(tutor.careerTimelineItems)}">
                                         등록된 근무경력 정보가 없습니다.
                                     </div>
                                 </div>
@@ -370,7 +417,7 @@
                                     <label class="form-label">선택된 시간</label>
                                     <textarea class="form-control bg-white" id="displaySelectedTime" rows="3"
                                         placeholder="캘린더에서 시간을 선택해주세요" readonly></textarea>
-                                    <div class="form-text">여러 날짜를 선택할 수 있습니다. (같은 날짜는 1개 시간만 선택)</div>
+                                    <div class="form-text">같은 날짜도 여러 시간을 선택할 수 있으며, 연속 시간은 한 수업으로 묶여 표시됩니다.</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">과목 *</label>
@@ -451,6 +498,118 @@
                     }));
                 }
 
+                function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                    const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                    if (!matched) return '';
+                    const hour = Number(matched[1]);
+                    const minute = Number(matched[2]);
+                    const second = Number(matched[3] || '0');
+                    if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                    if (minute % stepMinutes !== 0 || second !== 0) return '';
+                    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                }
+
+                function timeToMinutes(time) {
+                    const matched = String(time || '').match(/^(\d{2}):(\d{2})$/);
+                    if (!matched) return NaN;
+                    return Number(matched[1]) * 60 + Number(matched[2]);
+                }
+
+                function minutesToTime(totalMinutes) {
+                    const hour = Math.floor(totalMinutes / 60);
+                    const minute = totalMinutes % 60;
+                    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                }
+
+                function formatDurationLabel(durationMinutes) {
+                    if (durationMinutes % 60 === 0) {
+                        return `${durationMinutes / 60}시간`;
+                    }
+                    return `${durationMinutes}분`;
+                }
+
+                function buildMergedSelection(selectedData, stepMinutes = 30) {
+                    const groupedByDate = new Map();
+
+                    selectedData.forEach(item => {
+                        if (!item?.date || !item?.time) return;
+                        const minute = timeToMinutes(item.time);
+                        if (!Number.isFinite(minute)) return;
+                        if (!groupedByDate.has(item.date)) groupedByDate.set(item.date, new Set());
+                        groupedByDate.get(item.date).add(minute);
+                    });
+
+                    const merged = [];
+                    Array.from(groupedByDate.entries())
+                        .sort((a, b) => a[0].localeCompare(b[0]))
+                        .forEach(([date, minuteSet]) => {
+                            const sortedMinutes = Array.from(minuteSet).sort((a, b) => a - b);
+                            if (sortedMinutes.length === 0) return;
+
+                            let blockStart = sortedMinutes[0];
+                            let previous = sortedMinutes[0];
+                            for (let i = 1; i < sortedMinutes.length; i += 1) {
+                                const current = sortedMinutes[i];
+                                if (current === previous + stepMinutes) {
+                                    previous = current;
+                                    continue;
+                                }
+
+                                const end = previous + stepMinutes;
+                                merged.push({
+                                    date,
+                                    startTime: minutesToTime(blockStart),
+                                    endTime: minutesToTime(end),
+                                    durationMinutes: end - blockStart
+                                });
+                                blockStart = current;
+                                previous = current;
+                            }
+
+                            const end = previous + stepMinutes;
+                            merged.push({
+                                date,
+                                startTime: minutesToTime(blockStart),
+                                endTime: minutesToTime(end),
+                                durationMinutes: end - blockStart
+                            });
+                        });
+
+                    return merged;
+                }
+
+                function toLocalDateKey(date) {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+
+                function expandAvailabilityToSlots(item, stepMinutes = 30) {
+                    if (!item?.startAt) return [];
+                    const start = new Date(item.startAt);
+                    if (Number.isNaN(start.getTime())) return [];
+
+                    const endParsed = item.endAt ? new Date(item.endAt) : null;
+                    const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+                        ? endParsed
+                        : new Date(start.getTime() + (stepMinutes * 60000));
+
+                    const slots = [];
+                    for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                        const time = normalizeTimeToStep(
+                            `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                            stepMinutes
+                        );
+                        if (!time) continue;
+                        slots.push({
+                            date: toLocalDateKey(cursor),
+                            time
+                        });
+                    }
+                    return slots;
+                }
+
                 async function loadTutorAvailability(tutorId) {
                     try {
                         const { start, end } = getDateRangeForMaxWeeks(9);
@@ -467,19 +626,17 @@
                         const visibleGrouped = new Map();
                         const bookedGrouped = new Map();
                         result.data.forEach(item => {
-                            if (!item.startAt) return;
-                            const [datePart, timePart] = item.startAt.split('T');
-                            const time = timePart?.substring(0, 5);
-                            if (!datePart || !time) return;
                             const status = String(item.status || 'OPEN').toUpperCase();
+                            const slots = expandAvailabilityToSlots(item, 30);
 
-                            if (status === 'OPEN' || status === 'BOOKED') {
-                                addGroupedSlot(visibleGrouped, datePart, time);
-                            }
-
-                            if (status === 'BOOKED') {
-                                addGroupedSlot(bookedGrouped, datePart, time);
-                            }
+                            slots.forEach(slot => {
+                                if (status === 'OPEN' || status === 'BOOKED') {
+                                    addGroupedSlot(visibleGrouped, slot.date, slot.time);
+                                }
+                                if (status === 'BOOKED') {
+                                    addGroupedSlot(bookedGrouped, slot.date, slot.time);
+                                }
+                            });
                         });
 
                         return {
@@ -674,13 +831,14 @@
 
                             let successCount = 0;
                             let failCount = 0;
-                            const sorted = [...selectedData].sort((a, b) => {
-                                if (a.date === b.date) return a.time.localeCompare(b.time);
-                                return a.date.localeCompare(b.date);
-                            });
+                            const mergedBlocks = buildMergedSelection(selectedData, 30);
+                            if (mergedBlocks.length === 0) {
+                                alert('예약 가능한 시간 블록이 없습니다.');
+                                return;
+                            }
 
                             try {
-                                for (const item of sorted) {
+                                for (const block of mergedBlocks) {
                                     const response = await fetch(`/api/bookings/tutor/${tutorId}`, {
                                         method: 'POST',
                                         headers: {
@@ -688,8 +846,9 @@
                                             'Authorization': `Bearer ${token}`
                                         },
                                         body: JSON.stringify({
-                                            date: item.date,
-                                            time: item.time,
+                                            date: block.date,
+                                            time: block.startTime,
+                                            endTime: block.endTime,
                                             subject: subject,
                                             message: message
                                         })
@@ -834,7 +993,7 @@
                         tutorCalendar = new TutorCalendar({
                             containerId: 'tutorScheduleCalendar',
                             mode: isTutorViewer ? 'readonly' : 'edit',
-                            singleSlotPerDay: true,
+                            singleSlotPerDay: false,
                             baseTimeRanges: FULL_DAY_RANGES,
                             renderOnlyInRange: true,
                             timeStepMinutes: 30,
@@ -846,24 +1005,23 @@
                             })),
                             availableSlotsOnly: true,
                             onSlotClick: (dateKey, time, selectedData) => {
-                                const sorted = [...selectedData].sort((a, b) => {
-                                    if (a.date === b.date) return a.time.localeCompare(b.time);
-                                    return a.date.localeCompare(b.date);
-                                });
-                                const first = sorted[0];
+                                const mergedBlocks = buildMergedSelection(selectedData, 30);
+                                const first = mergedBlocks[0];
                                 const selectedDateInput = document.getElementById('selectedDate');
                                 const selectedTimeInput = document.getElementById('selectedTime');
                                 const selectedTextArea = document.getElementById('displaySelectedTime');
                                 const bookingSubmitBtn = document.getElementById('bookingSubmit');
 
                                 if (selectedDateInput) selectedDateInput.value = first ? first.date : '';
-                                if (selectedTimeInput) selectedTimeInput.value = first ? first.time : '';
+                                if (selectedTimeInput) selectedTimeInput.value = first ? first.startTime : '';
                                 if (selectedTextArea) {
-                                    selectedTextArea.value = sorted.length
-                                        ? sorted.map(item => `${item.date} ${item.time}`).join('\n')
+                                    selectedTextArea.value = mergedBlocks.length
+                                        ? mergedBlocks.map(block => (
+                                            `${block.date} ${block.startTime}~${block.endTime} (${formatDurationLabel(block.durationMinutes)})`
+                                        )).join('\n')
                                         : '';
                                 }
-                                if (bookingSubmitBtn) bookingSubmitBtn.disabled = sorted.length === 0;
+                                if (bookingSubmitBtn) bookingSubmitBtn.disabled = mergedBlocks.length === 0;
                             }
                         });
                     }

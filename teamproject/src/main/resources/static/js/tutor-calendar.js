@@ -7,6 +7,9 @@ class TutorCalendar {
     constructor(options = {}) {
         this.options = {
             containerId: 'tutorScheduleCalendar',
+            prevBtnId: 'btnPrevWeek',
+            nextBtnId: 'btnNextWeek',
+            rangeLabelId: 'weekRangeLabel',
             mode: 'edit', // 'edit' | 'readonly'
             maxWeeks: 9,
             timeStepMinutes: 30,
@@ -14,9 +17,11 @@ class TutorCalendar {
             singleSlotPerDay: false,
             onSlotClick: null,
             onWeekChange: null,
+            onBookedSlotHover: null,
             initialData: null, // {date: 'yyyy-MM-dd', slots: ['HH:mm', ...]}[]
             availableSlots: null, // {date: 'yyyy-MM-dd', slots: ['HH:mm', ...]}[]
             availableSlotsOnly: false,
+            focusFirstDataWeek: false,
             baseTimeRanges: {
                 0: [{ start: '09:00', end: '22:00' }],
                 1: [{ start: '09:00', end: '22:00' }],
@@ -33,6 +38,7 @@ class TutorCalendar {
             weekStart: null,
             selectedSlots: new Map(),
             bookedSlots: new Map(), // 예약된 슬롯 (읽기 전용)
+            bookedSlotMeta: new Map(), // key: yyyy-MM-dd|HH:mm
             availableSlots: new Map()
         };
 
@@ -43,6 +49,7 @@ class TutorCalendar {
         this.initWeekStart();
         this.loadInitialData();
         this.loadAvailableSlots();
+        this.focusWeekWithDataIfNeeded();
         this.render();
         this.updateNavigationButtons();
         this.bindEvents();
@@ -59,13 +66,30 @@ class TutorCalendar {
     loadInitialData() {
         if (!this.options.initialData) return;
         
-        this.options.initialData.forEach(({ date, slots, booked }) => {
+        this.options.initialData.forEach(({ date, slots, booked, metaByTime }) => {
+            if (!date || !Array.isArray(slots)) return;
             if (booked) {
                 this.state.bookedSlots.set(date, new Set(slots));
+                if (metaByTime && typeof metaByTime === 'object') {
+                    slots.forEach((time) => {
+                        if (metaByTime[time]) {
+                            this.state.bookedSlotMeta.set(`${date}|${time}`, metaByTime[time]);
+                        }
+                    });
+                }
             } else {
                 this.state.selectedSlots.set(date, new Set(slots));
             }
         });
+    }
+
+    setInitialData(initialData = []) {
+        this.options.initialData = initialData;
+        this.state.selectedSlots.clear();
+        this.state.bookedSlots.clear();
+        this.state.bookedSlotMeta.clear();
+        this.loadInitialData();
+        this.render();
     }
 
     loadAvailableSlots() {
@@ -74,6 +98,43 @@ class TutorCalendar {
         this.options.availableSlots.forEach(({ date, slots }) => {
             this.state.availableSlots.set(date, new Set(slots));
         });
+    }
+
+    focusWeekWithDataIfNeeded() {
+        if (!this.options.focusFirstDataWeek) return;
+
+        const currentWeekKeys = this.getWeekDates(this.state.weekStart).map((d) => this.formatDate(d));
+        const hasCurrentWeekData = currentWeekKeys.some((key) => (
+            (this.state.selectedSlots.get(key)?.size || 0) > 0
+            || (this.state.bookedSlots.get(key)?.size || 0) > 0
+            || (this.state.availableSlots.get(key)?.size || 0) > 0
+        ));
+        if (hasCurrentWeekData) return;
+
+        const allDateKeys = new Set([
+            ...this.state.selectedSlots.keys(),
+            ...this.state.bookedSlots.keys(),
+            ...this.state.availableSlots.keys()
+        ]);
+        if (allDateKeys.size === 0) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todaySunday = new Date(today);
+        todaySunday.setDate(today.getDate() - today.getDay());
+
+        const candidates = Array.from(allDateKeys)
+            .filter((key) => /^\d{4}-\d{2}-\d{2}$/.test(String(key)))
+            .map((key) => new Date(`${key}T00:00:00`))
+            .filter((d) => !Number.isNaN(d.getTime()) && d >= todaySunday)
+            .sort((a, b) => a.getTime() - b.getTime());
+
+        if (candidates.length === 0) return;
+
+        const firstDate = candidates[0];
+        const sunday = new Date(firstDate);
+        sunday.setDate(firstDate.getDate() - firstDate.getDay());
+        this.state.weekStart = sunday;
     }
 
     formatDate(date) {
@@ -130,18 +191,19 @@ class TutorCalendar {
             const m = minutes % 60;
             const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             const inRange = this.isTimeInRange(time, dayOfWeek);
+            const isBooked = this.state.bookedSlots.get(dateKey)?.has(time);
+            const isSelected = this.state.selectedSlots.get(dateKey)?.has(time);
 
-            if (this.options.renderOnlyInRange && !inRange) continue;
+            // Keep persisted slots visible even when base time ranges are changed or empty.
+            if (this.options.renderOnlyInRange && !inRange && !isBooked && !isSelected) continue;
 
             if (this.options.availableSlotsOnly) {
                 const availableSet = this.state.availableSlots.get(dateKey);
-                if (!availableSet || !availableSet.has(time)) {
+                if ((!availableSet || !availableSet.has(time)) && !isBooked && !isSelected) {
                     continue;
                 }
             }
-            
-            const isBooked = this.state.bookedSlots.get(dateKey)?.has(time);
-            const isSelected = this.state.selectedSlots.get(dateKey)?.has(time);
+
             const isPast = this.isPartTime(dateKey, time);
             
             timeSlots.push({
@@ -159,7 +221,7 @@ class TutorCalendar {
         timeSlots.forEach(slot => {
             const wrap = document.createElement('div');
             let className = 'sch_time';
-            if (!slot.inRange) className += ' off';
+            if (this.options.renderOnlyInRange && !slot.inRange && !slot.isBooked && !slot.isSelected) className += ' off';
             if (slot.isPast) className += ' past disabled';
             if (slot.isBooked) className += ' booked disabled';
             else if (slot.isSelected) className += ' selected';
@@ -171,6 +233,18 @@ class TutorCalendar {
             a.dataset.date = dateKey;
             a.dataset.inRange = slot.inRange ? 'true' : 'false';
             a.innerHTML = `${slot.time}<p class="sch_dsttime ${slot.inRange ? 'on' : 'off'}"></p>`;
+
+            if (slot.isBooked) {
+                const meta = this.state.bookedSlotMeta.get(`${dateKey}|${slot.time}`);
+                if (meta) {
+                    a.classList.add('booked-hover-enabled');
+                    const preview = [meta.studentName, meta.subject].filter(Boolean).join(' | ');
+                    if (preview) {
+                        a.title = preview;
+                    }
+                }
+            }
+
             wrap.appendChild(a);
             container.appendChild(wrap);
         });
@@ -179,7 +253,7 @@ class TutorCalendar {
     updateWeekHeader() {
         const dates = this.getWeekDates(this.state.weekStart);
         const head = document.querySelector(`#${this.options.containerId} .dayHead`);
-        const label = document.getElementById('weekRangeLabel');
+        const label = document.getElementById(this.options.rangeLabelId);
 
         if (label) {
             const startLabel = this.formatLabel(dates[0]);
@@ -299,8 +373,8 @@ class TutorCalendar {
     }
 
     updateNavigationButtons() {
-        const btnPrev = document.getElementById('btnPrevWeek');
-        const btnNext = document.getElementById('btnNextWeek');
+        const btnPrev = document.getElementById(this.options.prevBtnId);
+        const btnNext = document.getElementById(this.options.nextBtnId);
 
         if (btnPrev) {
             btnPrev.disabled = !this.canMoveWeek(-1);
@@ -335,10 +409,51 @@ class TutorCalendar {
     }
 
     bindEvents() {
-        const btnPrev = document.getElementById('btnPrevWeek');
-        const btnNext = document.getElementById('btnNextWeek');
+        const btnPrev = document.getElementById(this.options.prevBtnId);
+        const btnNext = document.getElementById(this.options.nextBtnId);
         const body = document.querySelector(`#${this.options.containerId} .dayCon`);
         window.addEventListener('resize', () => this.syncHeaderPadding());
+
+        if (body) {
+            body.addEventListener('mouseover', (e) => {
+                if (typeof this.options.onBookedSlotHover !== 'function') return;
+                const target = e.target.closest('a.time_in');
+                if (!target || !body.contains(target)) {
+                    this.options.onBookedSlotHover(null);
+                    return;
+                }
+
+                const dateKey = target.dataset.date;
+                const time = target.dataset.time;
+                if (!dateKey || !time) {
+                    this.options.onBookedSlotHover(null);
+                    return;
+                }
+
+                const meta = this.state.bookedSlotMeta.get(`${dateKey}|${time}`);
+                if (!meta) {
+                    this.options.onBookedSlotHover(null);
+                    return;
+                }
+
+                this.options.onBookedSlotHover({
+                    ...meta,
+                    date: dateKey,
+                    time
+                });
+            });
+
+            body.addEventListener('mouseout', (e) => {
+                if (typeof this.options.onBookedSlotHover !== 'function') return;
+                const from = e.target.closest('a.time_in');
+                if (!from || !body.contains(from)) return;
+                const to = e.relatedTarget && e.relatedTarget.closest
+                    ? e.relatedTarget.closest('a.time_in')
+                    : null;
+                if (to && body.contains(to)) return;
+                this.options.onBookedSlotHover(null);
+            });
+        }
 
         if (btnPrev) {
             btnPrev.addEventListener('click', () => {
@@ -378,7 +493,7 @@ class TutorCalendar {
                     return;
                 }
 
-                if (!inRange) {
+                if (!inRange && this.options.renderOnlyInRange) {
                     alert('기본 수업 가능 시간대가 아닙니다.');
                     return;
                 }

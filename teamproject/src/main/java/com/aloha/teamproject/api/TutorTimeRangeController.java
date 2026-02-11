@@ -3,6 +3,7 @@ package com.aloha.teamproject.api;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.TutorTimeRange;
 import com.aloha.teamproject.service.TutorTimeRangeService;
+import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TutorTimeRangeController {
 
     private final TutorTimeRangeService tutorTimeRangeService;
+    private final UserService userService;
 
     /**
      * 내 기본 시간대 조회
@@ -38,7 +41,10 @@ public class TutorTimeRangeController {
         }
 
         try {
-            String userId = authentication.getName();
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
             List<TutorTimeRange> timeRanges = tutorTimeRangeService.selectByUserId(userId);
             return ApiResponse.ok(timeRanges);
         } catch (Exception e) {
@@ -60,7 +66,10 @@ public class TutorTimeRangeController {
         }
 
         try {
-            String userId = authentication.getName();
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
                 List<TutorTimeRange> timeRanges = timeRangeDTOs.stream()
                     .peek(dto -> dto.setUserId(userId))
                     .toList();
@@ -87,7 +96,10 @@ public class TutorTimeRangeController {
         }
 
         try {
-            String userId = authentication.getName();
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
             TutorTimeRange timeRange = dto;
             timeRange.setUserId(userId);
             tutorTimeRangeService.insert(timeRange);
@@ -113,7 +125,10 @@ public class TutorTimeRangeController {
         }
 
         try {
-            String userId = authentication.getName();
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
             TutorTimeRange timeRange = dto;
             timeRange.setUserId(userId);
             timeRange.setId(id);
@@ -145,6 +160,23 @@ public class TutorTimeRangeController {
         } catch (Exception e) {
             log.error("기본 시간대 삭제 실패", e);
             return ApiResponse.error("기본 시간대를 삭제하지 못했습니다.");
+        }
+    }
+
+    private String resolveUserId(String authName) {
+        if (!StringUtils.hasText(authName)) {
+            return null;
+        }
+
+        try {
+            return userService.selectById(authName).getId();
+        } catch (Exception ignored) {
+            // fall through
+        }
+        try {
+            return userService.selectByUsername(authName).getId();
+        } catch (Exception ignored) {
+            return null;
         }
     }
 }

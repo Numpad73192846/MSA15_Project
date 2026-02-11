@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,6 +19,7 @@ import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
 import com.aloha.teamproject.dto.TutorAvailability;
 import com.aloha.teamproject.service.TutorAvailabilityService;
+import com.aloha.teamproject.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TutorAvailabilityController {
 
     private final TutorAvailabilityService tutorAvailabilityService;
+    private final UserService userService;
 
     /**
      * 내 가용 시간 조회 (기간별)
@@ -44,7 +47,10 @@ public class TutorAvailabilityController {
         }
 
         try {
-            String userId = authentication.getName();
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
             LocalDateTime startDate = parseDateTimeOrNull(start);
             LocalDateTime endDate = parseDateTimeOrNull(end);
             if (startDate == null || endDate == null) {
@@ -108,7 +114,10 @@ public class TutorAvailabilityController {
         }
 
         try {
-            String userId = authentication.getName();
+            String userId = resolveUserId(authentication.getName());
+            if (!StringUtils.hasText(userId)) {
+                return ApiResponse.error("사용자 정보를 확인하지 못했습니다.");
+            }
             LocalDateTime startDate = parseDateTimeOrNull(start);
             LocalDateTime endDate = parseDateTimeOrNull(end);
             if (startDate == null || endDate == null) {
@@ -181,6 +190,23 @@ public class TutorAvailabilityController {
             return LocalDateTime.parse(value);
         } catch (Exception e) {
             log.warn("Invalid datetime format: {}", value, e);
+            return null;
+        }
+    }
+
+    private String resolveUserId(String authName) {
+        if (!StringUtils.hasText(authName)) {
+            return null;
+        }
+
+        try {
+            return userService.selectById(authName).getId();
+        } catch (Exception ignored) {
+            // fall through
+        }
+        try {
+            return userService.selectByUsername(authName).getId();
+        } catch (Exception ignored) {
             return null;
         }
     }

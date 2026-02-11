@@ -6,6 +6,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS
     featured_tutor,
+    admin_inquiry_message,
+    admin_inquiry,
+    lesson_ai_homework,
+    lesson_ai_summary,
     tutor_message,
     tutor_student_note,
     review,
@@ -34,11 +38,11 @@ SET FOREIGN_KEY_CHECKS = 1;
 CREATE TABLE users (
     no BIGINT NOT NULL AUTO_INCREMENT,
     id VARCHAR(64) NOT NULL,
-    username VARCHAR(64) NOT NULL,  
-    profile_img VARCHAR(255) NULL,  
+    username VARCHAR(64) NOT NULL,
     password VARCHAR(255) NOT NULL,
     name VARCHAR(64) NOT NULL,
     nickname VARCHAR(64) NOT NULL,
+    profile_img VARCHAR(255) NULL,
     status ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -65,7 +69,6 @@ CREATE TABLE tutor_profile (
     no BIGINT NOT NULL AUTO_INCREMENT,
     user_id VARCHAR(64) NOT NULL,
     id VARCHAR(64) NOT NULL,
-    profile_img VARCHAR(255) NULL,
     phone VARCHAR(20) NULL,
     headline VARCHAR(100) NULL,
     bio TEXT NULL,
@@ -217,6 +220,102 @@ CREATE TABLE booking (
     CONSTRAINT fk_booking_tutor FOREIGN KEY (tutor_id) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT fk_booking_lesson FOREIGN KEY (lesson_id) REFERENCES lesson (id) ON DELETE CASCADE,
     CONSTRAINT fk_booking_availability FOREIGN KEY (availability_id) REFERENCES tutor_availability (id) ON DELETE CASCADE
+);
+
+CREATE TABLE lesson_ai_summary (
+    no BIGINT NOT NULL AUTO_INCREMENT,
+    id VARCHAR(64) NOT NULL,
+    booking_id VARCHAR(64) NOT NULL,
+    tutor_id VARCHAR(64) NOT NULL,
+    student_id VARCHAR(64) NOT NULL,
+    model_name VARCHAR(64) NULL,
+    prompt_text TEXT NULL,
+    summary_text TEXT NOT NULL,
+    next_action TEXT NULL,
+    version INT NOT NULL DEFAULT 1,
+    status ENUM('DRAFT', 'FINAL') NOT NULL DEFAULT 'DRAFT',
+    created_by ENUM('AI', 'TUTOR') NOT NULL DEFAULT 'AI',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (no),
+    UNIQUE KEY uk_lesson_ai_summary_id (id),
+    KEY idx_lesson_ai_summary_booking_id (booking_id),
+    KEY idx_lesson_ai_summary_tutor_id (tutor_id),
+    KEY idx_lesson_ai_summary_student_id (student_id),
+    KEY idx_lesson_ai_summary_status (status),
+    CONSTRAINT fk_lesson_ai_summary_booking FOREIGN KEY (booking_id) REFERENCES booking (id) ON DELETE CASCADE,
+    CONSTRAINT fk_lesson_ai_summary_tutor FOREIGN KEY (tutor_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_lesson_ai_summary_student FOREIGN KEY (student_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE lesson_ai_homework (
+    no BIGINT NOT NULL AUTO_INCREMENT,
+    id VARCHAR(64) NOT NULL,
+    booking_id VARCHAR(64) NOT NULL,
+    summary_id VARCHAR(64) NULL,
+    tutor_id VARCHAR(64) NOT NULL,
+    student_id VARCHAR(64) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT NULL,
+    due_date DATE NULL,
+    status ENUM('ASSIGNED', 'SUBMITTED', 'REVIEWED', 'DONE', 'CANCELLED') NOT NULL DEFAULT 'ASSIGNED',
+    generated_by ENUM('AI', 'TUTOR') NOT NULL DEFAULT 'AI',
+    submission_text TEXT NULL,
+    feedback_text TEXT NULL,
+    submitted_at DATETIME NULL,
+    reviewed_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (no),
+    UNIQUE KEY uk_lesson_ai_homework_id (id),
+    KEY idx_lesson_ai_homework_booking_id (booking_id),
+    KEY idx_lesson_ai_homework_summary_id (summary_id),
+    KEY idx_lesson_ai_homework_tutor_id (tutor_id),
+    KEY idx_lesson_ai_homework_student_id (student_id),
+    KEY idx_lesson_ai_homework_status (status),
+    CONSTRAINT fk_lesson_ai_homework_booking FOREIGN KEY (booking_id) REFERENCES booking (id) ON DELETE CASCADE,
+    CONSTRAINT fk_lesson_ai_homework_summary FOREIGN KEY (summary_id) REFERENCES lesson_ai_summary (id) ON DELETE SET NULL,
+    CONSTRAINT fk_lesson_ai_homework_tutor FOREIGN KEY (tutor_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_lesson_ai_homework_student FOREIGN KEY (student_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE admin_inquiry (
+    no BIGINT NOT NULL AUTO_INCREMENT,
+    id VARCHAR(64) NOT NULL,
+    user_id VARCHAR(64) NOT NULL,
+    category ENUM('INQUIRY', 'REPORT', 'PAYMENT', 'ACCOUNT') NOT NULL DEFAULT 'INQUIRY',
+    title VARCHAR(200) NOT NULL,
+    contact_name VARCHAR(64) NULL,
+    contact_email VARCHAR(128) NULL,
+    contact_phone VARCHAR(32) NULL,
+    status ENUM('OPEN', 'IN_PROGRESS', 'DONE') NOT NULL DEFAULT 'OPEN',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    closed_at DATETIME NULL,
+    PRIMARY KEY (no),
+    UNIQUE KEY uk_admin_inquiry_id (id),
+    KEY idx_admin_inquiry_user_id (user_id),
+    KEY idx_admin_inquiry_status (status),
+    KEY idx_admin_inquiry_category (category),
+    KEY idx_admin_inquiry_created_at (created_at),
+    CONSTRAINT fk_admin_inquiry_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE admin_inquiry_message (
+    no BIGINT NOT NULL AUTO_INCREMENT,
+    id VARCHAR(64) NOT NULL,
+    inquiry_id VARCHAR(64) NOT NULL,
+    sender_id VARCHAR(64) NOT NULL,
+    sender_role ENUM('USER', 'ADMIN') NOT NULL,
+    content VARCHAR(1000) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (no),
+    UNIQUE KEY uk_admin_inquiry_message_id (id),
+    KEY idx_admin_inquiry_message_inquiry_id (inquiry_id),
+    KEY idx_admin_inquiry_message_sender_id (sender_id),
+    KEY idx_admin_inquiry_message_created_at (created_at),
+    CONSTRAINT fk_admin_inquiry_message_inquiry FOREIGN KEY (inquiry_id) REFERENCES admin_inquiry (id) ON DELETE CASCADE,
+    CONSTRAINT fk_admin_inquiry_message_sender FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE tutor_message (

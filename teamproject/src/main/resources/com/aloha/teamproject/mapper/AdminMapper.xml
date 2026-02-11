@@ -14,7 +14,10 @@
         UPDATE tutor_document
         SET reviewed_by = #{adminId},
             reviewed_at = NOW(),
-            reject_reason = #{rejectReason},
+            reject_reason = CASE
+                WHEN UPPER(#{status}) = 'APPROVED' THEN NULL
+                ELSE COALESCE(NULLIF(#{rejectReason}, ''), 'REJECTED')
+            END,
             updated_at = NOW()
         WHERE id = #{id}
     </update>

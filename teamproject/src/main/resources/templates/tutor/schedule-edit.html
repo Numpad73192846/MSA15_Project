@@ -320,6 +320,49 @@
                 };
             }
 
+            function normalizeTimeToStep(rawTime, stepMinutes = 30) {
+                const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+                if (!matched) return '';
+                const hour = Number(matched[1]);
+                const minute = Number(matched[2]);
+                const second = Number(matched[3] || '0');
+                if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
+                if (minute % stepMinutes !== 0 || second !== 0) return '';
+                return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            }
+
+            function toLocalDateKey(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
+            function expandAvailabilityToSlots(item, stepMinutes = 30) {
+                if (!item?.startAt) return [];
+                const start = new Date(item.startAt);
+                if (Number.isNaN(start.getTime())) return [];
+
+                const endParsed = item.endAt ? new Date(item.endAt) : null;
+                const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+                    ? endParsed
+                    : new Date(start.getTime() + (stepMinutes * 60000));
+
+                const slots = [];
+                for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {
+                    const time = normalizeTimeToStep(
+                        `${String(cursor.getHours()).padStart(2, '0')}:${String(cursor.getMinutes()).padStart(2, '0')}:00`,
+                        stepMinutes
+                    );
+                    if (!time) continue;
+                    slots.push({
+                        date: toLocalDateKey(cursor),
+                        time
+                    });
+                }
+                return slots;
+            }
+
             async function loadAvailability() {
                 try {
                     const { start, end } = getDateRangeForMaxWeeks(9);
@@ -333,21 +376,21 @@
                         const bookedMap = new Map();
 
                         result.data.forEach(item => {
-                            if (!item.startAt) return;
-                            const [datePart, timePart] = item.startAt.split('T');
-                            const time = timePart?.substring(0, 5);
-                            if (!datePart || !time) return;
+                            const slots = expandAvailabilityToSlots(item, 30);
+                            const status = String(item.status || '').toUpperCase();
 
-                            if (item.status === 'BOOKED') {
-                                if (!bookedMap.has(datePart)) bookedMap.set(datePart, new Set());
-                                bookedMap.get(datePart).add(time);
-                                return;
-                            }
+                            slots.forEach(slot => {
+                                if (status === 'BOOKED') {
+                                    if (!bookedMap.has(slot.date)) bookedMap.set(slot.date, new Set());
+                                    bookedMap.get(slot.date).add(slot.time);
+                                    return;
+                                }
 
-                            if (item.status && item.status !== 'OPEN') return;
+                                if (status && status !== 'OPEN') return;
 
-                            if (!selectedMap.has(datePart)) selectedMap.set(datePart, new Set());
-                            selectedMap.get(datePart).add(time);
+                                if (!selectedMap.has(slot.date)) selectedMap.set(slot.date, new Set());
+                                selectedMap.get(slot.date).add(slot.time);
+                            });
                         });
 
                         const resultData = [];

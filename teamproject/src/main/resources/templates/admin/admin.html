@@ -36,6 +36,39 @@
     .pill-input { border-radius:999px; }
     .select-pill { border-radius:999px; }
     .row.g-3 { --bs-gutter-x: 1.25rem; --bs-gutter-y: 1.25rem; }
+    .ticket-thread {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ticket-msg {
+      max-width: 92%;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .ticket-msg.user { align-self: flex-start; }
+    .ticket-msg.admin {
+      align-self: flex-end;
+      background: #eef2ff;
+      border-color: #c7d2fe;
+    }
+    .ticket-msg-meta {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
 
     @media (min-width: 1600px){
         .admin-container{
@@ -257,6 +290,21 @@ const DATA = {
   ]
 };
 
+const STATE = {
+  tickets: DATA.tickets.map(t => ({
+    id: t.id,
+    title: t.title,
+    userName: t.writer,
+    category: t.category,
+    status: t.status,
+    createdAt: t.createdAt,
+    lastMessage: t.content
+  })),
+  selectedTicketId: null,
+  selectedTicketMessages: [],
+  dashboardSummary: null
+};
+
 /* =========================
    1) 공통 유틸
    ========================= */
@@ -340,6 +388,39 @@ async function showTab(key){
   }
 }
 
+async function fetchWithAdminAuth(url, options = {}) {
+  const headers = {
+    ...(options.headers || {}),
+    ...buildAuthHeaders()
+  };
+
+  const config = {
+    credentials: "include",
+    ...options,
+    headers
+  };
+
+  let response = await fetch(url, config);
+  if (response.status !== 401) {
+    return response;
+  }
+
+  const refreshed = await refreshAccessToken();
+  if (!refreshed) {
+    return response;
+  }
+
+  const retryConfig = {
+    ...config,
+    headers: {
+      ...(options.headers || {}),
+      ...buildAuthHeaders()
+    }
+  };
+
+  return fetch(url, retryConfig);
+}
+
 function initTab(key){
   if (key === "dashboard") return initDashboardTab();
   if (key === "doc") return initDocTab();
@@ -362,7 +443,16 @@ document.getElementById("btnRefresh")?.addEventListener("click", () => location.
    3) KPI/배지 렌더
    ========================= */
 function renderKPI(){
-  const k = DATA.kpi;
+  const fallback = DATA.kpi;
+  const summary = STATE.dashboardSummary || {};
+  const k = {
+    total: summary.totalAmount ?? fallback.total,
+    settleWait: summary.settleWaitCount ?? fallback.settleWait,
+    docWait: summary.docWaitCount ?? fallback.docWait,
+    newUsers: summary.newUsersCount ?? fallback.newUsers,
+    done: summary.doneCount ?? fallback.done
+  };
+
   document.getElementById("kpiTotal").textContent = fmtWon(k.total);
   document.getElementById("kpiSettleWait").textContent = `${k.settleWait}건`;
   document.getElementById("kpiDocWait").textContent = `${k.docWait}건`;
@@ -401,7 +491,11 @@ function renderDashboard(){
     `).join("");
   document.getElementById("dashSettleTbody").innerHTML = settleRows || `<tr><td colspan="2" class="muted text-center py-3">대기 없음</td></tr>`;
 
-  const ticketRows = DATA.tickets.slice(0,5).map(t => `
+  const recentTickets = Array.isArray(STATE.dashboardSummary?.recentInquiries)
+    ? STATE.dashboardSummary.recentInquiries
+    : STATE.tickets;
+
+  const ticketRows = recentTickets.slice(0,5).map(t => `
     <tr>
       <td class="text-truncate" style="max-width:220px;">
         <a href="#" class="text-link" data-go="tickets">${t.title}</a>
@@ -410,6 +504,21 @@ function renderDashboard(){
     </tr>
   `).join("");
   document.getElementById("dashTicketTbody").innerHTML = ticketRows || `<tr><td colspan="2" class="muted text-center py-3">최근 문의 없음</td></tr>`;
+}
+
+async function loadAdminDashboardSummary(){
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/inquiries/summary");
+    const result = await response.json();
+    if (!response.ok || !result?.success || !result?.data) {
+      return;
+    }
+    STATE.dashboardSummary = result.data;
+    renderKPI();
+    renderDashboard();
+  } catch (e) {
+    console.error("Failed to load dashboard summary", e);
+  }
 }
 
 /* =========================
@@ -692,17 +801,37 @@ function changeUserStatus(toStatus){
 /* =========================
    8) 문의/신고(좌 목록 + 우 처리)
    ========================= */
-let selectedTicketId = null;
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatDateTime(value){
+  if (!value) return "-";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 
 function filterTickets(){
-  const st = document.getElementById("ticketStatusFilter").value;
-  const cat = document.getElementById("ticketCatFilter").value;
-  const q = document.getElementById("ticketSearch").value.trim().toLowerCase();
+  const st = document.getElementById("ticketStatusFilter")?.value || "ALL";
+  const cat = document.getElementById("ticketCatFilter")?.value || "ALL";
+  const q = (document.getElementById("ticketSearch")?.value || "").trim().toLowerCase();
 
-  return DATA.tickets.filter(t => {
-    const okS = (st==="ALL") || (t.status===st);
-    const okC = (cat==="ALL") || (t.category===cat);
-    const okQ = !q || t.title.toLowerCase().includes(q);
+  return STATE.tickets.filter(t => {
+    const okS = (st === "ALL") || (t.status === st);
+    const okC = (cat === "ALL") || (t.category === cat);
+    const writer = (t.userName || t.userNickname || "").toLowerCase();
+    const okQ = !q || (t.title || "").toLowerCase().includes(q) || writer.includes(q);
     return okS && okC && okQ;
   });
 }
@@ -710,14 +839,15 @@ function filterTickets(){
 function renderTickets(){
   const tbody = document.getElementById("ticketTbody");
   if (!tbody) return;
+
   const list = filterTickets();
   tbody.innerHTML = list.map(t => `
     <tr data-ticket-row="${t.id}" style="cursor:pointer;">
-      <td class="fw-semibold">${t.title}</td>
-      <td class="muted">${t.writer}</td>
+      <td class="fw-semibold">${escapeHtml(t.title)}</td>
+      <td class="muted">${escapeHtml(t.userName || t.userNickname || "-")}</td>
       <td>${catLabel(t.category)}</td>
       <td>${badgeStatus("ticket", t.status)}</td>
-      <td class="muted">${t.createdAt}</td>
+      <td class="muted">${formatDateTime(t.createdAt)}</td>
     </tr>
   `).join("");
 
@@ -728,52 +858,155 @@ function renderTickets(){
   });
 }
 
-function selectTicket(id){
-  selectedTicketId = id;
-  const t = DATA.tickets.find(x => x.id===id);
-  if(!t) return;
+function renderTicketThread(messages){
+  const container = document.getElementById("ticketThread");
+  if (!container) return;
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted small py-3">메시지 내역이 없습니다.</div>';
+    return;
+  }
+
+  container.innerHTML = messages.map(m => {
+    const roleClass = m.senderRole === "ADMIN" ? "admin" : "user";
+    const sender = escapeHtml(m.senderName || (m.senderRole === "ADMIN" ? "관리자" : "회원"));
+    return `
+      <div class="ticket-msg ${roleClass}">
+        <div>${escapeHtml(m.content || "")}</div>
+        <span class="ticket-msg-meta">${sender} · ${formatDateTime(m.createdAt)}</span>
+      </div>
+    `;
+  }).join("");
+
+  container.scrollTop = container.scrollHeight;
+}
+
+async function loadTicketsFromServer(){
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/inquiries");
+    const result = await response.json();
+    if (!response.ok || !result?.success || !Array.isArray(result?.data)) {
+      return;
+    }
+    STATE.tickets = result.data;
+    renderTickets();
+    renderDashboard();
+  } catch (e) {
+    console.error("Failed to load inquiries", e);
+  }
+}
+
+async function loadTicketMessages(inquiryId){
+  try {
+    const response = await fetchWithAdminAuth(`/api/admin/inquiries/${encodeURIComponent(inquiryId)}/messages`);
+    const result = await response.json();
+    if (!response.ok || !result?.success || !Array.isArray(result?.data)) {
+      renderTicketThread([]);
+      return;
+    }
+    STATE.selectedTicketMessages = result.data;
+    renderTicketThread(STATE.selectedTicketMessages);
+  } catch (e) {
+    console.error("Failed to load inquiry messages", e);
+    renderTicketThread([]);
+  }
+}
+
+async function selectTicket(id){
+  STATE.selectedTicketId = id;
+  const t = STATE.tickets.find(x => x.id === id);
+  if (!t) return;
 
   document.getElementById("ticketPanelHint").classList.add("d-none");
   document.getElementById("ticketPanelBody").classList.remove("d-none");
-
-  document.getElementById("ticketTitle").textContent = t.title;
-  document.getElementById("ticketMeta").textContent = `${t.writer} · ${catLabel(t.category)} · ${t.createdAt}`;
-  document.getElementById("ticketContent").textContent = t.content;
+  document.getElementById("ticketTitle").textContent = t.title || "-";
+  document.getElementById("ticketMeta").textContent =
+    `${t.userName || t.userNickname || "-"} · ${catLabel(t.category)} · ${formatDateTime(t.createdAt)}`;
+  document.getElementById("ticketContent").textContent = t.lastMessage || "-";
   document.getElementById("ticketReply").value = "";
+
+  await loadTicketMessages(id);
 }
 
-function initTicketsTab(){
+async function initTicketsTab(){
   if (!document.getElementById("ticketStatusFilter")) return;
-  ["ticketStatusFilter","ticketCatFilter"].forEach(id => document.getElementById(id)?.addEventListener("change", renderTickets));
+
+  ["ticketStatusFilter", "ticketCatFilter"].forEach(id => {
+    document.getElementById(id)?.addEventListener("change", renderTickets);
+  });
   document.getElementById("ticketSearch")?.addEventListener("input", renderTickets);
 
-  document.getElementById("btnTicketProgress")?.addEventListener("click", () => changeTicketStatus("IN_PROGRESS"));
-  document.getElementById("btnTicketDone")?.addEventListener("click", () => changeTicketStatus("DONE"));
-
-  document.getElementById("btnTicketSave")?.addEventListener("click", () => {
-    if(!selectedTicketId) return alert("티켓을 선택하세요.");
-    const reply = document.getElementById("ticketReply").value.trim();
-    if(!reply) return alert("답변을 입력하세요.");
-    alert("답변 저장(시뮬레이션)\n\n" + reply);
-
-    // TODO(백엔드): reply 저장 API 호출(ticketId, reply)
+  document.getElementById("btnTicketProgress")?.addEventListener("click", async () => {
+    await changeTicketStatus("IN_PROGRESS");
   });
 
-  renderTickets();
+  document.getElementById("btnTicketDone")?.addEventListener("click", async () => {
+    await changeTicketStatus("DONE");
+  });
+
+  document.getElementById("btnTicketSave")?.addEventListener("click", async () => {
+    if (!STATE.selectedTicketId) {
+      alert("티켓을 선택하세요.");
+      return;
+    }
+
+    const reply = document.getElementById("ticketReply").value.trim();
+    if (!reply) {
+      alert("답변을 입력하세요.");
+      return;
+    }
+
+    const response = await fetchWithAdminAuth(
+      `/api/admin/inquiries/${encodeURIComponent(STATE.selectedTicketId)}/messages`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: reply })
+      }
+    );
+    const result = await response.json();
+    if (!response.ok || !result?.success) {
+      alert(result?.message || "답변 전송에 실패했습니다.");
+      return;
+    }
+
+    document.getElementById("ticketReply").value = "";
+    await loadTicketsFromServer();
+    await loadTicketMessages(STATE.selectedTicketId);
+    await loadAdminDashboardSummary();
+  });
+
+  await loadTicketsFromServer();
 }
 
-function changeTicketStatus(to){
-  if(!selectedTicketId) return alert("티켓을 선택하세요.");
-  const t = DATA.tickets.find(x => x.id===selectedTicketId);
-  t.status = to;
-  renderTickets();
-  selectTicket(selectedTicketId);
+async function changeTicketStatus(to){
+  if (!STATE.selectedTicketId) {
+    alert("티켓을 선택하세요.");
+    return;
+  }
 
-  // TODO(백엔드): 상태 변경 API 호출
+  const response = await fetchWithAdminAuth(
+    `/api/admin/inquiries/${encodeURIComponent(STATE.selectedTicketId)}/status`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: to })
+    }
+  );
+  const result = await response.json();
+  if (!response.ok || !result?.success) {
+    alert(result?.message || "상태 변경에 실패했습니다.");
+    return;
+  }
+
+  await loadTicketsFromServer();
+  await selectTicket(STATE.selectedTicketId);
+  await loadAdminDashboardSummary();
 }
 
 function initDashboardTab(){
   renderDashboard();
+  loadAdminDashboardSummary();
 }
 
 function initSettingsTab(){
@@ -784,6 +1017,8 @@ function initSettingsTab(){
    9) 초기 렌더
    ========================= */
 renderKPI();
+loadAdminDashboardSummary();
+loadTicketsFromServer();
 
 // 최초 탭
 const initial = new URLSearchParams(location.search).get("tab") || "dashboard";

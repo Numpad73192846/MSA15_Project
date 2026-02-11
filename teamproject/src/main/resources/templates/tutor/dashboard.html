@@ -243,7 +243,7 @@
         <!-- Tutor Message Modal -->
         <div class="modal fade" id="tutorMessageModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg">
+                <div class="modal-content border-0 shadow-lg tutor-message-modal-content">
                     <div class="modal-header border-bottom-0 pb-0">
                         <h5 class="modal-title fw-bold">메시지 보내기</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -262,15 +262,15 @@
                                 <div class="text-center text-muted py-4 small" id="tutorMessageThreadEmpty">아직 메시지가 없습니다.</div>
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 tutor-chat-composer">
                             <label class="form-label text-muted small">메시지 입력</label>
-                            <textarea class="form-control bg-light border-0" id="tutorMessageArea" rows="3"
+                            <textarea class="form-control bg-light border-0 tutor-chat-input" id="tutorMessageArea" rows="3"
                                 placeholder="메시지 내용을 입력하세요.." style="resize: none;"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0 pt-0">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-primary px-4" id="btnSendTutorMessage">
+                        <button type="button" class="btn btn-primary px-4 tutor-chat-send" id="btnSendTutorMessage">
                             <span class="me-1">메시지 전송</span>
                         </button>
                     </div>
@@ -346,6 +346,81 @@
                 </div>
             </div>
         </div>
+
+        <style>
+            .tutor-chat-thread {
+                max-height: 320px;
+                min-height: 180px;
+                overflow-y: auto;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 14px;
+                padding: 12px;
+            }
+
+            .tutor-chat-row {
+                display: flex;
+                justify-content: flex-start;
+                margin-bottom: 8px;
+            }
+
+            .tutor-chat-row.mine {
+                justify-content: flex-end;
+            }
+
+            .tutor-chat-bubble {
+                max-width: 78%;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 10px 12px;
+                color: #1f2937;
+                word-break: break-word;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+            }
+
+            .tutor-chat-row.mine .tutor-chat-bubble {
+                background: #eef2ff;
+                border-color: #c7d2fe;
+                color: #312e81;
+            }
+
+            .tutor-chat-meta {
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            .tutor-message-modal-content {
+                border-radius: 18px;
+            }
+
+            .tutor-chat-input {
+                border: 1px solid #dbe4f0 !important;
+                background: #ffffff !important;
+                border-radius: 12px;
+            }
+
+            .tutor-chat-input:focus {
+                border-color: #93c5fd !important;
+                box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.15);
+            }
+
+            .tutor-chat-send {
+                min-width: 120px;
+            }
+
+            .btn-save-primary {
+                color: #fff;
+                background-color: #0d6efd;
+                border-color: #0d6efd;
+            }
+
+            .btn-save-primary:hover {
+                color: #fff;
+                background-color: #0b5ed7;
+                border-color: #0a58ca;
+            }
+        </style>
 
         <script>
             async function fetchWithAuth(url, options = {}) {
@@ -482,7 +557,7 @@
                 }
 
                 function setEmptyThread() {
-                    tutorMessageThread.innerHTML = '<div class="text-center text-muted py-4 small" id="tutorMessageThreadEmpty">No messages yet.</div>';
+                    tutorMessageThread.innerHTML = '<div class="text-center text-muted py-4 small" id="tutorMessageThreadEmpty">아직 메시지가 없습니다.</div>';
                 }
 
                 function scrollThreadToBottom() {
@@ -497,14 +572,14 @@
 
                     const html = messages.map((msg) => {
                         const mine = (msg.senderRole || '').toUpperCase() === 'TUTOR';
-                        const roleText = mine ? 'Me' : 'Student';
+                        const roleText = mine ? '튜터' : '학생';
                         const content = escapeHtml(msg.content || '');
                         const createdAt = formatMessageTime(msg.createdAt);
                         return `
                             <div class="tutor-chat-row${mine ? ' mine' : ''}">
                                 <div class="tutor-chat-bubble">
                                     <div class="small">${content}</div>
-                                    <div class="tutor-chat-meta mt-1">${roleText}${createdAt ? ' - ' + createdAt : ''}</div>
+                                    <div class="tutor-chat-meta mt-1">${roleText}${createdAt ? ' · ' + createdAt : ''}</div>
                                 </div>
                             </div>
                         `;
@@ -570,7 +645,7 @@
                     document.getElementById('messageStudentId').value = studentId;
                     document.getElementById('messageBookingId').value = bookingId;
                     document.getElementById('msgReceiverName').textContent = name;
-                    msgLessonInfo.textContent = lessonParts.length > 0 ? lessonParts.join(' | ') : (bookingId ? `Booking: ${bookingId}` : 'Lesson chat');
+                    msgLessonInfo.textContent = lessonParts.length > 0 ? lessonParts.join(' | ') : (bookingId ? `Booking: ${bookingId}` : '수업 메시지');
                     document.getElementById('tutorMessageArea').value = '';
 
                     setEmptyThread();

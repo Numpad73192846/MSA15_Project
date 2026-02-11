@@ -1,25 +1,30 @@
 package com.aloha.teamproject.controller;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.util.StringUtils;
 
 import com.aloha.teamproject.dto.Review;
+import com.aloha.teamproject.dto.TutorDocument;
 import com.aloha.teamproject.dto.TutorList;
 import com.aloha.teamproject.dto.TutorMessage;
 import com.aloha.teamproject.dto.TutorStudentNote;
 import com.aloha.teamproject.dto.UpcomingLesson;
 import com.aloha.teamproject.service.ReviewService;
+import com.aloha.teamproject.service.TutorDocumentService;
 import com.aloha.teamproject.service.TutorMessageService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
@@ -35,6 +40,7 @@ public class TutorsPageController {
 
     private final TutorListService tutorListService;
     private final ReviewService reviewService;
+    private final TutorDocumentService tutorDocumentService;
     private final TutorMyPageService tutorMyPageService;
     private final TutorStudentNoteService tutorStudentNoteService;
     private final TutorMessageService tutorMessageService;
@@ -50,9 +56,9 @@ public class TutorsPageController {
                 double avgRating = 0.0;
                 if (!reviews.isEmpty()) {
                     avgRating = reviews.stream()
-                        .mapToInt(Review::getRating)
-                        .average()
-                        .orElse(0.0);
+                            .mapToInt(Review::getRating)
+                            .average()
+                            .orElse(0.0);
                 }
 
                 tutor.setRatingAvg(BigDecimal.valueOf(Math.round(avgRating * 10.0) / 10.0));
@@ -78,6 +84,27 @@ public class TutorsPageController {
                 return "redirect:/tutors";
             }
 
+            List<TutorDocument> documents = tutorDocumentService.selectByUserId(tutor.getUserId());
+            boolean educationApproved = hasApprovedDocument(documents, "EDUCATION");
+            boolean degreeApproved = hasApprovedDocument(documents, "DEGREE");
+            boolean certificateApproved = hasApprovedDocument(documents, "CERTIFICATE")
+                    || hasApprovedDocument(documents, "CERTIFICATE_TEXT");
+
+            if (!educationApproved) {
+                tutor.setEducationSchools("");
+                tutor.setEducationDocuments("");
+            }
+            if (!degreeApproved) {
+                tutor.setEducationDegrees("");
+                tutor.setDegreeDocuments("");
+            }
+            if (!(educationApproved && degreeApproved)) {
+                tutor.setEducationTimeline("");
+            }
+            if (!certificateApproved) {
+                tutor.setCertificates("");
+            }
+
             Map<String, Object> tutorMap = new HashMap<>();
             tutorMap.put("userId", tutor.getUserId());
             tutorMap.put("name", tutor.getName() != null ? tutor.getName() : "");
@@ -87,8 +114,12 @@ public class TutorsPageController {
             tutorMap.put("bio", tutor.getBio() != null ? tutor.getBio() : "");
             tutorMap.put("selfIntro", tutor.getSelfIntro() != null ? tutor.getSelfIntro() : "");
             tutorMap.put("experience", tutor.getExperience() != null ? tutor.getExperience() : "");
+            tutorMap.put("careerTimeline", tutor.getCareerTimeline() != null ? tutor.getCareerTimeline() : "");
+            tutorMap.put("careerTimelineItems", toTimelineItems(tutor.getCareerTimeline()));
             tutorMap.put("educationSchools", tutor.getEducationSchools() != null ? tutor.getEducationSchools() : "");
             tutorMap.put("educationDegrees", tutor.getEducationDegrees() != null ? tutor.getEducationDegrees() : "");
+            tutorMap.put("educationTimeline", tutor.getEducationTimeline() != null ? tutor.getEducationTimeline() : "");
+            tutorMap.put("educationTimelineItems", toTimelineItems(tutor.getEducationTimeline()));
             tutorMap.put("educationDocuments", tutor.getEducationDocuments() != null ? tutor.getEducationDocuments() : "");
             tutorMap.put("degreeDocuments", tutor.getDegreeDocuments() != null ? tutor.getDegreeDocuments() : "");
             tutorMap.put("certificates", tutor.getCertificates() != null ? tutor.getCertificates() : "");
@@ -100,9 +131,9 @@ public class TutorsPageController {
             double avgRating = 0.0;
             if (!reviews.isEmpty()) {
                 avgRating = reviews.stream()
-                    .mapToInt(Review::getRating)
-                    .average()
-                    .orElse(0.0);
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
             }
 
             model.addAttribute("tutor", tutorMap);
@@ -115,15 +146,26 @@ public class TutorsPageController {
         return "tutors/detail";
     }
 
+    private boolean hasApprovedDocument(List<TutorDocument> docs, String docType) {
+        if (!StringUtils.hasText(docType) || docs == null || docs.isEmpty()) {
+            return false;
+        }
+        return docs.stream()
+                .filter(Objects::nonNull)
+                .filter(doc -> docType.equalsIgnoreCase(doc.getDocType()))
+                .anyMatch(doc -> doc.getReviewedAt() != null
+                        && !StringUtils.hasText(doc.getRejectReason()));
+    }
+
     private boolean hasTutorAuthority(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
         return authentication.getAuthorities().stream()
-            .anyMatch(authority -> {
-                String role = authority.getAuthority();
-                return "ROLE_TUTOR".equals(role) || "ROLE_TUTOR_PENDING".equals(role);
-            });
+                .anyMatch(authority -> {
+                    String role = authority.getAuthority();
+                    return "ROLE_TUTOR".equals(role) || "ROLE_TUTOR_PENDING".equals(role);
+                });
     }
 
     @GetMapping("/tutor/dashboard")
@@ -157,16 +199,17 @@ public class TutorsPageController {
             }
 
             List<UpcomingLesson> dashboardLessons = lessonMap.values().stream()
-                .sorted(Comparator.comparing(UpcomingLesson::getStartAt, Comparator.nullsLast(Comparator.naturalOrder())))
-                .toList();
+                    .sorted(Comparator.comparing(UpcomingLesson::getStartAt,
+                            Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
 
             List<Map<String, Object>> bookings = dashboardLessons.stream().map(lesson -> {
                 Map<String, Object> map = new HashMap<>();
                 boolean paid = lesson.getPaidAt() != null;
                 boolean canComplete = "CONFIRMED".equals(lesson.getStatus())
-                    && paid
-                    && lesson.getEndAt() != null
-                    && !lesson.getEndAt().isAfter(now);
+                        && paid
+                        && lesson.getEndAt() != null
+                        && !lesson.getEndAt().isAfter(now);
 
                 map.put("id", lesson.getBookingId());
                 map.put("studentId", lesson.getStudentId());
@@ -207,9 +250,8 @@ public class TutorsPageController {
                     subjects.add(lesson.getSubject());
                 }
                 studentMap.get(studentId).put(
-                    "totalSessions",
-                    (Integer) studentMap.get(studentId).get("totalSessions") + 1
-                );
+                        "totalSessions",
+                        (Integer) studentMap.get(studentId).get("totalSessions") + 1);
             }
 
             model.addAttribute("bookings", bookings);
@@ -239,6 +281,35 @@ public class TutorsPageController {
             return "취소";
         }
         return status == null ? "" : status;
+    }
+
+    private List<Map<String, String>> toTimelineItems(String timelineRaw) {
+        List<Map<String, String>> items = new ArrayList<>();
+        if (timelineRaw == null || timelineRaw.isBlank()) {
+            return items;
+        }
+
+        String[] timelineRows = timelineRaw.split("\\s*\\|\\|\\|\\s*");
+        for (String row : timelineRows) {
+            if (row == null || row.isBlank()) {
+                continue;
+            }
+
+            String[] parts = row.split(":::", 2);
+            String year = parts.length > 0 ? parts[0].trim() : "";
+            String text = parts.length > 1 ? parts[1].trim() : "";
+
+            if (year.isEmpty() && text.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> item = new HashMap<>();
+            item.put("year", year);
+            item.put("text", text);
+            items.add(item);
+        }
+
+        return items;
     }
 
     private String toDashboardStatusClass(String status, boolean paid) {
