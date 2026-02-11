@@ -22,6 +22,7 @@ public class TutorList {
     private BigDecimal ratingAvg;
     private Integer reviewCount;
     private String profileImg;
+    private String videoUrl;
     private String subjects;
     private BigDecimal price;
     private String experience;
