@@ -124,6 +124,17 @@ public class TutorAvailabilityServiceImpl extends BaseServiceImpl implements Tut
             LocalDateTime endDate,
             List<TutorAvailability> existingAvailabilities
     ) throws Exception {
+        List<TutorAvailability> existing = existingAvailabilities == null
+                ? java.util.List.of()
+                : existingAvailabilities.stream()
+                        .filter(Objects::nonNull)
+                        .toList();
+
+        // Do not auto-fill missing slots when user-managed data already exists.
+        if (!existing.isEmpty()) {
+            return false;
+        }
+
         List<TutorTimeRange> timeRanges = tutorTimeRangeMapper.selectByUserId(userId);
         if (timeRanges == null || timeRanges.isEmpty()) {
             return false;
@@ -133,9 +144,6 @@ public class TutorAvailabilityServiceImpl extends BaseServiceImpl implements Tut
         LocalDate startDay = startDate.toLocalDate();
         LocalDate endDay = endDate.toLocalDate();
         List<TutorAvailability> generated = new java.util.ArrayList<>();
-        List<TutorAvailability> existing = existingAvailabilities == null
-                ? java.util.List.of()
-                : existingAvailabilities;
 
         for (LocalDate day = startDay; !day.isAfter(endDay); day = day.plusDays(1)) {
             DayOfWeek javaDay = day.getDayOfWeek();
@@ -157,19 +165,6 @@ public class TutorAvailabilityServiceImpl extends BaseServiceImpl implements Tut
                      slotStart = slotStart.plusMinutes(stepMinutes)) {
                     LocalDateTime slotEnd = slotStart.plusMinutes(stepMinutes);
                     if (!(slotStart.isBefore(endDate) && slotEnd.isAfter(startDate))) {
-                        continue;
-                    }
-                    final LocalDateTime candidateStart = slotStart;
-                    final LocalDateTime candidateEnd = slotEnd;
-
-                    boolean alreadyCovered = existing.stream()
-                            .filter(Objects::nonNull)
-                            .anyMatch(item ->
-                                    item.getStartAt() != null
-                                            && item.getEndAt() != null
-                                            && !item.getStartAt().isAfter(candidateStart)
-                                            && !item.getEndAt().isBefore(candidateEnd));
-                    if (alreadyCovered) {
                         continue;
                     }
 

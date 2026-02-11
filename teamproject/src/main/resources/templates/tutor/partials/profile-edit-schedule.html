@@ -151,19 +151,22 @@
       return `${y}-${m}-${d}T${hh}:${mm}:${ss}`;
     }
 
-    function getDateRangeForMaxWeeks(maxWeeks = 9) {
+    function getDateRangeForWeeks({ pastWeeks = 0, futureWeeks = 9 } = {}) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const day = today.getDay();
+      const safePastWeeks = Math.max(0, Number(pastWeeks) || 0);
+      const safeFutureWeeks = Math.max(0, Number(futureWeeks) || 0);
 
       const sunday = new Date(today);
       sunday.setDate(today.getDate() - day);
 
       const start = new Date(sunday);
+      start.setDate(start.getDate() - (safePastWeeks * 7));
       start.setHours(0, 0, 0, 0);
 
       const maxWeekStart = new Date(sunday);
-      maxWeekStart.setDate(maxWeekStart.getDate() + (maxWeeks * 7));
+      maxWeekStart.setDate(maxWeekStart.getDate() + (safeFutureWeeks * 7));
 
       const end = new Date(maxWeekStart);
       end.setDate(end.getDate() + 6);
@@ -175,6 +178,10 @@
       };
     }
 
+    function getDateRangeForMaxWeeks(maxWeeks = 9) {
+      return getDateRangeForWeeks({ futureWeeks: maxWeeks });
+    }
+
     function normalizeTimeToStep(rawTime, stepMinutes = 30) {
       const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
       if (!matched) return '';
@@ -184,6 +191,53 @@
       if (!Number.isFinite(hour) || !Number.isFinite(minute) || !Number.isFinite(second)) return '';
       if (minute % stepMinutes !== 0 || second !== 0) return '';
       return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    }
+
+    function resolveDayIndex(rawDay) {
+      if (rawDay === null || rawDay === undefined) return undefined;
+
+      if (typeof rawDay === 'number' && Number.isFinite(rawDay)) {
+        if (rawDay >= 0 && rawDay <= 6) return rawDay;
+        if (rawDay >= 1 && rawDay <= 7) return rawDay % 7;
+      }
+
+      const source = String(rawDay).trim();
+      if (!source) return undefined;
+
+      const asNumber = Number(source);
+      if (Number.isFinite(asNumber)) {
+        if (asNumber >= 0 && asNumber <= 6) return asNumber;
+        if (asNumber >= 1 && asNumber <= 7) return asNumber % 7;
+      }
+
+      const normalized = source.toUpperCase();
+      const table = {
+        SUN: 0, SUNDAY: 0, '일': 0, '일요일': 0,
+        MON: 1, MONDAY: 1, '월': 1, '월요일': 1,
+        TUE: 2, TUESDAY: 2, TUES: 2, '화': 2, '화요일': 2,
+        WED: 3, WEDNESDAY: 3, '수': 3, '수요일': 3,
+        THU: 4, THURSDAY: 4, THUR: 4, THURS: 4, '목': 4, '목요일': 4,
+        FRI: 5, FRIDAY: 5, '금': 5, '금요일': 5,
+        SAT: 6, SATURDAY: 6, '토': 6, '토요일': 6
+      };
+
+      return table[normalized] ?? table[source];
+    }
+
+    function timeToMinutes(rawTime) {
+      const matched = String(rawTime || '').match(/^(\d{2}):(\d{2})$/);
+      if (!matched) return null;
+      const hh = Number(matched[1]);
+      const mm = Number(matched[2]);
+      if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+      return (hh * 60) + mm;
+    }
+
+    function minutesToTime(minutes) {
+      if (!Number.isFinite(minutes) || minutes < 0 || minutes > 24 * 60) return '';
+      const hh = Math.floor(minutes / 60);
+      const mm = minutes % 60;
+      return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
     }
 
     function toLocalDateKey(date) {
@@ -218,6 +272,41 @@
       return slots;
     }
 
+    function deriveBaseRangesFromAvailability(apiData = [], stepMinutes = 30) {
+      const byDay = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+      apiData.forEach((row) => {
+        const date = String(row?.date || '');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(row?.slots)) return;
+        const dayIdx = new Date(`${date}T00:00:00`).getDay();
+        if (dayIdx < 0 || dayIdx > 6) return;
+        row.slots.forEach((slotTime) => {
+          const t = String(slotTime || '').slice(0, 5);
+          if (/^\d{2}:\d{2}$/.test(t)) {
+            byDay[dayIdx].push(t);
+          }
+        });
+      });
+
+      const fallback = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+      Object.keys(byDay).forEach((dayKey) => {
+        const daySlots = Array.from(new Set(byDay[dayKey]));
+        if (daySlots.length === 0) return;
+        const minuteList = daySlots
+          .map((t) => timeToMinutes(t))
+          .filter((v) => Number.isFinite(v))
+          .sort((a, b) => a - b);
+        if (minuteList.length === 0) return;
+
+        const startMin = minuteList[0];
+        const endMin = minuteList[minuteList.length - 1] + stepMinutes;
+        const start = minutesToTime(startMin);
+        const end = minutesToTime(endMin);
+        if (!start || !end || start >= end) return;
+        fallback[dayKey].push({ start, end });
+      });
+      return fallback;
+    }
+
     function setLoading(isLoading) {
       byId('btnSaveSchedule')?.toggleAttribute('disabled', isLoading);
       byId('btnApplyPattern')?.toggleAttribute('disabled', isLoading);
@@ -246,7 +335,9 @@
 
         return {
           baseTimeRanges: normalizeRanges(parsed.baseTimeRanges),
-          selectedData: Array.isArray(parsed.selectedData) ? parsed.selectedData : []
+          selectedData: Array.isArray(parsed.selectedData) ? parsed.selectedData : [],
+          baseRangesTouched: parsed.baseRangesTouched === true,
+          slotsTouched: parsed.slotsTouched === true
         };
       } catch (e) {
         console.warn('schedule draft parse failed', e);
@@ -254,11 +345,14 @@
       }
     }
 
-    function saveDraft() {
+    function saveDraft({ baseRangesTouched = false, slotsTouched = false } = {}) {
       if (!calendar) return;
+      const previous = loadDraft();
       const payload = {
         baseTimeRanges: normalizeRanges(baseTimeRanges),
-        selectedData: calendar.getSelectedData()
+        selectedData: calendar.getSelectedData(),
+        baseRangesTouched: Boolean(baseRangesTouched || previous?.baseRangesTouched),
+        slotsTouched: Boolean(slotsTouched || previous?.slotsTouched)
       };
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
     }
@@ -284,9 +378,13 @@
       return rows;
     }
 
-    function mergeBookedData(apiData = [], draftSelectedData = []) {
+    function hasAnyRange(ranges = {}) {
+      return Object.values(ranges).some((dayRanges) => Array.isArray(dayRanges) && dayRanges.length > 0);
+    }
+
+    function mergeBookedData(apiData = [], draftSelectedData = [], draftSlotsTouched = false) {
       const booked = apiData.filter((item) => item.booked);
-      if (!Array.isArray(draftSelectedData) || draftSelectedData.length === 0) {
+      if (!draftSlotsTouched) {
         return apiData;
       }
       const selected = draftToCalendarData(draftSelectedData);
@@ -306,7 +404,7 @@
 
       const ranges = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
       result.data.forEach((item) => {
-        const dayIdx = dayEnumToIndex[item.dayOfWeek];
+        const dayIdx = resolveDayIndex(item.dayOfWeek ?? item.day ?? item.weekDay);
         if (dayIdx === undefined) return;
         const start = String(item.startTime || item.startAt || '').slice(0, 5);
         const end = String(item.endTime || item.endAt || '').slice(0, 5);
@@ -317,8 +415,8 @@
       return ranges;
     }
 
-    async function loadAvailabilityFromApi() {
-      const { start, end } = getDateRangeForMaxWeeks(9);
+    async function loadAvailabilityFromApi({ pastWeeks = 0, futureWeeks = 9 } = {}) {
+      const { start, end } = getDateRangeForWeeks({ pastWeeks, futureWeeks });
       const response = await scheduleFetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
       if (!response.ok) {
         throw new Error('가용 시간 조회에 실패했습니다.');
@@ -416,9 +514,10 @@
       renderBaseTimeEditor();
       if (calendar) {
         calendar.options.baseTimeRanges = baseTimeRanges;
+        calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
         calendar.render();
       }
-      saveDraft();
+      saveDraft({ baseRangesTouched: true });
     }
 
     function removeRange(dayIndex, rangeIndex) {
@@ -427,9 +526,10 @@
       renderBaseTimeEditor();
       if (calendar) {
         calendar.options.baseTimeRanges = baseTimeRanges;
+        calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
         calendar.render();
       }
-      saveDraft();
+      saveDraft({ baseRangesTouched: true });
     }
 
     function updateRange(dayIndex, rangeIndex, key, value) {
@@ -439,9 +539,10 @@
       target[key] = value;
       if (calendar) {
         calendar.options.baseTimeRanges = baseTimeRanges;
+        calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
         calendar.render();
       }
-      saveDraft();
+      saveDraft({ baseRangesTouched: true });
     }
 
     function renderBaseTimeEditor() {
@@ -504,7 +605,7 @@
         if (!confirm('현재 주 패턴을 앞으로 9주간 적용하시겠습니까?')) return;
 
         calendar.applyWeekPattern(9);
-        saveDraft();
+        saveDraft({ slotsTouched: true });
         alert('패턴이 적용되었습니다. 저장 버튼을 누르면 DB에 반영됩니다.');
       });
 
@@ -533,17 +634,50 @@
         const apiBaseRanges = await loadBaseTimeRangesFromApi();
         const apiAvailability = await loadAvailabilityFromApi();
 
-        baseTimeRanges = draft?.baseTimeRanges ? normalizeRanges(draft.baseTimeRanges) : normalizeRanges(apiBaseRanges);
-        const initialData = mergeBookedData(apiAvailability, draft?.selectedData || []);
+        const normalizedApiBaseRanges = normalizeRanges(apiBaseRanges);
+        let derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(apiAvailability, 30));
+        if (!hasAnyRange(normalizedApiBaseRanges) && !hasAnyRange(derivedFromAvailability)) {
+          try {
+            const extendedAvailability = await loadAvailabilityFromApi({ pastWeeks: 52, futureWeeks: 52 });
+            derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(extendedAvailability, 30));
+          } catch (e) {
+            console.warn('Extended availability fallback failed', e);
+          }
+        }
+        const effectiveApiBaseRanges = hasAnyRange(normalizedApiBaseRanges)
+          ? normalizedApiBaseRanges
+          : derivedFromAvailability;
+        const normalizedDraftBaseRanges = draft?.baseTimeRanges
+          ? normalizeRanges(draft.baseTimeRanges)
+          : null;
+        const draftHasAnyBaseRange = Boolean(
+          normalizedDraftBaseRanges && hasAnyRange(normalizedDraftBaseRanges)
+        );
+        const useDraftBaseRanges = Boolean(
+          draft?.baseRangesTouched &&
+          normalizedDraftBaseRanges &&
+          (draftHasAnyBaseRange || !hasAnyRange(effectiveApiBaseRanges))
+        );
+
+        baseTimeRanges = useDraftBaseRanges
+          ? normalizedDraftBaseRanges
+          : effectiveApiBaseRanges;
+
+        const initialData = mergeBookedData(
+          apiAvailability,
+          draft?.selectedData || [],
+          draft?.slotsTouched === true
+        );
 
         calendar = new TutorCalendar({
           containerId: 'tutorScheduleEditor',
           mode: 'edit',
           baseTimeRanges,
-          renderOnlyInRange: true,
+          renderOnlyInRange: hasAnyRange(baseTimeRanges),
+          focusFirstDataWeek: true,
           timeStepMinutes: 30,
           initialData,
-          onSlotClick: () => saveDraft()
+          onSlotClick: () => saveDraft({ slotsTouched: true })
         });
 
         renderBaseTimeEditor();

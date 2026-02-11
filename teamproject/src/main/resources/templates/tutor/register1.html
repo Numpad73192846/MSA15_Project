@@ -590,12 +590,21 @@
 
                 careers.forEach((careerItem, index) => {
                     const endLabel = careerItem.endYear ? careerItem.endYear : '재직중';
-                    const badge = document.createElement('div');
-                    badge.className = 'mt-3 admin-chip';
-                    badge.innerHTML = `
-                        <span class="label">${careerItem.companyName}</span>
-                        <span class="sub">${careerItem.jobCategory} · ${careerItem.jobRole} · ${careerItem.startYear}~${endLabel}</span>
-                        <button type="button" class="icon-btn danger" aria-label="삭제"><i class="bi bi-x"></i></button>
+                    const yearText = `${escapeHtml(careerItem.startYear)} ~ ${escapeHtml(endLabel)}`;
+                    const card = document.createElement('div');
+                    card.className = 'career-item-card';
+                    card.innerHTML = `
+                        <div class="career-year-col">
+                            <div class="career-year-title">근무기간</div>
+                            <div class="career-year-value">${yearText}</div>
+                        </div>
+                        <div class="career-main-col">
+                            <div class="career-company">${escapeHtml(careerItem.companyName)}</div>
+                            <div class="career-role">${escapeHtml(careerItem.jobCategory)} · ${escapeHtml(careerItem.jobRole)}</div>
+                        </div>
+                        <button type="button" class="icon-btn danger career-remove-btn" aria-label="삭제">
+                            <i class="bi bi-x"></i>
+                        </button>
                     `;
                     card.querySelector('button').addEventListener('click', () => {
                         careers.splice(index, 1);

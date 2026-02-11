@@ -8,19 +8,23 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.util.StringUtils;
 
 import com.aloha.teamproject.dto.Review;
+import com.aloha.teamproject.dto.TutorDocument;
 import com.aloha.teamproject.dto.TutorList;
 import com.aloha.teamproject.dto.TutorMessage;
 import com.aloha.teamproject.dto.TutorStudentNote;
 import com.aloha.teamproject.dto.UpcomingLesson;
 import com.aloha.teamproject.service.ReviewService;
+import com.aloha.teamproject.service.TutorDocumentService;
 import com.aloha.teamproject.service.TutorMessageService;
 import com.aloha.teamproject.service.TutorListService;
 import com.aloha.teamproject.service.TutorMyPageService;
@@ -36,6 +40,7 @@ public class TutorsPageController {
 
     private final TutorListService tutorListService;
     private final ReviewService reviewService;
+    private final TutorDocumentService tutorDocumentService;
     private final TutorMyPageService tutorMyPageService;
     private final TutorStudentNoteService tutorStudentNoteService;
     private final TutorMessageService tutorMessageService;
@@ -79,6 +84,27 @@ public class TutorsPageController {
                 return "redirect:/tutors";
             }
 
+            List<TutorDocument> documents = tutorDocumentService.selectByUserId(tutor.getUserId());
+            boolean educationApproved = hasApprovedDocument(documents, "EDUCATION");
+            boolean degreeApproved = hasApprovedDocument(documents, "DEGREE");
+            boolean certificateApproved = hasApprovedDocument(documents, "CERTIFICATE")
+                    || hasApprovedDocument(documents, "CERTIFICATE_TEXT");
+
+            if (!educationApproved) {
+                tutor.setEducationSchools("");
+                tutor.setEducationDocuments("");
+            }
+            if (!degreeApproved) {
+                tutor.setEducationDegrees("");
+                tutor.setDegreeDocuments("");
+            }
+            if (!(educationApproved && degreeApproved)) {
+                tutor.setEducationTimeline("");
+            }
+            if (!certificateApproved) {
+                tutor.setCertificates("");
+            }
+
             Map<String, Object> tutorMap = new HashMap<>();
             tutorMap.put("userId", tutor.getUserId());
             tutorMap.put("name", tutor.getName() != null ? tutor.getName() : "");
@@ -118,6 +144,17 @@ public class TutorsPageController {
             log.error("튜터 상세 조회 실패", e);
         }
         return "tutors/detail";
+    }
+
+    private boolean hasApprovedDocument(List<TutorDocument> docs, String docType) {
+        if (!StringUtils.hasText(docType) || docs == null || docs.isEmpty()) {
+            return false;
+        }
+        return docs.stream()
+                .filter(Objects::nonNull)
+                .filter(doc -> docType.equalsIgnoreCase(doc.getDocType()))
+                .anyMatch(doc -> doc.getReviewedAt() != null
+                        && !StringUtils.hasText(doc.getRejectReason()));
     }
 
     private boolean hasTutorAuthority(Authentication authentication) {

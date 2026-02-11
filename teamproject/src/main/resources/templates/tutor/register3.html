@@ -624,6 +624,9 @@
                     endYear: normalizeCareerYear(career.endYear)
                 }));
                 formData.append('careersJson', JSON.stringify(careersPayload));
+                formData.append('educationsJson', JSON.stringify(step2Data.educations || []));
+                formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
+                formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
 
                 (step2Data.academicCertificates || []).forEach(id =>
                     formData.append('academicCertificates', id)
@@ -665,6 +668,30 @@
                         return;
                     }
 
+                    // Final submit should always persist base time ranges.
+                    const timeRangeSaved = await persistBaseTimeRanges();
+                    if (!timeRangeSaved) {
+                        return;
+                    }
+
+                    const certificateTextResponse = await fetch('/api/tutors/documents/certificate-texts', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${accessToken}`
+                        },
+                        body: JSON.stringify(Array.isArray(step2Data.certificateTexts) ? step2Data.certificateTexts : [])
+                    });
+                    let certificateTextResult = null;
+                    try {
+                        certificateTextResult = await certificateTextResponse.json();
+                    } catch (_) {
+                        certificateTextResult = null;
+                    }
+                    if (!certificateTextResponse.ok || (certificateTextResult && certificateTextResult.success === false)) {
+                        throw new Error((certificateTextResult && certificateTextResult.message) || 'Failed to save certificate texts');
+                    }
+
                     await uploadTutorDocuments(accessToken, step2Data.academicCertificates, 'EDUCATION');
                     await uploadTutorDocuments(accessToken, step2Data.educationCertificates, 'DEGREE');
                     await uploadTutorDocuments(accessToken, step2Data.certificateFiles, 'CERTIFICATE');
@@ -683,7 +710,7 @@
                             };
                         });
 
-                        await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+                        const availabilityResponse = await fetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -691,6 +718,16 @@
                             },
                             body: JSON.stringify(availabilityPayload)
                         });
+
+                        let availabilityResult = null;
+                        try {
+                            availabilityResult = await availabilityResponse.json();
+                        } catch (_) {
+                            availabilityResult = null;
+                        }
+                        if (!availabilityResponse.ok || (availabilityResult && availabilityResult.success === false)) {
+                            throw new Error((availabilityResult && availabilityResult.message) || 'Failed to save availability');
+                        }
                     }
 
                     // 성공 시 세션 스토리지 클리어
