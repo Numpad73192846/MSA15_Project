@@ -108,6 +108,8 @@ public class TutorsPageController {
             Map<String, Object> tutorMap = new HashMap<>();
             tutorMap.put("userId", tutor.getUserId());
             tutorMap.put("name", tutor.getName() != null ? tutor.getName() : "");
+            tutorMap.put("nickname", tutor.getNickname() != null ? tutor.getNickname() : "");
+            tutorMap.put("profileImg", tutor.getProfileImg() != null ? tutor.getProfileImg() : "");
             tutorMap.put("ratingAvg", tutor.getRatingAvg() != null ? tutor.getRatingAvg() : 0.0);
             tutorMap.put("reviewCount", tutor.getReviewCount() != null ? tutor.getReviewCount() : 0);
             tutorMap.put("subjects", tutor.getSubjects() != null ? tutor.getSubjects() : "");

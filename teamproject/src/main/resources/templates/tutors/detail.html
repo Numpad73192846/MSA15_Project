@@ -123,13 +123,17 @@
                     <div class="card shadow-sm mb-4">
                         <div class="card-body">
                             <div class="d-flex gap-3 align-items-start">
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                <div class="rounded-circle d-flex align-items-center justify-content-center text-white overflow-hidden"
                                     style="width:96px;height:96px;font-size:32px;flex:0 0 auto;"
-                                    th:text="${#strings.substring(tutor.name,0,1)}">김</div>
+                                    th:with="hasImg=${!#strings.isEmpty(tutor.profileImg)}"
+                                    th:classappend="${hasImg} ? '' : ' bg-primary'">
+                                    <img th:if="${hasImg}" th:src="${tutor.profileImg}" alt="프로필 이미지" class="w-100 h-100 object-fit-cover">
+                                    <span th:unless="${hasImg}" th:text="${#strings.substring(tutor.nickname,0,1)}">김</span>
+                                </div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <h1 class="h3 fw-bold mb-1" th:text="${tutor.name}">튜터명</h1>
+                                            <h1 class="h3 fw-bold mb-1" th:text="${tutor.nickname}">튜터명</h1>
                                             <div class="text-muted mb-2" th:if="${reviewCount > 0}">
                                                 <span class="me-1">⭐</span>
                                                 <span class="fw-semibold" th:text="${avgRating}">4.9</span>
@@ -160,53 +164,53 @@
                         <div class="card-body">
                             <h3 class="h5 fw-bold mb-3">튜터 정보</h3>
 
-                    <ul class="nav nav-pills tutor-info-tabs mb-2" id="tutorInfoTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
-                                data-bs-target="#intro-pane" type="button" role="tab"
-                                aria-controls="intro-pane" aria-selected="true">자기소개</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="education-tab" data-bs-toggle="tab"
-                                data-bs-target="#education-pane" type="button" role="tab"
-                                aria-controls="education-pane" aria-selected="false">학력</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="career-tab" data-bs-toggle="tab"
-                                data-bs-target="#career-pane" type="button" role="tab"
-                                aria-controls="career-pane" aria-selected="false">근무경력</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
-                                data-bs-target="#certificate-pane" type="button" role="tab"
-                                aria-controls="certificate-pane" aria-selected="false">자격증</button>
-                        </li>
-                    </ul>
+                            <ul class="nav nav-pills tutor-info-tabs" id="tutorInfoTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="intro-tab" data-bs-toggle="tab"
+                                        data-bs-target="#intro-pane" type="button" role="tab"
+                                        aria-controls="intro-pane" aria-selected="true">자기소개</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="education-tab" data-bs-toggle="tab"
+                                        data-bs-target="#education-pane" type="button" role="tab"
+                                        aria-controls="education-pane" aria-selected="false">학력</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="career-tab" data-bs-toggle="tab"
+                                        data-bs-target="#career-pane" type="button" role="tab"
+                                        aria-controls="career-pane" aria-selected="false">근무경력</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="certificate-tab" data-bs-toggle="tab"
+                                        data-bs-target="#certificate-pane" type="button" role="tab"
+                                        aria-controls="certificate-pane" aria-selected="false">자격증</button>
+                                </li>
+                            </ul>
 
-                    <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
-                        <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
-                            aria-labelledby="intro-tab" tabindex="0">
-                            <div class="mb-3">
-                                <div class="small fw-semibold text-muted mb-1">소개</div>
-                                <div class="text-muted"
-                                    th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
-                                    등록된 자기소개가 없습니다.
-                                </div>
-                            </div>
-                            <div>
-                                <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
-                            <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
-                                th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
-                                <div class="text-muted"
-                                    th:each="line : ${lines}"
-                                    th:if="${!#strings.isEmpty(#strings.trim(line))}"
-                                    th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
-                                    - 학생 수준에 맞춘 맞춤형 커리큘럼
-                                </div>
-                            </div>
+                            <div class="tab-content tutor-info-tab-content mb-4" id="tutorInfoTabContent">
+                                <div class="tab-pane fade show active" id="intro-pane" role="tabpanel"
+                                    aria-labelledby="intro-tab" tabindex="0">
+                                    <div class="mb-3">
+                                        <div class="small fw-semibold text-muted mb-1">소개</div>
+                                        <div class="text-muted"
+                                            th:text="${#strings.isEmpty(tutor.bio) ? '등록된 자기소개가 없습니다.' : tutor.bio}">
+                                            등록된 자기소개가 없습니다.
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small fw-semibold text-muted mb-1">강의 스타일</div>
+                                        <div th:if="${!#strings.isEmpty(tutor.selfIntro)}"
+                                            th:with="lines=${#strings.arraySplit(#strings.replace(tutor.selfIntro, '\r', ''), '\n')}">
+                                            <div class="text-muted"
+                                                th:each="line : ${lines}"
+                                                th:if="${!#strings.isEmpty(#strings.trim(line))}"
+                                                th:text="${#strings.startsWith(#strings.trim(line), '-') ? #strings.trim(line) : '- ' + #strings.trim(line)}">
+                                                - 학생 수준에 맞춘 맞춤형 커리큘럼
+                                            </div>
+                                        </div>
 
-                            <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
-                               등록된 강의 스타일 정보가 없습니다.
+                                        <div class="text-muted" th:if="${#strings.isEmpty(tutor.selfIntro)}">
+                                        등록된 강의 스타일 정보가 없습니다.
                                         </div>
                                     </div>
                                 </div>
