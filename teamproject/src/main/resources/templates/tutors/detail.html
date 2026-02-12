@@ -595,15 +595,42 @@
                     return `${y}-${m}-${d}`;
                 }
 
+                function alignDateTimeToStep(date, stepMinutes = 30, mode = 'floor') {
+                    const aligned = new Date(date);
+                    if (Number.isNaN(aligned.getTime())) return null;
+
+                    const hasSubMinute = aligned.getSeconds() !== 0 || aligned.getMilliseconds() !== 0;
+                    let totalMinutes = (aligned.getHours() * 60) + aligned.getMinutes();
+                    const remainder = totalMinutes % stepMinutes;
+
+                    if (mode === 'ceil') {
+                        if (remainder !== 0) {
+                            totalMinutes += (stepMinutes - remainder);
+                        } else if (hasSubMinute) {
+                            totalMinutes += stepMinutes;
+                        }
+                    } else {
+                        totalMinutes -= remainder;
+                    }
+
+                    aligned.setHours(0, 0, 0, 0);
+                    aligned.setMinutes(totalMinutes, 0, 0);
+                    return aligned;
+                }
+
                 function expandAvailabilityToSlots(item, stepMinutes = 30) {
                     if (!item?.startAt) return [];
-                    const start = new Date(item.startAt);
-                    if (Number.isNaN(start.getTime())) return [];
+                    const startRaw = new Date(item.startAt);
+                    if (Number.isNaN(startRaw.getTime())) return [];
 
                     const endParsed = item.endAt ? new Date(item.endAt) : null;
-                    const end = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > start
+                    const endRaw = endParsed && !Number.isNaN(endParsed.getTime()) && endParsed > startRaw
                         ? endParsed
-                        : new Date(start.getTime() + (stepMinutes * 60000));
+                        : new Date(startRaw.getTime() + (stepMinutes * 60000));
+
+                    const start = alignDateTimeToStep(startRaw, stepMinutes, 'ceil');
+                    const end = alignDateTimeToStep(endRaw, stepMinutes, 'floor');
+                    if (!start || !end || end <= start) return [];
 
                     const slots = [];
                     for (let cursor = new Date(start); cursor < end; cursor = new Date(cursor.getTime() + (stepMinutes * 60000))) {

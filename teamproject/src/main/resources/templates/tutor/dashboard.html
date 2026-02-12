@@ -16,7 +16,10 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h3 class="h5 fw-bold mb-0">예약 목록</h3>
-                                <button class="btn btn-outline-primary btn-sm">전체 보기</button>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-primary btn-sm" id="btnAcceptAllBookings">전체 수락</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm">전체 보기</button>
+                                </div>
                             </div>
 
                             <div class="row g-3">
@@ -321,7 +324,12 @@
                         </div>
 
                         <div class="mb-4">
-                            <h6 class="fw-bold small mb-2 text-muted">진도 현황</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold small mb-0 text-muted">진도 현황</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAiLessonSummary">
+                                    AI 수업 요약
+                                </button>
+                            </div>
                             <div class="p-3 bg-light rounded-3 text-dark small" id="detailProgressView">
                                 진도 현황 내용...
                             </div>
@@ -330,7 +338,12 @@
                         </div>
 
                         <div class="mb-3">
-                            <h6 class="fw-bold small mb-2 text-muted">특이사항 메모</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold small mb-0 text-muted">특이사항 메모</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAiHomework">
+                                    AI 과제 작성
+                                </button>
+                            </div>
                             <div class="p-3 bg-light rounded-3 text-dark small" id="detailNotesView">
                                 메모 내용...
                             </div>
@@ -441,10 +454,65 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const bookingButtons = document.querySelectorAll('.tutor-booking-action');
                 let activeBookingId = null;
+                const acceptAllBtn = document.getElementById('btnAcceptAllBookings');
 
                 const acceptModal = document.getElementById('acceptModal');
                 const rejectModal = document.getElementById('rejectModal');
                 const completeModal = document.getElementById('completeModal');
+
+                const getPendingAcceptButtons = () => {
+                    return Array.from(document.querySelectorAll('.tutor-booking-action[data-action="accept"]'));
+                };
+
+                const updateAcceptAllButtonState = () => {
+                    if (!acceptAllBtn) return;
+                    const pendingCount = getPendingAcceptButtons().length;
+                    acceptAllBtn.disabled = pendingCount === 0;
+                    acceptAllBtn.textContent = pendingCount > 0 ? `전체 수락 (${pendingCount}건)` : '전체 수락';
+                };
+
+                acceptAllBtn?.addEventListener('click', async () => {
+                    const pendingCount = getPendingAcceptButtons().length;
+                    if (pendingCount === 0) {
+                        alert('수락 대기 예약이 없습니다.');
+                        updateAcceptAllButtonState();
+                        return;
+                    }
+
+                    if (!confirm(`수락 대기 예약 ${pendingCount}건을 전체 수락하시겠습니까?`)) {
+                        return;
+                    }
+
+                    const originalText = acceptAllBtn.textContent;
+                    acceptAllBtn.disabled = true;
+                    acceptAllBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> 처리중...';
+
+                    try {
+                        const response = await fetchWithAuth('/api/bookings/tutor/confirm-all', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            const data = result.data || {};
+                            const targetCount = data.targetCount ?? pendingCount;
+                            const successCount = data.successCount ?? 0;
+                            alert(`전체 수락이 완료되었습니다. (${successCount}/${targetCount}건)`);
+                            location.reload();
+                            return;
+                        }
+                        alert(result.message || '전체 수락 처리에 실패했습니다.');
+                    } catch (e) {
+                        console.error('전체 수락 처리 실패', e);
+                        alert('전체 수락 처리 중 오류가 발생했습니다.');
+                    } finally {
+                        acceptAllBtn.disabled = false;
+                        acceptAllBtn.textContent = originalText;
+                        updateAcceptAllButtonState();
+                    }
+                });
+
+                updateAcceptAllButtonState();
 
                 bookingButtons.forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -758,6 +826,14 @@
                     saveStudentInfo();
                 });
 
+                document.getElementById('btnAiLessonSummary')?.addEventListener('click', async function() {
+                    await requestStudentAiResult('summary', this);
+                });
+
+                document.getElementById('btnAiHomework')?.addEventListener('click', async function() {
+                    await requestStudentAiResult('homework', this);
+                });
+
                 function enterEditMode() {
                     isEditing = true;
 
@@ -796,6 +872,93 @@
                     // Reset textarea values to current view values
                     document.getElementById('detailProgressEdit').value = document.getElementById('detailProgressView').textContent;
                     document.getElementById('detailNotesEdit').value = document.getElementById('detailNotesView').textContent;
+                }
+
+                function buildStudentLessonContext() {
+                    const progressView = (document.getElementById('detailProgressView')?.textContent || '').trim();
+                    const notesView = (document.getElementById('detailNotesView')?.textContent || '').trim();
+                    const progressEdit = (document.getElementById('detailProgressEdit')?.value || '').trim();
+                    const notesEdit = (document.getElementById('detailNotesEdit')?.value || '').trim();
+
+                    const progress = progressEdit || progressView;
+                    const notes = notesEdit || notesView;
+                    return [progress ? `진도: ${progress}` : '', notes ? `메모: ${notes}` : '']
+                        .filter(Boolean)
+                        .join('\n')
+                        .trim();
+                }
+
+                async function requestStudentAiResult(type, triggerBtn) {
+                    const studentId = document.getElementById('detailStudentId')?.value;
+                    if (!studentId) {
+                        alert('학생 정보를 찾을 수 없습니다.');
+                        return;
+                    }
+
+                    const lessonContext = buildStudentLessonContext();
+                    if (!lessonContext) {
+                        alert('수업 요약/과제 생성을 위해 진도 또는 메모를 먼저 입력해 주세요.');
+                        return;
+                    }
+
+                    if (!isEditing) {
+                        enterEditMode();
+                    }
+
+                    const studentName = (document.getElementById('detailName')?.textContent || '').trim() || '학생';
+                    const endpoint = type === 'homework' ? '/api/ai/homework' : '/api/ai/lesson-summary';
+                    const originalText = triggerBtn?.textContent || '';
+
+                    try {
+                        if (triggerBtn) {
+                            triggerBtn.disabled = true;
+                            triggerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>생성중';
+                        }
+
+                        const response = await fetchWithAuth(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                tutorName: '튜터',
+                                studentName: studentName,
+                                subject: '맞춤 수업',
+                                lessonContext: lessonContext
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (!result?.success || !result?.data?.text) {
+                            alert(result?.message || 'AI 생성에 실패했습니다.');
+                            return;
+                        }
+
+                        const generatedText = String(result.data.text).trim();
+                        if (!generatedText) {
+                            alert('생성된 내용이 없습니다.');
+                            return;
+                        }
+
+                        if (type === 'homework') {
+                            const notesEditEl = document.getElementById('detailNotesEdit');
+                            const currentNotes = (notesEditEl?.value || '').trim();
+                            notesEditEl.value = currentNotes ? `${currentNotes}\n\n${generatedText}` : generatedText;
+                            document.getElementById('detailNotesView').textContent = notesEditEl.value;
+                            notesEditEl.focus();
+                        } else {
+                            const progressEditEl = document.getElementById('detailProgressEdit');
+                            progressEditEl.value = generatedText;
+                            document.getElementById('detailProgressView').textContent = generatedText;
+                            progressEditEl.focus();
+                        }
+                    } catch (e) {
+                        console.error('AI 생성 오류', e);
+                        alert('AI 생성 중 예기치 못한 오류가 발생했습니다.');
+                    } finally {
+                        if (triggerBtn) {
+                            triggerBtn.disabled = false;
+                            triggerBtn.textContent = originalText || (type === 'homework' ? 'AI 과제 작성' : 'AI 수업 요약');
+                        }
+                    }
                 }
 
                 async function saveStudentInfo() {

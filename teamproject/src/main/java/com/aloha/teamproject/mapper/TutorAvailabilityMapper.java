@@ -69,9 +69,10 @@ public interface TutorAvailabilityMapper {
     /**
      * 튜터의 특정 기간 가용 시간 모두 삭제
      */
-    int deleteByUserIdAndDateRange(
+    int deleteOpenWithoutBookingByUserIdAndDateRange(
             @Param("userId") String userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
 }

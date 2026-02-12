@@ -66,10 +66,8 @@ public class TutorAvailabilityServiceImpl extends BaseServiceImpl implements Tut
         requireNotNull(endDate, ErrorCode.INVALID_REQUEST);
         requireNotNull(availabilities, ErrorCode.INVALID_REQUEST);
 
-        // 해당 기간의 기존 가용 시간 삭제
-        tutorAvailabilityMapper.deleteByUserIdAndDateRange(userId, startDate, endDate);
+        tutorAvailabilityMapper.deleteOpenWithoutBookingByUserIdAndDateRange(userId, startDate, endDate);
 
-        // 새 가용 시간이 있으면 추가
         if (!availabilities.isEmpty()) {
             availabilities.forEach(av -> av.setUserId(userId));
             tutorAvailabilityMapper.insertBatch(availabilities);

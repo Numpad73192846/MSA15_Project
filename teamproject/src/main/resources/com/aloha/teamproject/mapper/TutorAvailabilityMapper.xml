@@ -20,8 +20,8 @@
         SELECT no, user_id, id, start_at, end_at, status, created_at, updated_at
         FROM tutor_availability
         WHERE user_id = #{userId}
-             AND start_at &lt; #{endDate}
-             AND end_at &gt; #{startDate}
+          AND start_at &lt; #{endDate}
+          AND end_at &gt; #{startDate}
         ORDER BY start_at
     </select>
 
@@ -73,11 +73,17 @@
         WHERE id = #{id}
     </delete>
 
-    <delete id="deleteByUserIdAndDateRange">
-        DELETE FROM tutor_availability
-        WHERE user_id = #{userId}
-          AND start_at &gt;= #{startDate}
-          AND end_at &lt;= #{endDate}
+    <delete id="deleteOpenWithoutBookingByUserIdAndDateRange">
+        DELETE ta
+        FROM tutor_availability ta
+        LEFT JOIN booking b
+               ON b.availability_id = ta.id
+              AND b.canceled_at IS NULL
+        WHERE ta.user_id = #{userId}
+          AND ta.start_at &gt;= #{startDate}
+          AND ta.end_at &lt;= #{endDate}
+          AND ta.status = 'OPEN'
+          AND b.id IS NULL
     </delete>
 
 </mapper>

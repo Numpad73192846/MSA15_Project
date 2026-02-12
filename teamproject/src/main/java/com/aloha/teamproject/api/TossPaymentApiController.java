@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.aloha.teamproject.common.response.ApiResponse;
 import com.aloha.teamproject.common.response.SuccessCode;
+import com.aloha.teamproject.dto.TossBatchPaymentPrepare;
 import com.aloha.teamproject.service.TossPaymentService;
 
 import lombok.Data;
@@ -21,6 +22,27 @@ import lombok.extern.slf4j.Slf4j;
 public class TossPaymentApiController {
 
     private final TossPaymentService tossPaymentService;
+
+    @PostMapping("/prepare-tutor-batch")
+    public ApiResponse<TossBatchPaymentPrepare> prepareTutorBatch(
+            @RequestBody TossPrepareTutorBatchRequest request,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+        if (request == null || request.getTutorId() == null || request.getTutorId().isBlank()) {
+            return ApiResponse.error("튜터 정보가 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            TossBatchPaymentPrepare prepared = tossPaymentService.prepareTutorBatchPayment(userId, request.getTutorId());
+            return ApiResponse.ok(prepared);
+        } catch (Exception e) {
+            log.error("[Toss Prepare Tutor Batch] 실패", e);
+            return ApiResponse.error(e.getMessage() != null ? e.getMessage() : "튜터 통합 결제 준비에 실패했습니다.");
+        }
+    }
 
     @PostMapping("/confirm")
     public ApiResponse<Void> confirm(@RequestBody TossConfirmRequest request, Authentication authentication) {
@@ -41,6 +63,11 @@ public class TossPaymentApiController {
             log.error("[Toss Confirm API] 실패", e);
             return ApiResponse.error(e.getMessage() != null ? e.getMessage() : "결제 확인에 실패했습니다.");
         }
+    }
+
+    @Data
+    public static class TossPrepareTutorBatchRequest {
+        private String tutorId;
     }
 
     @Data

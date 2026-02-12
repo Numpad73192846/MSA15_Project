@@ -688,6 +688,369 @@ VALUES
 ('u-tutor-20','avail-20-1',DATE_ADD(NOW(),INTERVAL 1 DAY),  DATE_ADD(DATE_ADD(NOW(),INTERVAL 1 DAY),INTERVAL 1 HOUR), 'BOOKED'),
 ('u-tutor-20','avail-20-2',DATE_ADD(NOW(),INTERVAL 4 DAY),  DATE_ADD(DATE_ADD(NOW(),INTERVAL 4 DAY),INTERVAL 1 HOUR), 'OPEN');
 
+-- Expansion seed: students 20, tutors 50 (keep existing tone)
+DROP TEMPORARY TABLE IF EXISTS tmp_seed_tutor_nums;
+CREATE TEMPORARY TABLE tmp_seed_tutor_nums (
+    n INT PRIMARY KEY
+);
+
+INSERT INTO tmp_seed_tutor_nums (n)
+VALUES
+(21),(22),(23),(24),(25),(26),(27),(28),(29),(30),
+(31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
+(41),(42),(43),(44),(45),(46),(47),(48),(49),(50);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seed_student_nums;
+CREATE TEMPORARY TABLE tmp_seed_student_nums (
+    n INT PRIMARY KEY
+);
+
+INSERT INTO tmp_seed_student_nums (n)
+VALUES (11),(12),(13),(14),(15),(16),(17),(18),(19),(20);
+
+INSERT INTO users (id, username, password, name, nickname, status)
+SELECT
+    CONCAT('u-student-', s.n),
+    CONCAT('student', s.n, '@test.com'),
+    @pw,
+    CONCAT('신규학생', s.n),
+    CONCAT('학습러', s.n),
+    'ACTIVE'
+FROM tmp_seed_student_nums s;
+
+INSERT INTO users (id, username, password, name, nickname, status)
+SELECT
+    CONCAT('u-tutor-', t.n),
+    CONCAT('tutor', t.n, '@test.com'),
+    @pw,
+    CONCAT('신규튜터', t.n),
+    CONCAT('튜터확장', t.n),
+    'ACTIVE'
+FROM tmp_seed_tutor_nums t;
+
+UPDATE users
+SET profile_img = '/img/tutors/default.png'
+WHERE id LIKE 'u-tutor-%';
+
+INSERT INTO user_auth (user_id, id, auth)
+SELECT
+    CONCAT('u-student-', s.n),
+    CONCAT('ua-s', s.n),
+    'ROLE_USER'
+FROM tmp_seed_student_nums s;
+
+INSERT INTO user_auth (user_id, id, auth)
+SELECT
+    CONCAT('u-tutor-', t.n),
+    CONCAT('ua-t', t.n),
+    'ROLE_TUTOR'
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_profile (
+    user_id, id, phone, headline, bio, self_intro, video_url,
+    default_zoom_url, bank_name, account_number, account_holder,
+    is_verified, rating_avg, review_count
+)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CONCAT('tp-', t.n) AS id,
+    CONCAT('010-', LPAD(t.n, 4, '0'), '-', LPAD(3000 + t.n, 4, '0')) AS phone,
+    CASE MOD(t.n, 6)
+        WHEN 0 THEN '회화 중심 튜터'
+        WHEN 1 THEN '문법 집중 튜터'
+        WHEN 2 THEN '시험 대비 튜터'
+        WHEN 3 THEN '비즈니스 영어 튜터'
+        WHEN 4 THEN '여행 회화 튜터'
+        ELSE '발음 교정 튜터'
+    END AS headline,
+    CASE MOD(t.n, 4)
+        WHEN 0 THEN '학생 수준에 맞춘 단계형 수업을 제공합니다.'
+        WHEN 1 THEN '목표 점수와 실전 적용을 함께 잡는 수업입니다.'
+        WHEN 2 THEN '짧은 진단 후 맞춤 커리큘럼으로 진행합니다.'
+        ELSE '회화와 피드백 반복으로 실력을 끌어올립니다.'
+    END AS bio,
+    CONCAT('신규 등록 튜터 ', t.n, '번입니다. 학습 목표와 일정에 맞춘 맞춤형 수업을 진행합니다.') AS self_intro,
+    NULL AS video_url,
+    CONCAT('https://zoom.us/j/', LPAD(t.n, 10, '0')) AS default_zoom_url,
+    CASE MOD(t.n, 4)
+        WHEN 0 THEN 'KB'
+        WHEN 1 THEN 'Shinhan'
+        WHEN 2 THEN 'Woori'
+        ELSE 'Hana'
+    END AS bank_name,
+    CONCAT(LPAD(t.n, 3, '0'), '-', LPAD(100 + t.n, 3, '0'), '-', LPAD(100000 + (t.n * 37), 6, '0')) AS account_number,
+    CONCAT('신규튜터', t.n) AS account_holder,
+    TRUE AS is_verified,
+    ROUND(4.20 + (MOD(t.n, 7) * 0.10), 2) AS rating_avg,
+    3 + MOD(t.n, 15) AS review_count
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_field (user_id, field_id, id, seq)
+SELECT
+    CONCAT('u-tutor-', t.n),
+    CASE MOD(t.n, 8)
+        WHEN 0 THEN 'lf-general-conversation'
+        WHEN 1 THEN 'lf-general-grammar'
+        WHEN 2 THEN 'lf-general-reading'
+        WHEN 3 THEN 'lf-general-pronunciation'
+        WHEN 4 THEN 'lf-domain-business'
+        WHEN 5 THEN 'lf-domain-travel'
+        WHEN 6 THEN 'lf-domain-culture'
+        ELSE 'lf-general-writing'
+    END AS field_id,
+    CONCAT('tf-', t.n, '-1') AS id,
+    1 AS seq
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO lesson (user_id, subject_id, field_id, id, title, description, status, price)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CASE MOD(t.n, 8)
+        WHEN 0 THEN 'sub-eng-mid'
+        WHEN 1 THEN 'sub-eng-high'
+        WHEN 2 THEN 'sub-jpn-basic'
+        WHEN 3 THEN 'sub-chn-basic'
+        WHEN 4 THEN 'sub-spa-basic'
+        WHEN 5 THEN 'sub-kor-mid'
+        WHEN 6 THEN 'sub-fra-basic'
+        ELSE 'sub-ger-basic'
+    END AS subject_id,
+    CASE MOD(t.n, 8)
+        WHEN 0 THEN 'lf-general-conversation'
+        WHEN 1 THEN 'lf-general-grammar'
+        WHEN 2 THEN 'lf-general-reading'
+        WHEN 3 THEN 'lf-general-pronunciation'
+        WHEN 4 THEN 'lf-domain-business'
+        WHEN 5 THEN 'lf-domain-travel'
+        WHEN 6 THEN 'lf-domain-culture'
+        ELSE 'lf-general-writing'
+    END AS field_id,
+    CONCAT('lesson-', t.n + 1) AS id,
+    CONCAT('맞춤 수업 ', t.n) AS title,
+    CONCAT('레벨 진단 후 핵심 약점을 보완하는 ', t.n, '번 튜터의 맞춤 수업입니다.') AS description,
+    'OPEN' AS status,
+    (28000 + (MOD(t.n, 8) * 3000)) AS price
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_subject (user_id, subject_id, id, seq)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CASE MOD(t.n, 8)
+        WHEN 0 THEN 'sub-eng-mid'
+        WHEN 1 THEN 'sub-eng-high'
+        WHEN 2 THEN 'sub-jpn-basic'
+        WHEN 3 THEN 'sub-chn-basic'
+        WHEN 4 THEN 'sub-spa-basic'
+        WHEN 5 THEN 'sub-kor-mid'
+        WHEN 6 THEN 'sub-fra-basic'
+        ELSE 'sub-ger-basic'
+    END AS subject_id,
+    CONCAT('ts-', t.n, '-1') AS id,
+    1 AS seq
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_career (user_id, id, company_name, job_category, job_role, start_year, end_year)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CONCAT('tc-', t.n, '-1') AS id,
+    CONCAT('확장 튜터 센터 ', t.n) AS company_name,
+    '교육' AS job_category,
+    '전임 튜터' AS job_role,
+    2018 + MOD(t.n, 4) AS start_year,
+    NULL AS end_year
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_education (user_id, id, school_name, degree, start_year, graduated_year)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CONCAT('te-', t.n) AS id,
+    CASE MOD(t.n, 5)
+        WHEN 0 THEN '서울대학교'
+        WHEN 1 THEN '연세대학교'
+        WHEN 2 THEN '고려대학교'
+        WHEN 3 THEN '한국외국어대학교'
+        ELSE '성균관대학교'
+    END AS school_name,
+    CASE MOD(t.n, 4)
+        WHEN 0 THEN '영어영문학 학사'
+        WHEN 1 THEN '교육학 학사'
+        WHEN 2 THEN '언어학 학사'
+        ELSE '통번역학 학사'
+    END AS degree,
+    2011 + MOD(t.n, 5) AS start_year,
+    2015 + MOD(t.n, 5) AS graduated_year
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_document (user_id, id, doc_type, file_size, reviewed_by, reviewed_at, reject_reason, original_name, store_name, file_path, content_type)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CONCAT('td-', t.n, '-1') AS id,
+    'EDUCATION' AS doc_type,
+    100000 + (t.n * 10) AS file_size,
+    'admin' AS reviewed_by,
+    DATE_SUB(NOW(), INTERVAL (MOD(t.n, 7) + 2) DAY) AS reviewed_at,
+    NULL AS reject_reason,
+    '학력 증빙서류.pdf' AS original_name,
+    CONCAT('td-', t.n, '-1.pdf') AS store_name,
+    CONCAT('/uploads/tutors/documents/td-', t.n, '-1.pdf') AS file_path,
+    'application/pdf' AS content_type
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_document (user_id, id, doc_type, file_size, reviewed_by, reviewed_at, reject_reason, original_name, store_name, file_path, content_type)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CONCAT('td-', t.n, '-2') AS id,
+    'CERTIFICATE_TEXT' AS doc_type,
+    0 AS file_size,
+    NULL AS reviewed_by,
+    NULL AS reviewed_at,
+    NULL AS reject_reason,
+    '수업 커리큘럼 보유' AS original_name,
+    CONCAT('td-', t.n, '-2.txt') AS store_name,
+    CONCAT('/uploads/tutors/documents/td-', t.n, '-2.txt') AS file_path,
+    'text/plain' AS content_type
+FROM tmp_seed_tutor_nums t;
+
+INSERT INTO tutor_time_range (user_id, id, start_at, end_at, day_of_week)
+SELECT
+    CONCAT('u-tutor-', t.n) AS user_id,
+    CONCAT('tr-', t.n, '-', r.seq) AS id,
+    CASE r.seq
+        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '18:00:00' WHEN 1 THEN '19:00:00' ELSE '20:00:00' END
+        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '18:00:00' WHEN 1 THEN '19:00:00' ELSE '20:00:00' END
+        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '10:00:00' WHEN 1 THEN '11:00:00' ELSE '13:00:00' END
+    END AS start_at,
+    CASE r.seq
+        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '21:00:00' WHEN 1 THEN '22:00:00' ELSE '23:00:00' END
+        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '21:00:00' WHEN 1 THEN '22:00:00' ELSE '23:00:00' END
+        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '13:00:00' WHEN 1 THEN '14:00:00' ELSE '16:00:00' END
+    END AS end_at,
+    CASE r.seq
+        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '월' WHEN 1 THEN '화' ELSE '수' END
+        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '수' WHEN 1 THEN '목' ELSE '금' END
+        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '토' WHEN 1 THEN '일' ELSE '토' END
+    END AS day_of_week
+FROM tmp_seed_tutor_nums t
+JOIN (
+    SELECT 1 AS seq
+    UNION ALL
+    SELECT 2
+    UNION ALL
+    SELECT 3
+) r;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_seed_tutor_nums;
+DROP TEMPORARY TABLE IF EXISTS tmp_seed_student_nums;
+
+-- Additional availability slots (richer seed)
+-- Keep existing fixed IDs used by booking rows, and append deterministic extra OPEN slots.
+INSERT INTO tutor_availability (user_id, id, start_at, end_at, status)
+SELECT
+    tr.user_id,
+    CONCAT(
+        'availx-',
+        REPLACE(tr.user_id, 'u-tutor-', ''),
+        '-',
+        DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL d.day_offset DAY), '%m%d'),
+        '-',
+        DATE_FORMAT(ADDTIME(tr.start_at, SEC_TO_TIME(s.minute_offset * 60)), '%H%i'),
+        '-',
+        SUBSTRING_INDEX(tr.id, '-', -1)
+    ) AS id,
+    TIMESTAMP(
+        DATE_ADD(CURDATE(), INTERVAL d.day_offset DAY),
+        ADDTIME(tr.start_at, SEC_TO_TIME(s.minute_offset * 60))
+    ) AS start_at,
+    TIMESTAMP(
+        DATE_ADD(CURDATE(), INTERVAL d.day_offset DAY),
+        ADDTIME(ADDTIME(tr.start_at, SEC_TO_TIME(s.minute_offset * 60)), '01:00:00')
+    ) AS end_at,
+    'OPEN' AS status
+FROM tutor_time_range tr
+JOIN (
+    SELECT 1 AS day_offset UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL
+    SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL
+    SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL
+    SELECT 12 UNION ALL SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL
+    SELECT 16 UNION ALL SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL
+    SELECT 20 UNION ALL SELECT 21
+) d
+JOIN (
+    SELECT 0 AS minute_offset
+    UNION ALL
+    SELECT 60
+) s
+WHERE CASE DAYOFWEEK(DATE_ADD(CURDATE(), INTERVAL d.day_offset DAY))
+        WHEN 1 THEN '일'
+        WHEN 2 THEN '월'
+        WHEN 3 THEN '화'
+        WHEN 4 THEN '수'
+        WHEN 5 THEN '목'
+        WHEN 6 THEN '금'
+        WHEN 7 THEN '토'
+      END = tr.day_of_week
+  AND ADDTIME(ADDTIME(tr.start_at, SEC_TO_TIME(s.minute_offset * 60)), '01:00:00') <= tr.end_at;
+
+-- Additional booked slots (30-min aligned, one slot per tutor) for mypage visibility
+INSERT INTO tutor_availability (user_id, id, start_at, end_at, status)
+SELECT
+    tr.user_id,
+    CONCAT(
+        'availb-',
+        REPLACE(tr.user_id, 'u-tutor-', ''),
+        '-',
+        DATE_FORMAT(
+            DATE_ADD(
+                DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
+                INTERVAL CASE tr.day_of_week
+                    WHEN '일' THEN 0
+                    WHEN '월' THEN 1
+                    WHEN '화' THEN 2
+                    WHEN '수' THEN 3
+                    WHEN '목' THEN 4
+                    WHEN '금' THEN 5
+                    ELSE 6
+                END DAY
+            ),
+            '%m%d'
+        ),
+        '-',
+        DATE_FORMAT(tr.start_at, '%H%i')
+    ) AS id,
+    TIMESTAMP(
+        DATE_ADD(
+            DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
+            INTERVAL CASE tr.day_of_week
+                WHEN '일' THEN 0
+                WHEN '월' THEN 1
+                WHEN '화' THEN 2
+                WHEN '수' THEN 3
+                WHEN '목' THEN 4
+                WHEN '금' THEN 5
+                ELSE 6
+            END DAY
+        ),
+        tr.start_at
+    ) AS start_at,
+    TIMESTAMP(
+        DATE_ADD(
+            DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
+            INTERVAL CASE tr.day_of_week
+                WHEN '일' THEN 0
+                WHEN '월' THEN 1
+                WHEN '화' THEN 2
+                WHEN '수' THEN 3
+                WHEN '목' THEN 4
+                WHEN '금' THEN 5
+                ELSE 6
+            END DAY
+        ),
+        ADDTIME(tr.start_at, '00:30:00')
+    ) AS end_at,
+    'BOOKED' AS status
+FROM tutor_time_range tr
+WHERE tr.id LIKE '%-1';
+
 -- Bookings
 INSERT INTO booking (
   user_id, tutor_id, lesson_id, availability_id, id, title,
@@ -771,6 +1134,34 @@ VALUES
  NOW(), DATE_SUB(NOW(),INTERVAL 13 MINUTE), NULL, NULL, NULL,
  '기초 회화를 빠르게 시작하고 싶어요.','https://zoom.us/j/2020202020');
 
+-- Additional bookings connected to generated BOOKED availability
+INSERT INTO booking (
+  user_id, tutor_id, lesson_id, availability_id, id, title,
+  requested_at, confirmed_at, canceled_at, done_at, paid_at,
+  memo, zoom_join_url
+)
+SELECT
+  CONCAT('u-student-', ((CAST(SUBSTRING_INDEX(ta.user_id, '-', -1) AS UNSIGNED) - 1) % 20) + 1) AS user_id,
+  ta.user_id AS tutor_id,
+  ls.id AS lesson_id,
+  ta.id AS availability_id,
+  CONCAT('bookx-', REPLACE(ta.user_id, 'u-tutor-', ''), '-', DATE_FORMAT(ta.start_at, '%m%d%H%i')) AS id,
+  CONCAT('정규 수업 예약 ', REPLACE(ta.user_id, 'u-tutor-', '')) AS title,
+  DATE_SUB(ta.start_at, INTERVAL 3 DAY) AS requested_at,
+  DATE_SUB(ta.start_at, INTERVAL 2 DAY) AS confirmed_at,
+  NULL AS canceled_at,
+  NULL AS done_at,
+  DATE_SUB(ta.start_at, INTERVAL 2 DAY) AS paid_at,
+  '확장 시드 데이터 자동 생성 예약입니다.' AS memo,
+  CONCAT('https://zoom.us/j/', LPAD(CAST(SUBSTRING_INDEX(ta.user_id, '-', -1) AS UNSIGNED), 10, '0')) AS zoom_join_url
+FROM tutor_availability ta
+JOIN (
+  SELECT user_id, MIN(id) AS id
+  FROM lesson
+  GROUP BY user_id
+) ls ON ls.user_id = ta.user_id
+WHERE ta.id LIKE 'availb-%';
+
 
 -- Payments
 INSERT INTO payment (user_id, booking_id, id, amount, provider, status, paid_at)
@@ -795,6 +1186,19 @@ VALUES
 ('u-student-8','book-18','pay-18',42000,'CARD','PENDING',NULL),
 ('u-student-9','book-19','pay-19',39000,'CARD','PENDING',NULL);
 
+INSERT INTO payment (user_id, booking_id, id, amount, provider, status, paid_at)
+SELECT
+  b.user_id,
+  b.id AS booking_id,
+  CONCAT('payx-', SUBSTRING(b.id, 7)) AS id,
+  COALESCE(l.price, 30000) AS amount,
+  'CARD' AS provider,
+  'PAID' AS status,
+  COALESCE(b.paid_at, DATE_ADD(b.requested_at, INTERVAL 2 DAY)) AS paid_at
+FROM booking b
+LEFT JOIN lesson l ON l.id = b.lesson_id
+WHERE b.id LIKE 'bookx-%';
+
 -- Reviews
 INSERT INTO review (booking_id, id, rating, content)
 VALUES
@@ -804,6 +1208,16 @@ VALUES
 ('book-8','review-8',5,'성조 교정이 도움이 됐고, 연습 방법을 알려주셔서 좋았습니다.'),
 ('book-11','review-11',5,'회의 상황 롤플레이가 실전 같아서 자신감이 생겼습니다.'),
 ('book-15','review-15',4,'여행 상황별 표현을 정리해 주셔서 바로 써먹을 것 같아요.');
+
+INSERT INTO review (booking_id, id, rating, content)
+SELECT
+  b.id AS booking_id,
+  CONCAT('reviewx-', SUBSTRING(b.id, 7)) AS id,
+  4 + MOD(CAST(SUBSTRING_INDEX(b.tutor_id, '-', -1) AS UNSIGNED), 2) AS rating,
+  '수업 구성이 탄탄하고 피드백이 구체적이어서 학습 방향을 잡는 데 도움이 되었습니다.'
+FROM booking b
+WHERE b.id LIKE 'bookx-%'
+  AND MOD(CAST(SUBSTRING_INDEX(b.tutor_id, '-', -1) AS UNSIGNED), 3) = 0;
 
 -- Tutor notes
 INSERT INTO tutor_student_note (id, tutor_id, student_id, progress, notes)
