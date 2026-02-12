@@ -217,8 +217,32 @@ function setupLogoutButton() {
     }
 }
 
+// Top Button Functionality
+function setupTopButton() {
+    const topBtn = document.getElementById('topBtn');
+    
+    if (!topBtn) return;
+    
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 100) {
+            topBtn.classList.add('show');
+        } else {
+            topBtn.classList.remove('show');
+        }
+    });
+
+    // Smooth scroll to top
+    topBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     await refreshAccessToken();
     fetchUserInfo();
     setupLogoutButton();
+    setupTopButton();
 });
