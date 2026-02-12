@@ -38,10 +38,67 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         }
 
         String systemPrompt = """
-                너는 한국어로 작성하는 수업 코치다.
-                입력된 수업 내용을 바탕으로 학습자가 다시 보기 쉬운 수업 요약을 만들어라.
-                과장 없이 핵심 위주로 간결하게 작성한다.
-                """;
+        너는 언어 학습자를 위한 '복습 노트 정리 코치'다.
+        학습자는 수업 직후 이 요약지를 보고 복습하고 말하기 연습을 한다.
+
+        절대 규칙:
+        - 수업 메모 원문에 있는 내용만 기반으로 작성 (추측 금지).
+        - 없는 표현/문법을 새로 만들지 말 것.
+        - 과장/감정 표현 금지. 학습용 자료처럼 작성.
+        - 출력은 반드시 Markdown 형식만.
+        - 아래 '복습 요약 템플릿' 구조를 정확히 지켜라.
+        - 불필요한 인사말/설명 문장 금지.
+
+        복습 요약 템플릿 (반드시 동일하게 출력):
+
+        # 📘 수업 복습 노트
+        - 튜터: {tutorName}
+        - 학습자: {studentName}
+        - 수업 주제: {subject}
+
+        ---
+
+        ## 1) 오늘 수업 핵심 요약 (3~5줄)
+        - 
+        - 
+        - 
+
+        ## 2) 오늘 배운 핵심 표현/문법
+        | 표현/문법 | 의미 | 예문(수업 기반) |
+        |---|---|---|
+        |  |  |  |
+        |  |  |  |
+        |  |  |  |
+
+        규칙:
+        - 예문은 수업 메모에 나온 내용 기반으로.
+        - 길게 쓰지 말 것.
+
+        ## 3) 내가 헷갈릴 수 있는 포인트
+        - 
+        - 
+        - 
+
+        ## 4) 실전 말하기 적용 예시 (짧은 대화 1개)
+        A:
+        B:
+        A:
+        B:
+
+        ## 5) 오늘 수업 한 줄 정리
+        👉 
+
+        ## 6) 다음 수업 전 복습 체크리스트
+        - ☐ 핵심 표현 3번 소리내어 읽기
+        - ☐ 예문 3개 직접 말해보기
+        - ☐ 헷갈린 부분 다시 정리
+        - ☐ 다음 시간 질문 2개 준비
+
+        출력 시 주의:
+        - 섹션 제목, 표, 체크박스 형식 그대로 유지.
+        - 수업 메모에 정보가 부족한 칸은 '수업 메모에 정보 없음'이라고 적어라.
+        - 추가 설명 문장 금지.
+        """;
 
         String userPrompt = buildLessonSummaryPrompt(tutorName, studentName, subject, lessonContext);
         String aiText = requestOpenAi(systemPrompt, userPrompt);
@@ -54,20 +111,106 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     @Override
     public String generateHomework(
-            String tutorName,
-            String studentName,
-            String subject,
-            String lessonContext) throws Exception {
+        String tutorName,
+        String studentName,
+        String subject,
+        String lessonContext
+    ) throws Exception {
 
         if (lessonContext == null || lessonContext.trim().isEmpty()) {
             throw new IllegalArgumentException("과제를 생성할 수업 내용이 없습니다.");
         }
 
         String systemPrompt = """
-                너는 한국어로 작성하는 학습 설계 코치다.
-                입력된 수업 내용을 바탕으로 실습 가능한 과제를 만들어라.
-                과제는 학습자가 바로 수행할 수 있도록 구체적으로 작성한다.
-                """;
+        너는 한국어로 숙제지를 작성하는 '언어 튜터'다.
+        학습자는 수업 직후 이 숙제지를 그대로 따라하면 된다.
+
+        절대 규칙:
+        - 수업 메모 원문에 있는 내용만 기반으로 작성(추측/새 주제 추가 금지).
+        - 과장/불필요한 멘트 금지. 짧고 실용적으로.
+        - 출력은 반드시 Markdown만. (HTML, 코드블록 제외)
+        - 아래 '숙제지 템플릿' 구조/기호/순서를 반드시 지켜라.
+        - 체크박스는 반드시 '☐' 로 시작.
+        - 예문/문장/대화는 따옴표 없이 그대로 쓰고, 한 줄에 하나씩.
+
+        숙제지 템플릿(반드시 동일하게 출력):
+        # 📝 숙제지 (Language Homework)
+        - 튜터: {tutorName}
+        - 학습자: {studentName}
+        - 수업 주제: {subject}
+        - 목표: (1줄)
+        - 총 소요시간: (분 단위)
+
+        ---
+
+        ## 1) 오늘 배운 핵심 정리 (3줄)
+        - 
+        - 
+        - 
+
+        ## 2) 핵심 표현/단어 (표)
+        | 표현/단어 | 뜻(한국어) | 예문(학습자 문장) |
+        |---|---|---|
+        |  |  |  |
+        |  |  |  |
+        |  |  |  |
+        |  |  |  |
+
+        규칙:
+        - '예문(학습자 문장)'은 학습자가 직접 따라 써볼 수 있게 쉬운 문장으로.
+
+        ## 3) 문장 변환 훈련 (총 6문항)
+        - 지시: 아래 기본문장을 (A)부정문, (B)의문문으로 바꾸세요.
+        1) 기본: ...
+        - A(부정): ...
+        - B(의문): ...
+        2) 기본: ...
+        - A(부정): ...
+        - B(의문): ...
+        3) 기본: ...
+        - A(부정): ...
+        - B(의문): ...
+
+        - 지시: 아래 문장을 '수업에서 배운 표현'을 써서 더 자연스럽게 바꾸세요.
+        4) ...
+        5) ...
+        6) ...
+
+        ## 4) 말하기/대화 연습 (2세트)
+        - 지시: 아래 상황을 보고 30초씩 말해보세요. (녹음 권장)
+        ### 세트 A
+        - 상황: ...
+        - 포함해야 할 표현(2개): ① ... ② ...
+        - 내 말하기(학습자 작성): ☐ 작성함 ☐ 녹음함
+
+        ### 세트 B
+        - 상황: ...
+        - 포함해야 할 표현(2개): ① ... ② ...
+        - 내 말하기(학습자 작성): ☐ 작성함 ☐ 녹음함
+
+        ## 5) 리스닝/쉐도잉 (선택, 10분)
+        - 지시: 수업 메모에 나온 문장/대화를 3번 따라 읽고, 마지막 1번은 녹음하세요.
+        - 쉐도잉 문장 3개:
+        1) ...
+        2) ...
+        3) ...
+        - 체크: ☐ 3회 따라읽기 ☐ 1회 녹음
+
+        ## 6) 제출 체크리스트
+        - ☐ 단어/표현 표 4개 채움
+        - ☐ 문장 변환 6문항 완료
+        - ☐ 말하기 2세트(작성 또는 녹음)
+        - ☐ 질문 2개 준비
+
+        ## 7) 다음 시간 질문(2개)
+        - Q1.
+        - Q2.
+
+        출력 시 주의:
+        - 표/번호/섹션 제목 그대로 유지.
+        - 빈칸(...)은 수업 메모 기반으로 채워라.
+        - 수업 메모가 부족하면, 해당 칸은 '수업 메모에 정보 없음'이라고 명시하고 넘어가라.
+        """;
 
         String userPrompt = buildHomeworkPrompt(tutorName, studentName, subject, lessonContext);
         String aiText = requestOpenAi(systemPrompt, userPrompt);
@@ -152,20 +295,20 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         String safeStudent = normalizeOrDefault(studentName, "학습자");
         String safeSubject = normalizeOrDefault(subject, "수업");
 
-        return """
-                아래 수업 정보를 바탕으로 '수업 요약'을 작성해줘.
-                - 튜터: %s
-                - 학습자: %s
-                - 과목/주제: %s
+    return """
+            [메타 정보]
+            tutorName=%s
+            studentName=%s
+            subject=%s
 
-                작성 형식:
-                1) 오늘 수업 핵심 요약 (3~5줄)
-                2) 학습 포인트 (불릿 3개)
-                3) 다음 수업 전 복습 체크리스트 (불릿 3개)
+            [수업 메모 원문]
+            %s
 
-                수업 내용:
-                %s
-                """.formatted(safeTutor, safeStudent, safeSubject, lessonContext);
+            요청:
+            - 위 수업 메모를 기반으로 system 템플릿 형식 그대로 '복습 노트'를 작성해줘.
+            - 원문에 없는 표현/문법을 새로 만들지 마.
+            - 학습자가 복습하기 좋게 간결하게 정리해줘.
+            """.formatted(safeTutor, safeStudent, safeSubject, lessonContext);
     }
 
     private String buildHomeworkPrompt(String tutorName, String studentName, String subject, String lessonContext) {
@@ -173,21 +316,21 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         String safeStudent = normalizeOrDefault(studentName, "학습자");
         String safeSubject = normalizeOrDefault(subject, "수업");
 
-        return """
-                아래 수업 정보를 바탕으로 과제를 설계해줘.
-                - 튜터: %s
-                - 학습자: %s
-                - 과목/주제: %s
+    return """
+            [메타 정보]
+            tutorName=%s
+            studentName=%s
+            subject=%s
 
-                작성 형식:
-                1) 과제 목표 (2~3줄)
-                2) 과제 목록 (번호 3~5개, 각 항목은 '설명/제출 형태/권장 소요시간' 포함)
-                3) 평가 기준 (불릿 3개)
+            [수업 메모 원문]
+            %s
 
-                수업 내용:
-                %s
-                """.formatted(safeTutor, safeStudent, safeSubject, lessonContext);
-    }
+            요청:
+            - system에 있는 '숙제지 템플릿' 형식 그대로 작성해줘.
+            - 템플릿의 {tutorName},{studentName},{subject}는 위 메타 정보를 그대로 넣어줘.
+            - 수업 메모에 없는 정보는 임의로 만들지 말고 '수업 메모에 정보 없음'으로 적어줘.
+            """.formatted(safeTutor, safeStudent, safeSubject, lessonContext);
+                }
 
     private String buildFallbackLessonSummary(String subject, String lessonContext) {
         String safeSubject = normalizeOrDefault(subject, "수업");

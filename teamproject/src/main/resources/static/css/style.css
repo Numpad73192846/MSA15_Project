@@ -73,9 +73,9 @@ header .navbar-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 .5rem;
     height: 100%;
     width: 100%;
 }
@@ -102,6 +102,10 @@ header .navbar-logo img {
     height: 32px;
     width: auto;
     object-fit: contain;
+}
+
+header .navbar-menu a {
+    font-size: 1.125rem;
 }
 
 header .search-bar {
@@ -213,6 +217,44 @@ footer .footer-bottom {
     text-align: center;
     color: #6b7280;
     font-size: 13px;
+}
+
+/* Top Button Styles */
+.top-button {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 4rem;
+    height: 4rem;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary-color);
+    opacity: 0;
+    visibility: hidden;
+    color: white;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.top-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.6);
+}
+
+.top-button.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.top-button:active {
+    transform: translateY(-1px);
 }
 
 /* Responsive Design */

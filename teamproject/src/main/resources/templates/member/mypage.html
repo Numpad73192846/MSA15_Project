@@ -696,6 +696,7 @@
         <script src="https://js.tosspayments.com/v2/standard"></script>
         <script src="/js/tutor-calendar.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
         <script>
             // 결제 모달 열기 함수
@@ -1834,15 +1835,16 @@
                 }
 
                 // placeholder 제거
-                view.innerHTML = '';
+                const html = marked.parse(text || '');
 
                 memberAiTyped = new Typed('#memberAiResultView', {
-                    strings: [safeText],
-                    typeSpeed: 18,
+                    strings: [html],
+                    typeSpeed: 10,
                     backSpeed: 0,
                     showCursor: true,
                     cursorChar: '|',
-                    loop: false
+                    loop: false,
+                    contentType: 'html'   // 🔥 이게 핵심
                 });
 
                 view.scrollTop = 0;
