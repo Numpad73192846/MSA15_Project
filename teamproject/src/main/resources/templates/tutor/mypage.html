@@ -196,6 +196,25 @@
 
                     </div>
 
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <div>
+                                    <h3 class="h6 fw-bold mb-1">AI 수업 도우미</h3>
+                                    <p class="text-muted small mb-0">수업 요약과 과제 초안을 빠르게 작성할 수 있습니다.</p>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenTutorAiSummary">
+                                        AI 수업 요약
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="btnOpenTutorAiHomework">
+                                        AI 과제 초안
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
 
                     <!-- Tabs -->
@@ -369,6 +388,12 @@
                                         <button type="button" class="btn btn-primary" id="btnSaveSchedule">
 
                                             <i class="bi bi-check-lg"></i> 저장
+
+                                        </button>
+
+                                        <button type="button" class="btn btn-outline-danger" id="btnResetScheduleAllMypage">
+
+                                            <i class="bi bi-arrow-counterclockwise"></i> 전체 초기화
 
                                         </button>
 
@@ -818,6 +843,47 @@
 
 
 
+        <div class="modal fade" id="tutorAiModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content rounded-4 border-0 shadow-lg">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title fw-bold" id="tutorAiTitle">AI 수업 요약</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <p class="small text-muted mb-3" id="tutorAiHint">수업 내용을 입력하면 요약 포맷으로 정리해드립니다.</p>
+                        <div id="tutorAiFlash" class="alert alert-danger py-2 small d-none mb-3"></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold mb-1" for="tutorAiTutorName">튜터명</label>
+                                <input type="text" class="form-control form-control-sm" id="tutorAiTutorName" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold mb-1" for="tutorAiStudentName">학생명</label>
+                                <input type="text" class="form-control form-control-sm" id="tutorAiStudentName" placeholder="예: 박학생">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1" for="tutorAiSubject">수업 주제</label>
+                            <input type="text" class="form-control form-control-sm" id="tutorAiSubject" placeholder="예: 중등 영어 문법 / 토익 RC">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1" for="tutorAiLessonContext">수업 내용</label>
+                            <textarea class="form-control" id="tutorAiLessonContext" rows="7" placeholder="오늘 수업 진행 내용, 학생 반응, 다음 수업 계획 등을 입력해 주세요."></textarea>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label small fw-semibold mb-1" for="tutorAiResult">생성 결과</label>
+                            <textarea class="form-control bg-light" id="tutorAiResult" rows="9" readonly placeholder="여기에 AI 생성 결과가 표시됩니다."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary px-4" id="btnRunTutorAi">요약 생성</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- CSS/JS for Schedule Editor -->
 
         <link rel="stylesheet" href="/css/tutor-calendar.css">
@@ -905,6 +971,166 @@
                 return response;
 
             }
+
+            const TUTOR_AI_MODES = Object.freeze({
+                SUMMARY: 'lesson-summary',
+                HOMEWORK: 'homework'
+            });
+            let tutorAiMode = TUTOR_AI_MODES.SUMMARY;
+
+            function setTutorAiFlash(message, type = 'danger') {
+                const flash = document.getElementById('tutorAiFlash');
+                if (!flash) return;
+                if (!message) {
+                    flash.textContent = '';
+                    flash.classList.add('d-none');
+                    flash.classList.remove('alert-danger', 'alert-success', 'alert-warning', 'alert-info');
+                    return;
+                }
+                flash.textContent = message;
+                flash.classList.remove('d-none');
+                flash.classList.remove('alert-danger', 'alert-success', 'alert-warning', 'alert-info');
+                flash.classList.add(`alert-${type}`);
+            }
+
+            function getTutorAiName() {
+                const fromInput = String(document.getElementById('tutorAiTutorName')?.value || '').trim();
+                if (fromInput) return fromInput;
+                const fromProfile = String(tutorMypageData?.tutorProfile?.name || '').trim();
+                if (fromProfile) return fromProfile;
+                const fromTitle = String(document.getElementById('tutorName')?.textContent || '').replace(/\s*튜터$/, '').trim();
+                return fromTitle || '튜터';
+            }
+
+            function setTutorAiMode(mode) {
+                tutorAiMode = mode === TUTOR_AI_MODES.HOMEWORK ? TUTOR_AI_MODES.HOMEWORK : TUTOR_AI_MODES.SUMMARY;
+                const titleEl = document.getElementById('tutorAiTitle');
+                const hintEl = document.getElementById('tutorAiHint');
+                const runBtn = document.getElementById('btnRunTutorAi');
+
+                if (tutorAiMode === TUTOR_AI_MODES.HOMEWORK) {
+                    if (titleEl) titleEl.textContent = 'AI 과제 초안';
+                    if (hintEl) hintEl.textContent = '수업 내용을 입력하면 학생에게 줄 과제 초안을 생성합니다.';
+                    if (runBtn) runBtn.textContent = '과제 초안 생성';
+                } else {
+                    if (titleEl) titleEl.textContent = 'AI 수업 요약';
+                    if (hintEl) hintEl.textContent = '수업 내용을 입력하면 요약 포맷으로 정리해드립니다.';
+                    if (runBtn) runBtn.textContent = '요약 생성';
+                }
+            }
+
+            function openTutorAiModal(mode) {
+                const modalEl = document.getElementById('tutorAiModal');
+                if (!modalEl || !window.bootstrap) return;
+
+                setTutorAiMode(mode);
+                setTutorAiFlash('');
+
+                const tutorInput = document.getElementById('tutorAiTutorName');
+                const studentInput = document.getElementById('tutorAiStudentName');
+                const subjectInput = document.getElementById('tutorAiSubject');
+                const contextInput = document.getElementById('tutorAiLessonContext');
+                const resultInput = document.getElementById('tutorAiResult');
+
+                const upcomingLessons = Array.isArray(tutorMypageData?.upcomingLessons) ? tutorMypageData.upcomingLessons : [];
+                const latestLesson = upcomingLessons[0] || {};
+
+                if (tutorInput) tutorInput.value = getTutorAiName();
+                if (studentInput) studentInput.value = String(latestLesson.studentName || '').trim();
+                if (subjectInput) subjectInput.value = String(latestLesson.subject || '').trim();
+                if (contextInput) contextInput.value = '';
+                if (resultInput) resultInput.value = '';
+
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+
+            async function runTutorAiGeneration(triggerBtn) {
+                const authed = await ensureAuth();
+                if (!authed) {
+                    setTutorAiFlash('로그인이 필요합니다.', 'warning');
+                    location.href = '/login';
+                    return;
+                }
+
+                const tutorName = getTutorAiName();
+                const studentName = String(document.getElementById('tutorAiStudentName')?.value || '').trim();
+                const subject = String(document.getElementById('tutorAiSubject')?.value || '').trim();
+                const lessonContext = String(document.getElementById('tutorAiLessonContext')?.value || '').trim();
+                const resultInput = document.getElementById('tutorAiResult');
+
+                if (!studentName) {
+                    setTutorAiFlash('학생명을 입력해 주세요.', 'warning');
+                    return;
+                }
+                if (!subject) {
+                    setTutorAiFlash('수업 주제를 입력해 주세요.', 'warning');
+                    return;
+                }
+                if (!lessonContext) {
+                    setTutorAiFlash('수업 내용을 입력해 주세요.', 'warning');
+                    return;
+                }
+
+                const endpoint = tutorAiMode === TUTOR_AI_MODES.HOMEWORK ? '/api/ai/homework' : '/api/ai/lesson-summary';
+                const originalText = triggerBtn?.textContent || '';
+                const progressText = tutorAiMode === TUTOR_AI_MODES.HOMEWORK ? '과제 생성중' : '요약 생성중';
+
+                if (triggerBtn) {
+                    triggerBtn.disabled = true;
+                    triggerBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>${progressText}`;
+                }
+                setTutorAiFlash('');
+
+                try {
+                    const response = await fetchWithAuth(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            tutorName,
+                            studentName,
+                            subject,
+                            lessonContext
+                        })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result?.success || !result?.data?.text) {
+                        setTutorAiFlash(result?.message || 'AI 생성에 실패했습니다.');
+                        return;
+                    }
+
+                    const text = String(result.data.text || '').trim();
+                    if (!text) {
+                        setTutorAiFlash('생성된 결과가 비어 있습니다.');
+                        return;
+                    }
+
+                    if (resultInput) {
+                        resultInput.value = text;
+                        resultInput.focus();
+                        resultInput.scrollTop = 0;
+                    }
+                } catch (error) {
+                    console.error('튜터 AI 생성 실패', error);
+                    setTutorAiFlash('AI 생성 중 오류가 발생했습니다.');
+                } finally {
+                    if (triggerBtn) {
+                        triggerBtn.disabled = false;
+                        triggerBtn.textContent = originalText || '요약 생성';
+                    }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('btnOpenTutorAiSummary')?.addEventListener('click', () => {
+                    openTutorAiModal(TUTOR_AI_MODES.SUMMARY);
+                });
+                document.getElementById('btnOpenTutorAiHomework')?.addEventListener('click', () => {
+                    openTutorAiModal(TUTOR_AI_MODES.HOMEWORK);
+                });
+                document.getElementById('btnRunTutorAi')?.addEventListener('click', async function() {
+                    await runTutorAiGeneration(this);
+                });
+            });
 
 
 
@@ -1098,7 +1324,7 @@
 
                                 profileImgContainer.innerHTML = `
 
-                                    <span class="fs-1">튜</span>
+                                    <span class="fs-1">👨‍🏫</span>
 
                                 `;
 
@@ -1159,6 +1385,10 @@
                             document.getElementById('tutorHeadline').textContent = profile.headline || '소개가 없습니다.';
 
                             document.getElementById('tutorBio').textContent = profile.bio || '소개가 없습니다.';
+                            const tutorAiTutorNameInput = document.getElementById('tutorAiTutorName');
+                            if (tutorAiTutorNameInput) {
+                                tutorAiTutorNameInput.value = profile.name || '튜터';
+                            }
 
                         }
 
@@ -3006,6 +3236,89 @@
 
             }
 
+            async function resetAllSchedulesFromEditor() {
+
+                const timeRangeResponse = await fetchWithAuth('/api/tutors/me/time-ranges', {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify([])
+
+                });
+
+                const timeRangeResult = await timeRangeResponse.json();
+
+                if (!(timeRangeResponse.ok && timeRangeResult.success)) {
+
+                    throw new Error(timeRangeResult?.message || '기본 시간대 초기화 실패');
+
+                }
+
+                const { start, end } = getDateRangeForMaxWeeks(520);
+
+                const availabilityResponse = await fetchWithAuth(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify([])
+
+                });
+
+                const availabilityResult = await availabilityResponse.json();
+
+                if (!(availabilityResponse.ok && availabilityResult.success)) {
+
+                    throw new Error(availabilityResult?.message || '가용 시간 초기화 실패');
+
+                }
+
+            }
+
+            async function refreshScheduleCalendarsOnly() {
+
+                const baseTimeRangesFromApi = await loadBaseTimeRanges();
+                const editorData = await loadAvailability();
+                const derivedBaseTimeRanges = deriveBaseTimeRangesFromRows(editorData, 30);
+                const effectiveBaseTimeRanges = hasAnyRange(baseTimeRangesFromApi)
+                    ? baseTimeRangesFromApi
+                    : derivedBaseTimeRanges;
+
+                if (mypageCalendar) {
+                    const currentWeekStart = mypageCalendar?.state?.weekStart
+                        ? new Date(mypageCalendar.state.weekStart)
+                        : null;
+                    mypageCalendar.options.baseTimeRanges = effectiveBaseTimeRanges;
+                    mypageCalendar.options.renderOnlyInRange = hasAnyRange(effectiveBaseTimeRanges);
+                    mypageCalendar.setInitialData(editorData);
+                    if (currentWeekStart) {
+                        mypageCalendar.state.weekStart = currentWeekStart;
+                        mypageCalendar.render();
+                    }
+                }
+
+                if (weeklyViewCalendar) {
+                    const selectedStudentId = document.getElementById('weeklyStudentFilter')?.value || '';
+                    const weeklyData = await loadAvailability(selectedStudentId);
+                    const currentWeekStart = weeklyViewCalendar?.state?.weekStart
+                        ? new Date(weeklyViewCalendar.state.weekStart)
+                        : null;
+                    weeklyViewCalendar.options.baseTimeRanges = effectiveBaseTimeRanges;
+                    weeklyViewCalendar.options.renderOnlyInRange = hasAnyRange(effectiveBaseTimeRanges);
+                    weeklyViewCalendar.setInitialData(weeklyData);
+                    if (currentWeekStart) {
+                        weeklyViewCalendar.state.weekStart = currentWeekStart;
+                        weeklyViewCalendar.render();
+                    }
+                    updateWeeklyHoverInfo(null);
+                    enableWeeklyRescheduleDnD();
+                }
+
+            }
+
 
 
             async function toggleScheduleEditor() {
@@ -3125,6 +3438,40 @@
 
                                 console.error('저장 중 오류:', error);
                                 alert('저장에 실패했습니다.');
+                            }
+
+                        });
+
+                        document.getElementById('btnResetScheduleAllMypage')?.addEventListener('click', async () => {
+
+                            if (!confirm('스케줄을 전체 초기화하시겠습니까?\n예약된 수업은 유지됩니다.')) {
+
+                                return;
+
+                            }
+
+                            const btnSaveSchedule = document.getElementById('btnSaveSchedule');
+                            const btnResetSchedule = document.getElementById('btnResetScheduleAllMypage');
+                            if (btnSaveSchedule) btnSaveSchedule.disabled = true;
+                            if (btnResetSchedule) btnResetSchedule.disabled = true;
+
+                            try {
+
+                                await resetAllSchedulesFromEditor();
+                                await refreshScheduleCalendarsOnly();
+
+                                alert('스케줄이 전체 초기화되었습니다. 예약된 수업은 유지됩니다.');
+
+                            } catch (error) {
+
+                                console.error('전체 초기화 중 오류:', error);
+                                alert(error?.message || '전체 초기화에 실패했습니다.');
+
+                            } finally {
+
+                                if (btnSaveSchedule) btnSaveSchedule.disabled = false;
+                                if (btnResetSchedule) btnResetSchedule.disabled = false;
+
                             }
 
                         });
@@ -3263,14 +3610,6 @@
     </div>
 
 </div>
-
-
-
-
-
-
-
-
 
 
 

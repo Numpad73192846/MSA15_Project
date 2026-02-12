@@ -15,6 +15,7 @@
         <result property="ratingAvg" column="rating_avg"/>
         <result property="reviewCount" column="review_count"/>
         <result property="profileImg" column="profile_img"/>
+        <result property="videoUrl" column="video_url"/>
         <result property="subjects" column="subjects"/>
         <result property="price" column="price"/>
         <result property="experience" column="experience"/>
@@ -35,7 +36,7 @@
             u.nickname, 
             tp.bio, 
             tp.self_intro,
-            u.profile_img,
+            u.profile_img,            
             COALESCE(
                 (SELECT AVG(r.rating) 
                  FROM review r 
@@ -89,6 +90,7 @@
             tp.bio, 
             tp.self_intro,
             u.profile_img,
+            tp.video_url,
             COALESCE(
                 (SELECT AVG(r.rating) 
                  FROM review r 
@@ -319,8 +321,7 @@
         JOIN users u ON tp.user_id = u.id
         WHERE tp.user_id IN (SELECT user_id FROM user_auth WHERE auth = 'ROLE_TUTOR')
           AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
-          AND (u.name LIKE CONCAT('%', #{searchTerm}, '%') 
-               OR u.nickname LIKE CONCAT('%', #{searchTerm}, '%')
+          AND (u.nickname LIKE CONCAT('%', #{searchTerm}, '%') 
                OR tp.bio LIKE CONCAT('%', #{searchTerm}, '%'))
         ORDER BY rating_avg DESC, review_count DESC
     </select>

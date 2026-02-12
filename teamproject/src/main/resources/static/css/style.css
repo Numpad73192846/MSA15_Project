@@ -658,6 +658,53 @@ footer .footer-bottom {
     border-radius: 12px !important;
 }
 
+/* 튜터리스트 필터 */
+.selected-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.selected-filters__chips {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #cbd5f5;
+    background: #eef2ff;
+    color: #1e3a8a;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter-chip__close {
+    font-weight: 800;
+    line-height: 1;
+}
+
+#selectedFilters {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    gap: .375em;
+}
+
 /* 프로필 이미지 스타일 */
 .profile-img-container {
     overflow: hidden;

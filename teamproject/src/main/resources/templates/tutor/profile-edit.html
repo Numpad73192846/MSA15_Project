@@ -313,9 +313,9 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center gap-3 mb-3">
                                 <div id="sidebarProfileImg"
-                                    class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center overflow-hidden"
+                                    class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
                                     style="width:60px;height:60px;font-size:1.5rem;">
-                                    👨‍🏫
+                                    <span class="fs-4">👨‍🏫</span>
                                 </div>
                                 <div>
                                     <div class="fw-bold" id="sidebarName">튜터</div>
@@ -508,7 +508,13 @@
                     elements.editDefaultZoomUrl.value = profileState.defaultZoomUrl || "";
                     elements.editDefaultZoomUrl.dispatchEvent(new Event('input'));
                 }
-                if (elements.editBankName) elements.editBankName.value = profileState.bankName || "";
+                if (elements.editBankName) {
+                    elements.editBankName.value = profileState.bankName || "";
+                    // select option selected 처리 (동적 렌더링 대응)
+                    Array.from(elements.editBankName.options).forEach(opt => {
+                        opt.selected = (opt.value === profileState.bankName);
+                    });
+                }
                 if (elements.editAccountNumber) elements.editAccountNumber.value = profileState.accountNumber || "";
                 if (elements.editAccountHolder) elements.editAccountHolder.value = profileState.accountHolder || "";
 
@@ -520,7 +526,7 @@
                 } else if (elements.currentProfileImg) {
                     elements.currentProfileImg.classList.add('bg-primary');
                     elements.currentProfileImg.innerHTML = `
-                        <span class="fs-1">👨‍🏫</span>
+                        <span class="fs-4">👨‍🏫</span>
                     `;
                 }
             }
@@ -566,6 +572,13 @@
 
             let currentSection = "basic";
             let securityVerified = false;
+
+            function reloadProfileEditSection(sectionType) {
+                const safeKey = sections.includes(sectionType) ? sectionType : (currentSection || 'basic');
+                window.location.href = `${window.location.pathname}?section=${encodeURIComponent(safeKey)}`;
+            }
+
+            window.reloadProfileEditSection = reloadProfileEditSection;
 
             async function verifySecurityAccessInline() {
                 if (!profileState.loginId) {
@@ -835,7 +848,7 @@
                             } else {
                                 document.getElementById('sidebarProfileImg').classList.add('bg-primary');
                                 document.getElementById('sidebarProfileImg').innerHTML = `
-                                    <span class="fs-1">👨‍🏫</span>
+                                    <span class="fs-4">👨‍🏫</span>
                                 `;
                             }
 
@@ -886,9 +899,9 @@
                         break;
 
                     case 'account':
-                        formData.set('basicBankName', profileState.bankName || '');
-                        formData.set('basicAccountNumber', profileState.accountNumber || '');
-                        formData.set('basicAccountHolder', profileState.accountHolder || '');
+                        formData.set('bankName', profileState.bankName || '');
+                        formData.set('accountNumber', profileState.accountNumber || '');
+                        formData.set('accountHolder', profileState.accountHolder || '');
                         break;
 
                     case 'zoom':
@@ -1239,6 +1252,13 @@
                 return true;
 
             }
+
+            window.saveEmploymentSection = async function saveEmploymentSection() {
+                const ok = await saveCareersToApi(true);
+                if (ok) {
+                    reloadProfileEditSection('employment');
+                }
+            };
 
             async function saveEducationsToApi(showSuccess = false) {
                 const payload = buildEducationPayload();
@@ -1730,8 +1750,9 @@
                         }
 
                         documentTextsInitialized = false;
-                        await loadDocumentList();
                         alert('서류 정보가 저장되었습니다.');
+                        reloadProfileEditSection('documents');
+                        return;
                     } catch (e) {
                         console.error(e);
                         alert(e.message || '서류 저장 중 오류가 발생했습니다.');

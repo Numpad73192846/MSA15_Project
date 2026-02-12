@@ -302,8 +302,97 @@ const STATE = {
   })),
   selectedTicketId: null,
   selectedTicketMessages: [],
-  dashboardSummary: null
+  dashboardSummary: null,
+  docs: [],
+  users: []
 };
+
+/* =========================
+   문서 매핑/로딩
+   ========================= */
+function mapDoc(d) {
+  return {
+    id: d.id,
+    tutorName: d.userName,
+    nickname: d.userNickname,
+    type: d.docType,
+    fileName: d.originalName,
+    ext: (d.originalName || d.storeName || "").split(".").pop().toLowerCase() || "",
+    uploadedAt: d.createdAt ? String(d.createdAt).slice(0,10) : "-",
+    status: d.status || "PENDING",
+    url: d.filePath || "#",
+    log: d.rejectReason || "-"
+  }
+}
+
+async function loadDocumentsFromServer() {
+  const response = await fetchWithAdminAuth("/api/admin/documents");
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return;
+
+  STATE.docs = ( result.data || [] ).map(mapDoc);
+
+  renderDocs();
+  renderDashboard();
+}
+
+function mapSettlement(s){
+  const toNum = (v) => Number(v ?? 0);
+
+  const total = toNum(s.totalAmount);
+  const settled = toNum(s.remittedAmount);
+  const payable = toNum(s.balance);
+
+  const raw = String(s.status || "").toUpperCase();
+  let status = "DONE";
+  if (raw === "PENDING") status = "WAIT";
+  else if (raw === "COMPLETED") status = "DONE";
+  else status = payable > 0 ? "WAIT" : "DONE";
+
+  return {
+    id: String(s.userId),
+    tutorName: s.userName || "-",
+    nickname: s.nickname || "-",
+    total,
+    settled,
+    payable,
+    status
+  };
+}
+
+async function loadSettlementsFromServer(){
+  const response = await fetchWithAdminAuth("/api/admin/settlements");
+  const result = await response.json();
+
+  if (!response.ok || !result?.success) return;
+
+  DATA.settlements = (result.data || []).map(mapSettlement);
+  renderSettles();
+  renderDashboard();
+}
+
+function mapUser(u) {
+  return {
+    id: String(u.id),
+    name: u.name || "-",
+    nickname: u.nickname || "-",
+    username: u.username || "-",
+    role: String(u.role || "USER").toUpperCase(),
+    status: String(u.status || "ACTIVE").toUpperCase(),
+    joinedAt: u.createdAt ? String(u.createdAt).slice(0,10) : "-"
+  }
+}
+
+async function loadUsersFromServer() {
+  const response = await fetchWithAdminAuth("/api/admin/users");
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return;
+
+  STATE.users = ( result.data || [] ).map(mapUser);
+  renderUsers();
+}
 
 /* =========================
    1) 공통 유틸
@@ -470,7 +559,7 @@ function renderDashboard(){
   const dashDoc = document.getElementById("dashDocTbody");
   if (!dashDoc) return;
 
-  const docRows = DATA.docs.slice(0,5).map(d => `
+  const docRows = STATE.docs.slice(0,5).map(d => `
     <tr>
       <td>${d.tutorName} <span class="muted small">(${d.nickname})</span></td>
       <td>${typeLabel(d.type)}</td>
@@ -531,10 +620,10 @@ function filterDocs(){
   const type = document.getElementById("docFilterType").value;
   const q = document.getElementById("docSearch").value.trim().toLowerCase();
 
-  return DATA.docs.filter(d => {
+  return STATE.docs.filter(d => {
     const okStatus = (status==="ALL") || (d.status===status);
     const okType = (type==="ALL") || (d.type===type);
-    const okQ = !q || (d.tutorName.toLowerCase().includes(q) || d.nickname.toLowerCase().includes(q));
+    const okQ = !q || (d.tutorName || "").toLowerCase().includes(q) || (d.nickname || "").toLowerCase().includes(q) || (d.fileName || "").toLowerCase().includes(q);
     return okStatus && okType && okQ;
   });
 }
@@ -566,8 +655,8 @@ function renderDocs(){
 }
 
 function selectDoc(id){
-  selectedDocId = id;
-  const d = DATA.docs.find(x => x.id===id);
+  selectedDocId = String(id);
+  const d = STATE.docs.find(x => String(x.id) === selectedDocId);
   if(!d) return;
 
   document.getElementById("docPanelHint").classList.add("d-none");
@@ -600,7 +689,7 @@ function initDocTab(){
     document.getElementById("docFilterStatus").value = "ALL";
     document.getElementById("docFilterType").value = "ALL";
     document.getElementById("docSearch").value = "";
-    renderDocs();
+    loadDocumentsFromServer();
   });
 
   document.getElementById("btnReject")?.addEventListener("click", () => {
@@ -608,34 +697,53 @@ function initDocTab(){
     document.getElementById("rejectBox").classList.toggle("d-none");
   });
 
-  document.getElementById("btnApprove")?.addEventListener("click", () => {
+  document.getElementById("btnApprove")?.addEventListener("click", async () => {
+    
     if(!selectedDocId) return alert("서류를 선택하세요.");
-    // 프론트 시뮬레이션: 상태만 변경
-    const d = DATA.docs.find(x => x.id===selectedDocId);
-    d.status = "APPROVED";
-    d.log = "관리자 승인(시뮬레이션)";
-    renderDocs();
-    selectDoc(selectedDocId);
+    
+    const response = await fetchWithAdminAuth("/api/admin/documents/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selectedDocId })
+    });
 
-    // TODO(백엔드): approve API 호출 후 성공 시 갱신
-    // fetch(`/admin/docs/${selectedDocId}/approve`, {method:"POST"})
+    const result = await response.json();
+
+    if ( !response.ok || !result?.success ) {
+      return alert("서류 승인에 실패했습니다. 다시 시도해주세요.");
+    }
+
+    await loadDocumentsFromServer();
+    await loadAdminDashboardSummary();
+    selectDoc(selectedDocId);
   });
 
-  document.getElementById("btnRejectConfirm")?.addEventListener("click", () => {
-    if(!selectedDocId) return alert("서류를 선택하세요.");
+  document.getElementById("btnRejectConfirm")?.addEventListener("click", async () => {
+    if(!selectedDocId) return alert("서류를 선택해 주세요");
+
     const reason = document.getElementById("rejectReason").value.trim();
-    if(!reason) return alert("반려 사유를 입력하세요.");
 
-    const d = DATA.docs.find(x => x.id===selectedDocId);
-    d.status = "REJECTED";
-    d.log = `반려(시뮬레이션): ${reason}`;
-    renderDocs();
+    if(!reason) return alert("반려 사유를 입력해 주세요");
+
+    const res = await fetchWithAdminAuth("/api/admin/documents/reject", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: selectedDocId, reason })
+    });
+    const result = await res.json();
+    if (!res.ok || !result?.success) {
+      return alert(result?.message || "반려 처리 실패");
+    }
+
+    document.getElementById("rejectBox").classList.add("d-none");
+    document.getElementById("rejectReason").value = "";
+
+    await loadDocumentsFromServer();
+    await loadAdminDashboardSummary();
     selectDoc(selectedDocId);
-
-    // TODO(백엔드): reject API 호출(reason 포함)
   });
 
-  renderDocs();
+  loadDocumentsFromServer();
 }
 
 /* =========================
@@ -697,23 +805,37 @@ function initSettlementTab(){
   document.getElementById("settleFilter")?.addEventListener("change", renderSettles);
   document.getElementById("settleSearch")?.addEventListener("input", renderSettles);
 
-  document.getElementById("btnSettleRun")?.addEventListener("click", () => {
+  document.getElementById("btnSettleRun")?.addEventListener("click", async () => {
     if(!selectedSettleId) return alert("정산 항목을 선택하세요.");
+
     const s = DATA.settlements.find(x => x.id===selectedSettleId);
     if(!s || s.status!=="WAIT" || s.payable<=0) return;
 
-    // 시뮬레이션 완료 처리
-    s.status = "DONE";
-    s.settled += s.payable;
-    s.payable = 0;
+    const response = await fetchWithAdminAuth("/api/admin/settlements/remit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tutorId: selectedSettleId })
+    });
 
-    renderSettles();
+    const result = await response.json();
+
+    if ( !response.ok || !result?.success ) {
+      return alert( result?.message || "정산 실행에 실패했습니다. 다시 시도해주세요." );
+    }
+
+    const update = Number(result?.data?.updated ?? 0);
+
+    if ( update <= 0 ) {
+       return alert("정산할 금액이 없습니다.");
+    }
+
+    await loadSettlementsFromServer();
+    await loadAdminDashboardSummary();
     selectSettle(selectedSettleId);
 
-    // TODO(백엔드): 정산 실행 API 호출
   });
 
-  renderSettles();
+  loadSettlementsFromServer();
 }
 
 /* =========================
@@ -726,7 +848,7 @@ function filterUsers(){
   const st = document.getElementById("userStatusFilter").value;
   const q = document.getElementById("userSearch").value.trim().toLowerCase();
 
-  return DATA.users.filter(u => {
+  return STATE.users.filter(u => {
     const okR = (r==="ALL") || (u.role===r);
     const okS = (st==="ALL") || (u.status===st);
     const okQ = !q || u.name.toLowerCase().includes(q) || u.nickname.toLowerCase().includes(q);
@@ -761,7 +883,7 @@ function renderUsers(){
 
 function selectUser(id){
   selectedUserId = id;
-  const u = DATA.users.find(x => x.id===id);
+  const u = STATE.users.find(x => x.id===id);
   if(!u) return;
 
   document.getElementById("userPanelHint").classList.add("d-none");
@@ -782,19 +904,72 @@ function initUsersTab(){
   document.getElementById("btnUserSuspend")?.addEventListener("click", () => changeUserStatus("SUSPENDED"));
   document.getElementById("btnUserActivate")?.addEventListener("click", () => changeUserStatus("ACTIVE"));
 
-  renderUsers();
+  document.getElementById("btnRoleUser")?.addEventListener("click", () => changeUserRole("USER"));
+  document.getElementById("btnRoleTutor")?.addEventListener("click", () => changeUserRole("TUTOR"));
+  document.getElementById("btnRoleAdmin")?.addEventListener("click", () => changeUserRole("ADMIN"));
+
+  document.getElementById("btnUserDelete")?.addEventListener("click", () => deleteUser());
+
+  loadUsersFromServer();
 }
 
-function changeUserStatus(toStatus){
+async function changeUserStatus(toStatus){
   if(!selectedUserId) return alert("회원을 선택하세요.");
-  const u = DATA.users.find(x => x.id===selectedUserId);
-  if(!u) return;
 
-  u.status = toStatus;
-  renderUsers();
+  const response = await fetchWithAdminAuth( `/api/admin/users/${encodeURIComponent(selectedUserId)}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: toStatus })
+  });
+
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return alert( result?.message || "회원 상태 변경에 실패했습니다. 다시 시도해주세요." );
+
+  await loadUsersFromServer();
   selectUser(selectedUserId);
 
-  // TODO(백엔드): 상태 변경 API 호출 + 사유 전송
+}
+
+async function changeUserRole(toRole){
+  if(!selectedUserId) return alert("회원을 선택하세요.");
+
+  const response = await fetchWithAdminAuth( `/api/admin/users/${encodeURIComponent(selectedUserId)}/role`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role: toRole })
+  });
+
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return alert( result?.message || "회원 권한 변경에 실패했습니다. 다시 시도해주세요." );
+
+  await loadUsersFromServer();
+  selectUser(selectedUserId);
+
+}
+
+async function deleteUser() {
+  if(!selectedUserId) return alert("회원을 선택하세요.");
+
+  if(!confirm("정말로 회원을 삭제하시겠습니까? 삭제된 회원의 정보는 복구할 수 없습니다.")) {
+    return;
+  }
+
+  const response = await fetchWithAdminAuth( `/api/admin/users/${encodeURIComponent(selectedUserId)}`, {
+    method: "DELETE"
+  });
+
+  const result = await response.json();
+
+  if ( !response.ok || !result?.success ) return alert( result?.message || "회원 삭제에 실패했습니다. 다시 시도해주세요." );
+
+  selectedUserId = null;
+  document.getElementById("userPanelBody").classList.add("d-none");
+  document.getElementById("userPanelHint").classList.remove("d-none");
+
+  await loadUsersFromServer();
+  await loadAdminDashboardSummary();
 }
 
 
@@ -1005,12 +1180,11 @@ async function changeTicketStatus(to){
 }
 
 function initDashboardTab(){
-  renderDashboard();
+  loadSettlementsFromServer();
   loadAdminDashboardSummary();
 }
 
 function initSettingsTab(){
-  // 설정 탭은 별도 초기화 없음
 }
 
 /* =========================
@@ -1020,11 +1194,9 @@ renderKPI();
 loadAdminDashboardSummary();
 loadTicketsFromServer();
 
-// 최초 탭
 const initial = new URLSearchParams(location.search).get("tab") || "dashboard";
 showTab(tabs.includes(initial) ? initial : "dashboard");
 
-// 페이지 로드 시 로그아웃 버튼 초기화
 setupLogoutButton();
 </script>
 </th:block>

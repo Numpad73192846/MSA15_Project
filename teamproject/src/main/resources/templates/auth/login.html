@@ -36,11 +36,16 @@
                                     <input name="password" type="password" class="form-control" required>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe">
-                                        <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe">
+                                            <label class="form-check-label" for="rememberMe">자동 로그인</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="rememberId" id="rememberId">
+                                            <label class="form-check-label" for="rememberId">아이디 저장</label>
+                                        </div>
                                     </div>
-                                    <!-- 현재 준비 중 -->
                                     <a href="javascript:void(0)" class="small">비밀번호 찾기</a>
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">로그인</button>
@@ -243,7 +248,8 @@
                 const fd = new FormData(event.target);
                 const payload = {
                     username: fd.get('username'),
-                    password: fd.get('password')
+                    password: fd.get('password'),
+                    rememberMe: fd.get('rememberMe') === 'on'
                 };
 
                 const response = await fetch('/api/auth/login', {
@@ -256,6 +262,12 @@
                 if (!data.success) {
                     alert(data.message || '로그인에 실패했습니다.');
                     return;
+                }
+
+                if (fd.get('rememberId') === 'on') {
+                    localStorage.setItem('rememberedUsername', payload.username || '');
+                } else {
+                    localStorage.removeItem('rememberedUsername');
                 }
 
                 if (data.data && typeof setAccessToken === 'function') {
@@ -292,6 +304,17 @@
             }
 
             document.addEventListener('DOMContentLoaded', () => {
+                const rememberedUsername = localStorage.getItem('rememberedUsername');
+                const loginUsernameInput = document.querySelector('#loginForm input[name="username"]');
+                const rememberIdInput = document.getElementById('rememberId');
+
+                if (loginUsernameInput && rememberedUsername) {
+                    loginUsernameInput.value = rememberedUsername;
+                }
+                if (rememberIdInput) {
+                    rememberIdInput.checked = !!rememberedUsername;
+                }
+
                 // 쿼리 파라미터(tab=signup)로 회원가입 탭 활성화
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('tab') === 'signup') {
@@ -346,7 +369,7 @@
                 const loginResponse = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: payload.username, password: payload.password }),
+                    body: JSON.stringify({ username: payload.username, password: payload.password, rememberMe: false }),
                     credentials: 'include'
                 });
                 

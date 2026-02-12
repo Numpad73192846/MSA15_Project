@@ -77,6 +77,9 @@
 </section>
 
 <div class="d-flex justify-content-end gap-2">
+  <button type="button" class="btn btn-outline-danger px-4" id="btnResetScheduleAll">
+    <i class="bi bi-arrow-counterclockwise me-1"></i> 전체 초기화
+  </button>
   <button type="button" class="btn btn-primary px-4" id="btnSaveSchedule">
     <i class="bi bi-check-lg me-1"></i> 스케줄 저장
   </button>
@@ -310,6 +313,7 @@
     function setLoading(isLoading) {
       byId('btnSaveSchedule')?.toggleAttribute('disabled', isLoading);
       byId('btnApplyPattern')?.toggleAttribute('disabled', isLoading);
+      byId('btnResetScheduleAll')?.toggleAttribute('disabled', isLoading);
     }
 
     function showError(message) {
@@ -484,7 +488,7 @@
 
       const selectedData = calendar.getSelectedData();
       const stepMinutes = Number(calendar.options?.timeStepMinutes) || 30;
-      const { start, end } = getDateRangeForMaxWeeks(9);
+      const { start, end } = getDateRangeForMaxWeeks(520);
 
       const availabilities = selectedData.map((item) => {
         const startDate = new Date(`${item.date}T${item.time}:00`);
@@ -508,41 +512,71 @@
       }
     }
 
-    function addRange(dayIndex) {
-      if (!baseTimeRanges[dayIndex]) baseTimeRanges[dayIndex] = [];
-      baseTimeRanges[dayIndex].push({ start: '08:00', end: '09:30' });
-      renderBaseTimeEditor();
+    async function resetScheduleToApi() {
+      const timeRangeResponse = await scheduleFetch('/api/tutors/me/time-ranges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([])
+      });
+      const timeRangeResult = await timeRangeResponse.json();
+      if (!(timeRangeResponse.ok && timeRangeResult.success)) {
+        throw new Error(timeRangeResult?.message || '기본 시간대 초기화에 실패했습니다.');
+      }
+
+      const { start, end } = getDateRangeForMaxWeeks(9);
+      const availabilityResponse = await scheduleFetch(`/api/tutors/me/availability?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([])
+      });
+      const availabilityResult = await availabilityResponse.json();
+      if (!(availabilityResponse.ok && availabilityResult.success)) {
+        throw new Error(availabilityResult?.message || '가용 시간 초기화에 실패했습니다.');
+      }
+    }
+
+    function syncBaseRangesToCalendar({ baseRangesTouched = true } = {}) {
       if (calendar) {
-        calendar.options.baseTimeRanges = baseTimeRanges;
-        calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
+        const normalized = normalizeRanges(baseTimeRanges);
+        calendar.options.baseTimeRanges = normalized;
+        calendar.options.renderOnlyInRange = hasAnyRange(normalized);
         calendar.render();
       }
-      saveDraft({ baseRangesTouched: true });
+      saveDraft({ baseRangesTouched });
+    }
+
+    function addRange(dayIndex) {
+      if (!Array.isArray(baseTimeRanges[dayIndex])) {
+        baseTimeRanges[dayIndex] = [];
+      }
+      baseTimeRanges[dayIndex].push({ start: '08:00', end: '09:30' });
+      renderBaseTimeEditor();
+      syncBaseRangesToCalendar({ baseRangesTouched: true });
     }
 
     function removeRange(dayIndex, rangeIndex) {
       if (!Array.isArray(baseTimeRanges[dayIndex])) return;
       baseTimeRanges[dayIndex].splice(rangeIndex, 1);
       renderBaseTimeEditor();
-      if (calendar) {
-        calendar.options.baseTimeRanges = baseTimeRanges;
-        calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
-        calendar.render();
-      }
-      saveDraft({ baseRangesTouched: true });
+      syncBaseRangesToCalendar({ baseRangesTouched: true });
     }
 
     function updateRange(dayIndex, rangeIndex, key, value) {
       if (!Array.isArray(baseTimeRanges[dayIndex])) return;
-      const target = baseTimeRanges[dayIndex][rangeIndex];
-      if (!target) return;
-      target[key] = value;
-      if (calendar) {
-        calendar.options.baseTimeRanges = baseTimeRanges;
-        calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
-        calendar.render();
-      }
-      saveDraft({ baseRangesTouched: true });
+      if (!baseTimeRanges[dayIndex][rangeIndex]) return;
+      baseTimeRanges[dayIndex][rangeIndex][key] = String(value || '').slice(0, 5);
+      syncBaseRangesToCalendar({ baseRangesTouched: true });
+    }
+
+    function closeTimeDropdown(input) {
+      if (!input || typeof input.blur !== 'function') return;
+      window.setTimeout(() => {
+        input.blur();
+      }, 0);
+    }
+
+    function minutePartOfTime(value) {
+      return String(value || '').slice(3, 5);
     }
 
     function renderBaseTimeEditor() {
@@ -561,42 +595,101 @@
           <div class="fw-semibold">${label}요일</div>
           <button type="button" class="btn btn-sm btn-outline-primary">시간대 추가</button>
         `;
-
         header.querySelector('button')?.addEventListener('click', () => addRange(dayIndex));
         dayRow.appendChild(header);
 
-        const ranges = baseTimeRanges[dayIndex] || [];
+        const ranges = Array.isArray(baseTimeRanges[dayIndex]) ? baseTimeRanges[dayIndex] : [];
         if (ranges.length === 0) {
           const empty = document.createElement('div');
           empty.className = 'text-muted small';
           empty.textContent = '설정된 시간대 없음';
           dayRow.appendChild(empty);
-        } else {
-          ranges.forEach((range, rangeIndex) => {
-            const row = document.createElement('div');
-            row.className = 'd-flex align-items-center gap-2 mb-2';
-            row.innerHTML = `
-              <input type="time" class="form-control form-control-sm" value="${range.start}">
-              <span>~</span>
-              <input type="time" class="form-control form-control-sm" value="${range.end}">
-              <button type="button" class="btn btn-sm btn-outline-danger" aria-label="시간대 삭제" title="시간대 삭제">
-                <i class="bi bi-x-lg"></i>
-              </button>
-            `;
-
-            const [startInput, endInput] = row.querySelectorAll('input');
-            const removeBtn = row.querySelector('button');
-
-            startInput?.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'start', e.target.value));
-            endInput?.addEventListener('change', (e) => updateRange(dayIndex, rangeIndex, 'end', e.target.value));
-            removeBtn?.addEventListener('click', () => removeRange(dayIndex, rangeIndex));
-
-            dayRow.appendChild(row);
-          });
+          container.appendChild(dayRow);
+          return;
         }
+
+        ranges.forEach((range, rangeIndex) => {
+          const row = document.createElement('div');
+          row.className = 'd-flex align-items-center gap-2 mb-2';
+          row.innerHTML = `
+            <input type="time" class="form-control form-control-sm" value="${range.start}" step="1800">
+            <span>~</span>
+            <input type="time" class="form-control form-control-sm" value="${range.end}" step="1800">
+            <button type="button" class="btn btn-sm btn-outline-danger" aria-label="시간대 삭제" title="시간대 삭제">
+              <i class="bi bi-x-lg"></i>
+              <span class="visually-hidden">삭제</span>
+            </button>
+          `;
+
+          const [startInput, endInput] = row.querySelectorAll('input');
+          const removeBtn = row.querySelector('button');
+
+          let previousStartValue = String(range.start || '');
+          let previousEndValue = String(range.end || '');
+
+          const handleStartInput = (e) => {
+            const nextValue = String(e.target.value || '');
+            updateRange(dayIndex, rangeIndex, 'start', nextValue);
+            if (minutePartOfTime(previousStartValue) !== minutePartOfTime(nextValue)) {
+              closeTimeDropdown(e.target);
+            }
+            previousStartValue = nextValue;
+          };
+          const handleEndInput = (e) => {
+            const nextValue = String(e.target.value || '');
+            updateRange(dayIndex, rangeIndex, 'end', nextValue);
+            if (minutePartOfTime(previousEndValue) !== minutePartOfTime(nextValue)) {
+              closeTimeDropdown(e.target);
+            }
+            previousEndValue = nextValue;
+          };
+
+          startInput?.addEventListener('input', handleStartInput);
+          startInput?.addEventListener('change', handleStartInput);
+          endInput?.addEventListener('input', handleEndInput);
+          endInput?.addEventListener('change', handleEndInput);
+          removeBtn?.addEventListener('click', () => removeRange(dayIndex, rangeIndex));
+
+          dayRow.appendChild(row);
+        });
 
         container.appendChild(dayRow);
       });
+    }
+
+    async function refreshScheduleCalendarOnly() {
+      const currentWeekStart = calendar?.state?.weekStart
+        ? new Date(calendar.state.weekStart)
+        : null;
+
+      const apiBaseRanges = await loadBaseTimeRangesFromApi();
+      const apiAvailability = await loadAvailabilityFromApi();
+
+      const normalizedApiBaseRanges = normalizeRanges(apiBaseRanges);
+      let derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(apiAvailability, 30));
+      if (!hasAnyRange(normalizedApiBaseRanges) && !hasAnyRange(derivedFromAvailability)) {
+        try {
+          const extendedAvailability = await loadAvailabilityFromApi({ pastWeeks: 52, futureWeeks: 52 });
+          derivedFromAvailability = normalizeRanges(deriveBaseRangesFromAvailability(extendedAvailability, 30));
+        } catch (e) {
+          console.warn('Extended availability fallback failed', e);
+        }
+      }
+
+      baseTimeRanges = hasAnyRange(normalizedApiBaseRanges)
+        ? normalizedApiBaseRanges
+        : derivedFromAvailability;
+
+      renderBaseTimeEditor();
+
+      if (!calendar) return;
+      calendar.options.baseTimeRanges = baseTimeRanges;
+      calendar.options.renderOnlyInRange = hasAnyRange(baseTimeRanges);
+      calendar.setInitialData(apiAvailability);
+      if (currentWeekStart) {
+        calendar.state.weekStart = currentWeekStart;
+        calendar.render();
+      }
     }
 
     function bindScheduleEvents() {
@@ -609,6 +702,23 @@
         alert('패턴이 적용되었습니다. 저장 버튼을 누르면 DB에 반영됩니다.');
       });
 
+      byId('btnResetScheduleAll')?.addEventListener('click', async () => {
+        if (!confirm('스케줄을 전체 초기화하시겠습니까?\n예약된 수업은 유지됩니다.')) return;
+
+        setLoading(true);
+        try {
+          await resetScheduleToApi();
+          clearDraft();
+          await refreshScheduleCalendarOnly();
+          alert('스케줄이 전체 초기화되었습니다. 예약된 수업은 유지됩니다.');
+        } catch (error) {
+          console.error(error);
+          showError(error.message || '스케줄 초기화에 실패했습니다.');
+        } finally {
+          setLoading(false);
+        }
+      });
+
       byId('btnSaveSchedule')?.addEventListener('click', async () => {
         if (!calendar) return;
 
@@ -618,6 +728,11 @@
           await saveAvailabilityToApi();
           clearDraft();
           alert('스케줄이 저장되었습니다.');
+          if (typeof window.reloadProfileEditSection === 'function') {
+            window.reloadProfileEditSection('schedule');
+            return;
+          }
+          window.location.href = '/tutor/profile-edit?section=schedule';
         } catch (error) {
           console.error(error);
           showError(error.message || '스케줄 저장에 실패했습니다.');

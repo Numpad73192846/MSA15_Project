@@ -8,6 +8,7 @@
 	<select id="selectTutorProfileByUserId" resultType="TutorProfile">
 		SELECT u.id AS userId, u.name, u.username AS email, u.nickname, tp.phone, u.profile_img AS profileImg, tp.bio, tp.headline,
 		       tp.self_intro AS selfIntro, tp.video_url AS videoUrl, tp.default_zoom_url AS defaultZoomUrl,
+		       tp.bank_name AS bankName, tp.account_number AS accountNumber, tp.account_holder AS accountHolder,
 		       tp.rating_avg AS ratingAvg, tp.review_count AS reviewCount
 		FROM tutor_profile tp
 		JOIN users u ON tp.user_id = u.id

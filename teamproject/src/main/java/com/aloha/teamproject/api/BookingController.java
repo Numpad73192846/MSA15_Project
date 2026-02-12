@@ -448,6 +448,109 @@ public class BookingController {
     /**
      * ?덉빟 寃곗젣 泥섎━
      */
+    @PutMapping("/tutor/confirm-all")
+    public ApiResponse<BulkOperationResult> confirmAllPendingBookings(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String tutorId = authentication.getName();
+            List<Booking> tutorBookings = bookingService.selectByTutorId(tutorId);
+
+            List<Booking> pendingBookings = tutorBookings.stream()
+                    .filter(Objects::nonNull)
+                    .filter(booking -> booking.getId() != null && !booking.getId().isBlank())
+                    .filter(booking -> booking.getConfirmedAt() == null)
+                    .filter(booking -> booking.getCanceledAt() == null)
+                    .filter(booking -> booking.getDoneAt() == null)
+                    .toList();
+
+            int targetCount = pendingBookings.size();
+            int successCount = 0;
+            List<String> failedBookingIds = new ArrayList<>();
+
+            for (Booking booking : pendingBookings) {
+                try {
+                    int updated = bookingService.confirmBooking(booking.getId());
+                    if (updated > 0) {
+                        successCount++;
+                    } else {
+                        failedBookingIds.add(booking.getId());
+                    }
+                } catch (Exception e) {
+                    failedBookingIds.add(booking.getId());
+                    log.warn("[전체 수락 실패] bookingId={}", booking.getId(), e);
+                }
+            }
+
+            BulkOperationResult result = new BulkOperationResult();
+            result.setTargetCount(targetCount);
+            result.setSuccessCount(successCount);
+            result.setFailedCount(targetCount - successCount);
+            result.setFailedBookingIds(failedBookingIds);
+            result.setTotalAmount(null);
+
+            return ApiResponse.ok(result);
+        } catch (Exception e) {
+            log.error("[전체 수락 처리 실패]", e);
+            return ApiResponse.error("전체 수락 처리에 실패했습니다.");
+        }
+    }
+
+    @PostMapping("/pay-all")
+    public ApiResponse<BulkOperationResult> payAllUpcomingBookings(
+            @RequestBody(required = false) PaymentRequest request,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ApiResponse.error("로그인이 필요합니다.");
+        }
+
+        try {
+            String userId = authentication.getName();
+            String provider = (request != null && request.getPaymentMethod() != null && !request.getPaymentMethod().isBlank())
+                    ? request.getPaymentMethod().toUpperCase()
+                    : "CARD";
+
+            List<StudentBooking> upcomingBookings = memberMyPageService.selectUpcomingBookings(userId);
+            List<StudentBooking> targetBookings = upcomingBookings.stream()
+                    .filter(Objects::nonNull)
+                    .filter(booking -> booking.getBookingId() != null && !booking.getBookingId().isBlank())
+                    .filter(booking -> "CONFIRMED".equalsIgnoreCase(booking.getStatus()))
+                    .filter(booking -> booking.getPaidAt() == null)
+                    .toList();
+
+            int targetCount = targetBookings.size();
+            int successCount = 0;
+            List<String> failedBookingIds = new ArrayList<>();
+            BigDecimal totalAmount = BigDecimal.ZERO;
+
+            for (StudentBooking booking : targetBookings) {
+                BigDecimal amount = booking.getPrice() != null ? booking.getPrice() : BigDecimal.ZERO;
+                try {
+                    bookingService.payBooking(booking.getBookingId(), amount, provider);
+                    successCount++;
+                    totalAmount = totalAmount.add(amount);
+                } catch (Exception e) {
+                    failedBookingIds.add(booking.getBookingId());
+                    log.warn("[전체 결제 실패] bookingId={}", booking.getBookingId(), e);
+                }
+            }
+
+            BulkOperationResult result = new BulkOperationResult();
+            result.setTargetCount(targetCount);
+            result.setSuccessCount(successCount);
+            result.setFailedCount(targetCount - successCount);
+            result.setFailedBookingIds(failedBookingIds);
+            result.setTotalAmount(totalAmount.longValue());
+
+            return ApiResponse.ok(result);
+        } catch (Exception e) {
+            log.error("[전체 결제 처리 실패]", e);
+            return ApiResponse.error("전체 결제 처리에 실패했습니다.");
+        }
+    }
+
     @PostMapping("/{id}/pay")
     public ApiResponse<Void> payBooking(
             @PathVariable("id") String id,
@@ -502,6 +605,15 @@ public class BookingController {
     public static class PaymentRequest {
         private String paymentMethod;
         private Integer amount;
+    }
+
+    @Data
+    public static class BulkOperationResult {
+        private Integer targetCount;
+        private Integer successCount;
+        private Integer failedCount;
+        private List<String> failedBookingIds;
+        private Long totalAmount;
     }
 }
 

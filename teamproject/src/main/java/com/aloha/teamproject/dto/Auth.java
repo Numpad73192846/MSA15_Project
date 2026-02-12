@@ -18,6 +18,7 @@ public class Auth {
     @Data
     public static class RefreshTokenRequest {
         private String refreshToken;
+        private Boolean rememberMe;
     }
 
     // OAuth2 설정 완료 후 활성화

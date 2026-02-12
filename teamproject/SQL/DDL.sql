@@ -13,6 +13,8 @@ DROP TABLE IF EXISTS
     tutor_message,
     tutor_student_note,
     review,
+    toss_payment_order_item,
+    toss_payment_order,
     payment,
     refresh_token,
     booking,
@@ -372,6 +374,46 @@ CREATE TABLE payment (
     KEY idx_payment_booking_id (booking_id),
     CONSTRAINT fk_payment_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT fk_payment_booking FOREIGN KEY (booking_id) REFERENCES booking (id) ON DELETE CASCADE
+);
+
+CREATE TABLE toss_payment_order (
+    no BIGINT NOT NULL AUTO_INCREMENT,
+    id VARCHAR(64) NOT NULL,
+    order_id VARCHAR(64) NOT NULL,
+    user_id VARCHAR(64) NOT NULL,
+    tutor_id VARCHAR(64) NOT NULL,
+    tutor_name VARCHAR(64) NOT NULL,
+    booking_count INT NOT NULL DEFAULT 0,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'READY',
+    payment_key VARCHAR(200) NULL,
+    paid_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (no),
+    UNIQUE KEY uk_toss_payment_order_id (id),
+    UNIQUE KEY uk_toss_payment_order_order_id (order_id),
+    KEY idx_toss_payment_order_user_id (user_id),
+    KEY idx_toss_payment_order_tutor_id (tutor_id),
+    KEY idx_toss_payment_order_status (status),
+    CONSTRAINT fk_toss_payment_order_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_toss_payment_order_tutor FOREIGN KEY (tutor_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE toss_payment_order_item (
+    no BIGINT NOT NULL AUTO_INCREMENT,
+    id VARCHAR(64) NOT NULL,
+    order_id VARCHAR(64) NOT NULL,
+    booking_id VARCHAR(64) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (no),
+    UNIQUE KEY uk_toss_payment_order_item_id (id),
+    UNIQUE KEY uk_toss_payment_order_item_order_booking (order_id, booking_id),
+    KEY idx_toss_payment_order_item_order_id (order_id),
+    KEY idx_toss_payment_order_item_booking_id (booking_id),
+    CONSTRAINT fk_toss_payment_order_item_order FOREIGN KEY (order_id) REFERENCES toss_payment_order (order_id) ON DELETE CASCADE,
+    CONSTRAINT fk_toss_payment_order_item_booking FOREIGN KEY (booking_id) REFERENCES booking (id) ON DELETE CASCADE
 );
 
 CREATE TABLE review (
