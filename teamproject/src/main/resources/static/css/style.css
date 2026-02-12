@@ -73,9 +73,9 @@ header .navbar-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 1200px;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 0 .5rem;
     height: 100%;
     width: 100%;
 }
@@ -102,6 +102,10 @@ header .navbar-logo img {
     height: 32px;
     width: auto;
     object-fit: contain;
+}
+
+header .navbar-menu a {
+    font-size: 1.125rem;
 }
 
 header .search-bar {
