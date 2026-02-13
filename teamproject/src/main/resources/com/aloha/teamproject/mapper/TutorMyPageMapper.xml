@@ -109,7 +109,7 @@
 			 WHERE l.user_id = #{userId}
 			   AND b.canceled_at IS NULL) AS activeStudents,
 			NULL AS hourlyRate,
-			COALESCE((SELECT AVG(r.rating)
+			COALESCE((SELECT ROUND(AVG(r.rating), 1)
 			 FROM review r
 			 JOIN booking b ON r.booking_id = b.id
 			 JOIN lesson l ON b.lesson_id = l.id

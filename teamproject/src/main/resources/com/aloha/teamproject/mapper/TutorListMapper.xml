@@ -38,7 +38,7 @@
             tp.self_intro,
             u.profile_img,            
             COALESCE(
-                (SELECT AVG(r.rating) 
+                (SELECT ROUND(AVG(r.rating), 1) 
                  FROM review r 
                  JOIN booking b ON r.booking_id = b.id 
                  JOIN lesson l ON b.lesson_id = l.id
@@ -92,7 +92,7 @@
             u.profile_img,
             tp.video_url,
             COALESCE(
-                (SELECT AVG(r.rating) 
+                (SELECT ROUND(AVG(r.rating), 1) 
                  FROM review r 
                  JOIN booking b ON r.booking_id = b.id 
                  JOIN lesson l ON b.lesson_id = l.id
@@ -220,7 +220,7 @@
             u.nickname, 
             tp.bio, 
             tp.self_intro,
-            COALESCE(AVG(r.rating), 0) AS rating_avg, 
+            COALESCE(ROUND(AVG(r.rating), 1), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             u.profile_img,
             GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
@@ -249,7 +249,7 @@
             u.nickname, 
             tp.bio, 
             tp.self_intro,
-            COALESCE(AVG(r.rating), 0) AS rating_avg, 
+            COALESCE(ROUND(AVG(r.rating), 1), 0) AS rating_avg, 
             COALESCE(COUNT(DISTINCT r.id), 0) AS review_count, 
             u.profile_img,
             GROUP_CONCAT(DISTINCT CONCAT(sg.name, ' - ', lf.name) SEPARATOR ',') AS subjects,
