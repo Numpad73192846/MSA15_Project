@@ -717,7 +717,10 @@ INSERT INTO tmp_seed_tutor_nums (n)
 VALUES
 (21),(22),(23),(24),(25),(26),(27),(28),(29),(30),
 (31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
-(41),(42),(43),(44),(45),(46),(47),(48),(49),(50);
+(41),(42),(43),(44),(45),(46),(47),(48),(49),(50),
+(51),(52),(53),(54),(55),(56),(57),(58),(59),(60),
+(61),(62),(63),(64),(65),(66),(67),(68),(69),(70),
+(71),(72),(73),(74),(75),(76),(77),(78),(79),(80);
 
 DROP TEMPORARY TABLE IF EXISTS tmp_seed_student_nums;
 CREATE TEMPORARY TABLE tmp_seed_student_nums (
@@ -868,6 +871,91 @@ SELECT
     1 AS seq
 FROM tmp_seed_tutor_nums t;
 
+-- Normalize subjects: ensure exactly 10 tutors per subject_group (80 tutors total)
+DELETE FROM tutor_subject WHERE user_id LIKE 'u-tutor-%';
+DELETE FROM lesson WHERE user_id LIKE 'u-tutor-%';
+
+INSERT INTO lesson (user_id, subject_id, field_id, id, title, description, status, price)
+SELECT
+    CONCAT('u-tutor-', nums.n) AS user_id,
+    CASE FLOOR((nums.n - 1) / 10)
+        WHEN 0 THEN 'sub-kor-basic'
+        WHEN 1 THEN 'sub-eng-basic'
+        WHEN 2 THEN 'sub-jpn-basic'
+        WHEN 3 THEN 'sub-chn-basic'
+        WHEN 4 THEN 'sub-fra-basic'
+        WHEN 5 THEN 'sub-spa-basic'
+        WHEN 6 THEN 'sub-ger-basic'
+        ELSE 'sub-rus-basic'
+    END AS subject_id,
+    CASE FLOOR((nums.n - 1) / 10)
+        WHEN 0 THEN 'lf-domain-school' ELSE 'lf-general-conversation' END AS field_id,
+    CONCAT('lesson-', nums.n) AS id,
+    CONCAT('맞춤 수업 ', nums.n) AS title,
+    CONCAT('레벨 진단 후 핵심 약점을 보완하는 ', nums.n, '번 튜터의 맞춤 수업입니다.') AS description,
+    'OPEN' AS status,
+    (28000 + (MOD(nums.n, 8) * 3000)) AS price
+FROM (
+    SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+    SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+    SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12 UNION ALL
+    SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL
+    SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL SELECT 20 UNION ALL
+    SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL SELECT 24 UNION ALL
+    SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL SELECT 28 UNION ALL
+    SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31 UNION ALL SELECT 32 UNION ALL
+    SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35 UNION ALL SELECT 36 UNION ALL
+    SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL SELECT 40 UNION ALL
+    SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43 UNION ALL SELECT 44 UNION ALL
+    SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL SELECT 48 UNION ALL
+    SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51 UNION ALL SELECT 52 UNION ALL
+    SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55 UNION ALL SELECT 56 UNION ALL
+    SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59 UNION ALL SELECT 60 UNION ALL
+    SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63 UNION ALL SELECT 64 UNION ALL
+    SELECT 65 UNION ALL SELECT 66 UNION ALL SELECT 67 UNION ALL SELECT 68 UNION ALL
+    SELECT 69 UNION ALL SELECT 70 UNION ALL SELECT 71 UNION ALL SELECT 72 UNION ALL
+    SELECT 73 UNION ALL SELECT 74 UNION ALL SELECT 75 UNION ALL SELECT 76 UNION ALL
+    SELECT 77 UNION ALL SELECT 78 UNION ALL SELECT 79 UNION ALL SELECT 80
+) nums;
+
+INSERT INTO tutor_subject (user_id, subject_id, id, seq)
+SELECT
+    CONCAT('u-tutor-', nums.n) AS user_id,
+    CASE FLOOR((nums.n - 1) / 10)
+        WHEN 0 THEN 'sub-kor-basic'
+        WHEN 1 THEN 'sub-eng-basic'
+        WHEN 2 THEN 'sub-jpn-basic'
+        WHEN 3 THEN 'sub-chn-basic'
+        WHEN 4 THEN 'sub-fra-basic'
+        WHEN 5 THEN 'sub-spa-basic'
+        WHEN 6 THEN 'sub-ger-basic'
+        ELSE 'sub-rus-basic'
+    END AS subject_id,
+    CONCAT('ts-', nums.n, '-1') AS id,
+    1 AS seq
+FROM (
+    SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+    SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+    SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12 UNION ALL
+    SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL
+    SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL SELECT 20 UNION ALL
+    SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL SELECT 24 UNION ALL
+    SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL SELECT 28 UNION ALL
+    SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31 UNION ALL SELECT 32 UNION ALL
+    SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35 UNION ALL SELECT 36 UNION ALL
+    SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL SELECT 40 UNION ALL
+    SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43 UNION ALL SELECT 44 UNION ALL
+    SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL SELECT 48 UNION ALL
+    SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51 UNION ALL SELECT 52 UNION ALL
+    SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55 UNION ALL SELECT 56 UNION ALL
+    SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59 UNION ALL SELECT 60 UNION ALL
+    SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63 UNION ALL SELECT 64 UNION ALL
+    SELECT 65 UNION ALL SELECT 66 UNION ALL SELECT 67 UNION ALL SELECT 68 UNION ALL
+    SELECT 69 UNION ALL SELECT 70 UNION ALL SELECT 71 UNION ALL SELECT 72 UNION ALL
+    SELECT 73 UNION ALL SELECT 74 UNION ALL SELECT 75 UNION ALL SELECT 76 UNION ALL
+    SELECT 77 UNION ALL SELECT 78 UNION ALL SELECT 79 UNION ALL SELECT 80
+) nums;
+
 INSERT INTO tutor_career (user_id, id, company_name, job_category, job_role, start_year, end_year)
 SELECT
     CONCAT('u-tutor-', t.n) AS user_id,
@@ -935,19 +1023,34 @@ SELECT
     CONCAT('u-tutor-', t.n) AS user_id,
     CONCAT('tr-', t.n, '-', r.seq) AS id,
     CASE r.seq
-        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '18:00:00' WHEN 1 THEN '19:00:00' ELSE '20:00:00' END
-        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '18:00:00' WHEN 1 THEN '19:00:00' ELSE '20:00:00' END
-        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '10:00:00' WHEN 1 THEN '11:00:00' ELSE '13:00:00' END
+        WHEN 1 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '17:00:00' WHEN 1 THEN '18:00:00' WHEN 2 THEN '19:00:00'
+                        WHEN 3 THEN '20:00:00' WHEN 4 THEN '16:00:00' WHEN 5 THEN '15:00:00' ELSE '21:00:00' END
+        WHEN 2 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '19:00:00' WHEN 1 THEN '20:00:00' WHEN 2 THEN '21:00:00'
+                        WHEN 3 THEN '18:00:00' WHEN 4 THEN '17:00:00' WHEN 5 THEN '16:00:00' ELSE '22:00:00' END
+        ELSE CASE MOD(t.n, 7)
+                        WHEN 0 THEN '09:00:00' WHEN 1 THEN '10:00:00' WHEN 2 THEN '11:00:00'
+                        WHEN 3 THEN '12:00:00' WHEN 4 THEN '13:00:00' WHEN 5 THEN '14:00:00' ELSE '15:00:00' END
     END AS start_at,
     CASE r.seq
-        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '21:00:00' WHEN 1 THEN '22:00:00' ELSE '23:00:00' END
-        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '21:00:00' WHEN 1 THEN '22:00:00' ELSE '23:00:00' END
-        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '13:00:00' WHEN 1 THEN '14:00:00' ELSE '16:00:00' END
+        WHEN 1 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '20:30:00' WHEN 1 THEN '21:30:00' WHEN 2 THEN '22:30:00'
+                        WHEN 3 THEN '23:00:00' WHEN 4 THEN '19:30:00' WHEN 5 THEN '18:30:00' ELSE '23:30:00' END
+        WHEN 2 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '22:00:00' WHEN 1 THEN '23:00:00' WHEN 2 THEN '23:30:00'
+                        WHEN 3 THEN '21:30:00' WHEN 4 THEN '20:30:00' WHEN 5 THEN '19:30:00' ELSE '23:59:00' END
+        ELSE CASE MOD(t.n, 7)
+                        WHEN 0 THEN '12:30:00' WHEN 1 THEN '13:30:00' WHEN 2 THEN '14:30:00'
+                        WHEN 3 THEN '15:30:00' WHEN 4 THEN '16:30:00' WHEN 5 THEN '17:30:00' ELSE '18:30:00' END
     END AS end_at,
     CASE r.seq
-        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '월' WHEN 1 THEN '화' ELSE '수' END
-        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '수' WHEN 1 THEN '목' ELSE '금' END
-        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '토' WHEN 1 THEN '일' ELSE '토' END
+        WHEN 1 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '월' WHEN 1 THEN '화' WHEN 2 THEN '수' WHEN 3 THEN '목' WHEN 4 THEN '금' WHEN 5 THEN '토' ELSE '일' END
+        WHEN 2 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '화' WHEN 1 THEN '수' WHEN 2 THEN '목' WHEN 3 THEN '금' WHEN 4 THEN '토' WHEN 5 THEN '일' ELSE '월' END
+        ELSE CASE MOD(t.n, 7)
+                        WHEN 0 THEN '토' WHEN 1 THEN '일' WHEN 2 THEN '월' WHEN 3 THEN '화' WHEN 4 THEN '수' WHEN 5 THEN '목' ELSE '금' END
     END AS day_of_week
 FROM tmp_seed_tutor_nums t
 JOIN (
@@ -1018,6 +1121,8 @@ SELECT
         'availb-',
         REPLACE(tr.user_id, 'u-tutor-', ''),
         '-',
+        r.seq,
+        '-',
         DATE_FORMAT(
             DATE_ADD(
                 DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
@@ -1032,9 +1137,7 @@ SELECT
                 END DAY
             ),
             '%m%d'
-        ),
-        '-',
-        DATE_FORMAT(tr.start_at, '%H%i')
+        )
     ) AS id,
     TIMESTAMP(
         DATE_ADD(
@@ -1049,7 +1152,7 @@ SELECT
                 ELSE 6
             END DAY
         ),
-        tr.start_at
+        ADDTIME(tr.start_at, SEC_TO_TIME((r.seq - 1) * 1800))
     ) AS start_at,
     TIMESTAMP(
         DATE_ADD(
@@ -1064,11 +1167,17 @@ SELECT
                 ELSE 6
             END DAY
         ),
-        ADDTIME(tr.start_at, '00:30:00')
+        ADDTIME(ADDTIME(tr.start_at, SEC_TO_TIME((r.seq - 1) * 1800)), '00:30:00')
     ) AS end_at,
     'BOOKED' AS status
 FROM tutor_time_range tr
-WHERE tr.id LIKE '%-1';
+JOIN (
+    SELECT 1 AS seq UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+    UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
+) r
+ON 1=1
+WHERE tr.id LIKE '%-1'
+  AND ADDTIME(ADDTIME(tr.start_at, SEC_TO_TIME((r.seq - 1) * 1800)), '00:30:00') <= tr.end_at;
 
 -- Bookings
 INSERT INTO booking (
@@ -1237,6 +1346,22 @@ SELECT
 FROM booking b
 WHERE b.id LIKE 'bookx-%'
   AND MOD(CAST(SUBSTRING_INDEX(b.tutor_id, '-', -1) AS UNSIGNED), 3) = 0;
+
+-- Ensure at least 10 reviews per tutor: insert 10 auto reviews referencing one generated booking per tutor
+INSERT INTO review (booking_id, id, rating, content)
+SELECT
+    mb.bid AS booking_id,
+    CONCAT('reviewx-', REPLACE(mb.tutor_id,'u-tutor-',''), '-', LPAD(r.n,2,'0')) AS id,
+    3 + MOD(r.n,3) AS rating,
+    CONCAT('자동 생성 리뷰 (튜터 ', REPLACE(mb.tutor_id,'u-tutor-',''), ') - No.', r.n) AS content
+FROM (
+    SELECT tutor_id, MIN(id) AS bid FROM booking WHERE id LIKE 'bookx-%' GROUP BY tutor_id
+) mb
+JOIN (
+    SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+    SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+    SELECT 9 UNION ALL SELECT 10
+) r;
 
 -- Tutor notes
 INSERT INTO tutor_student_note (id, tutor_id, student_id, progress, notes)
