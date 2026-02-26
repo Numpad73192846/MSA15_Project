@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.aloha.board.mapper.BoardMapper">
+
+ <!-- resultMap -->
+ <resultMap type="Boards" id="BoardMap">
+    <id property="no" column="no" />
+    <result property="id" column="id" />
+    <result property="title" column="title" />
+    <result property="writer" column="writer" />
+    <result property="content" column="content" />
+    <result property="createdAt" column="created_at" />
+    <result property="updatedAt" column="updated_at" />
+ </resultMap>
+
+
+   SELECT
+       *
+   FROM
+       boards
+   ORDER BY
+       NO DECS
+ 
+ SELECT * FROM boards ORDER BY NO DECS
+ </SELECT>
+
+ <SELECT id="selectById" resultMap="BoardMap">
+   SELECT
+       *
+   FROM
+       boards
+   WHERE
+       id = #{id}
+ </select>
+
+ <!-- 자동증가된(AI) boards 의 no를 Boards 객체의 no 변수에 넣어준다. -->
+ <insert id="insert" parameterType="Boards" useGeratedKeys="true" useProperty="no">
+ insert INTO BOARDS( ID, TITLE, CONTENT, WRITER )
+ VALUES (#{id}, #{title}, #{content}, #{writer} )
+</mapper>
+
+<update id="update">
+  UPDATE boards
+  <set>
+      <if test="title != null">
+          title = #{title},
+      </if>
+      <if test="writer != null">
+          title = #{writer},
+      </if>
+      <if test="content != null">
+          title = #{content},
+      </if>
+  </set>
+  WHERE
+      no = #{no}
+</update>
+
+<update id="updateById">
+  UPDATE boards
+  <set>
+      <if test="title != null">
+          title = #{title},
+      </if>
+      <if test="writer != null">
+          title = #{writer},
+      </if>
+      <if test="content != null">
+          title = #{content},
+      </if>
+  </set>
+  WHERE
+      id = #{id}
+</update>
+
+<delete id="delete">
+  DELETE FROM boards
+  WHERE
+      no = #{no}
+</delete>
+
+ <delete id="deleteById">
+   DELETE FROM boards
+   WHERE
+       no = #{id}
+ </delete>
+
+ </mapper>

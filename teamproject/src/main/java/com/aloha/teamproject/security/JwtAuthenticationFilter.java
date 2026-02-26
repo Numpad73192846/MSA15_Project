@@ -29,10 +29,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-        @NonNull HttpServletRequest request,
-        @NonNull HttpServletResponse response,
-        @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         String token = null;
 
         String header = request.getHeader("Authorization");
@@ -42,29 +41,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (token == null && request.getCookies() != null) {
             token = Arrays.stream(request.getCookies())
-                          .filter(cookie -> "accessToken".equals(cookie.getName()))
-                          .map(cookie -> cookie.getValue())
-                          .findFirst()
-                          .orElse(null);
+                    .filter(cookie -> "accessToken".equals(cookie.getName()))
+                    .map(cookie -> cookie.getValue())
+                    .findFirst()
+                    .orElse(null);
         }
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
 
             String userId = jwtTokenProvider.getUserIdFromToken(token);
             List<String> authList = jwtTokenProvider.getAuthListFromToken(token);
-            
+
             log.debug("JWT Auth - userId: {}, authList: {}", userId, authList);
 
             SimpleGrantedAuthority[] authorities = authList.stream()
-                                                           .map(SimpleGrantedAuthority::new)
-                                                           .toArray(SimpleGrantedAuthority[]::new);
+                    .map(SimpleGrantedAuthority::new)
+                    .toArray(SimpleGrantedAuthority[]::new);
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, Arrays.asList(authorities));
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null,
+                    Arrays.asList(authorities));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } else if (token != null) {
             log.warn("JWT token validation failed for request: {}", request.getRequestURI());
         }
-        
+
         filterChain.doFilter(request, response);
     }
 

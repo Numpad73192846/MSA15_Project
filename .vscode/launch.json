@@ -2,11 +2,28 @@
     "configurations": [
         {
             "type": "java",
+            "name": "BoardApplication",
+            "request": "launch",
+            "mainClass": "com.aloha.board.BoardApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-TeamprojectApplication<teamproject>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "mainClass": "com.aloha.teamproject.TeamprojectApplication",
             "projectName": "teamproject",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-PortfolioApplication<portfolio>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.cho.portfolio.PortfolioApplication",
+            "projectName": "portfolio",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
