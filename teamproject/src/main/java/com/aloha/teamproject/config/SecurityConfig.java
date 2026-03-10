@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import lombok.RequiredArgsConstructor;
@@ -60,9 +61,11 @@ public class SecurityConfig {
         // 허용할 출처 (Origin) 설정
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
+            "http://localhost:5173",
             "http://localhost:8080",
             "http://127.0.0.1:8080",
-            "http://127.0.0.1:3000"
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173"
         ));
         
         // 허용할 HTTP 메서드
@@ -101,58 +104,33 @@ public class SecurityConfig {
         // ✅ CORS 설정 활성화
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         
-        // ✅ 인가 설정
+        // ✅ CSRF 비활성화 (API 전용)
         http
-            .csrf(csrf -> csrf.ignoringRequestMatchers(
-            "/api/auth/**",
-            "/api/users/**",
-            "/api/admin/**",
-            "/api/tutors/**",
-            "/api/reviews/**",
-            "/api/bookings/**",
-            "/api/payments/**",
-            "/api/lessons/**",
-            "/api/inquiries/**",
-            "/api/tutor/messages",
-            "/api/tutor/messages/**",
-            "/api/tutor/students/**",
-            "/api/ai/**",
-            "/api/game/**"
-            ))
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin", "/admin/**", "/api/admin", "/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/login", "/join", "/auth/**", "/api/auth/**").permitAll()
+                // 공개 API
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                .requestMatchers("/tutor/register", "/tutor/register1", "/tutor/register2", "/tutor/register3").permitAll()
-                .requestMatchers("/tutor/mypage", "/mypage", "/member/mypage").permitAll()
-                .requestMatchers("/payments/**").permitAll()
-                .requestMatchers("/tutor/schedule-edit").permitAll()
-                .requestMatchers("/tutors", "/tutors/**", "/tutor/dashboard").permitAll()
-                .requestMatchers("/guide", "/guide/**", "/faq", "/contact", "/about", "/partnership").permitAll()
-                .requestMatchers("/game", "/game/**").permitAll()
-                .requestMatchers("/api/game/**").permitAll()
-                .requestMatchers("/", "/css/**", "/js/**", "/img/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tutors/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/validate").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/validate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/check-username", "/api/users/check-nickname").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/tutors/{tutorId}/availability").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/language-fields").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/game/**").permitAll()
+                // 관리자 API
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // 인증 필요 API
                 .requestMatchers("/api/bookings/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/payments/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING", "ADMIN")
                 .requestMatchers("/api/inquiries/**").hasAnyRole("USER", "TUTOR", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/tutor/messages/thread/member").hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/tutor/messages/reply-writable").hasAnyRole("USER", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/tutor/messages/reply").hasAnyRole("USER", "ADMIN")
-                .requestMatchers("/api/tutor/messages").hasAnyRole("TUTOR", "ADMIN")
-                .requestMatchers("/api/tutor/messages/**").hasAnyRole("TUTOR", "ADMIN")
+                .requestMatchers("/api/tutor/messages/**").hasAnyRole("TUTOR", "USER", "ADMIN")
                 .requestMatchers("/api/tutor/students/**").hasAnyRole("TUTOR", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/ai/lesson-summary").hasAnyRole("USER", "TUTOR", "ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/ai/homework").hasAnyRole("TUTOR", "ADMIN")
+                .requestMatchers("/api/ai/**").hasAnyRole("USER", "TUTOR", "ADMIN")
                 .requestMatchers("/api/tutors/profile", "/api/tutors/me/**").hasAnyRole("USER", "TUTOR", "TUTOR_PENDING")
-                .requestMatchers(HttpMethod.PUT, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR")
-                .requestMatchers(HttpMethod.DELETE, "/api/auth", "/api/auth/**").hasAnyRole("USER", "TUTOR", "ADMIN")
-                .anyRequest().authenticated()
+                .requestMatchers("/api/**").authenticated()
+                // 프론트엔드 라우트는 React SPA가 처리
+                .anyRequest().permitAll()
             );
 
         // OAuth2 로그인 설정
@@ -171,6 +149,25 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             );
+
+        // API 요청에 대한 인증 실패 처리 (401 JSON 반환, /login 리다이렉트 방지)
+        http.exceptionHandling(ex -> ex
+            .authenticationEntryPoint((request, response, authException) -> {
+                String uri = request.getRequestURI();
+                if (uri.startsWith("/api/")) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"인증이 필요합니다.\"}");
+                } else {
+                    response.sendRedirect("/login");
+                }
+            })
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"접근 권한이 없습니다.\"}");
+            })
+        );
 
         // JWT 인증 필터 설정
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

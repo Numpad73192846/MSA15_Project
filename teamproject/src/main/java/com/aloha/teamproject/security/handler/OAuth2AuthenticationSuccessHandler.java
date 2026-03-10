@@ -61,7 +61,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 session.setAttribute("oauth2UserId", email);
                 session.setAttribute("oauth2UserNo", null);
                 setTemporaryAuthentication(oUser, email, null, "ROLE_GUEST");
-                getRedirectStrategy().sendRedirect(request, response, "/login?needsRoleSelection=true");
+                getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/login?needsRoleSelection=true");
                 return;
             }
 
@@ -73,14 +73,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 session.setAttribute("oauth2UserId", user.getId());
                 session.setAttribute("oauth2UserNo", user.getNo());
                 setTemporaryAuthentication(oUser, user.getId(), user.getNo(), resolvedRole);
-                getRedirectStrategy().sendRedirect(request, response, "/login?needsRoleSelection=true");
+                getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/login?needsRoleSelection=true");
                 return;
             }
 
             log.info("기존 사용자입니다. 홈으로 이동합니다.");
             setTemporaryAuthentication(oUser, user.getId(), user.getNo(), resolvedRole);
             request.getSession(true);
-            getRedirectStrategy().sendRedirect(request, response, "/login?oauth2=success");
+            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/?oauth2=success");
             return;
         } else {
             log.warn("알 수 없는 principal 타입: {}", principal != null ? principal.getClass() : null);
@@ -104,12 +104,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         if ("ROLE_GUEST".equals(role)) {
             log.info("신규 사용자입니다. 역할 선택 페이지로 이동합니다.");
-            getRedirectStrategy().sendRedirect(request, response, "/login?needsRoleSelection=true");
+            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/login?needsRoleSelection=true");
             return;
         }
 
         log.info("기존 사용자입니다. 홈으로 이동합니다.");
-        getRedirectStrategy().sendRedirect(request, response, "/login?oauth2=success");
+        getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/?oauth2=success");
     }
 
     private void setTemporaryAuthentication(OAuth2User sourceUser, String userId, Long userNo, String role) {
