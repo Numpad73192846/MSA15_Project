@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -165,6 +166,18 @@ public class SecurityConfig {
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2FailureHandler)
             );
+
+        // API 요청에 대해 인증 실패 시 HTML로 리다이렉트하지 않고 JSON 401을 반환하도록 설정
+        http.exceptionHandling(exception -> exception.authenticationEntryPoint((request, response, authException) -> {
+            String uri = request.getRequestURI();
+            if (uri != null && uri.startsWith("/api/")) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"data\":null,\"message\":\"로그인이 필요합니다.\"}");
+            } else {
+                response.sendRedirect("/login");
+            }
+        }));
 
         // 세션 관리 (OAuth2 사용 시 IF_REQUIRED)
         http
