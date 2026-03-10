@@ -15,10 +15,20 @@ export default function TutorDetailPage() {
 
   const fetchTutorDetail = async () => {
     try {
-      const response = await httpClient.get(`/tutors/${id}`);
-      const d = response.data?.data ?? response.data;
-      setTutor(d?.tutor ?? d);
-      setReviews(d?.reviews ?? []);
+      const [tutorRes, reviewsRes] = await Promise.allSettled([
+        httpClient.get(`/tutors/public/${id}`),
+        httpClient.get(`/reviews/tutor/${id}`),
+      ]);
+      if (tutorRes.status === 'fulfilled') {
+        const d = tutorRes.value.data?.data ?? tutorRes.value.data;
+        setTutor(d);
+      } else {
+        setError('튜터 정보를 불러오는데 실패했습니다.');
+      }
+      if (reviewsRes.status === 'fulfilled') {
+        const r = reviewsRes.value.data?.data ?? reviewsRes.value.data;
+        setReviews(Array.isArray(r) ? r : []);
+      }
     } catch (err) {
       setError('튜터 정보를 불러오는데 실패했습니다.');
     } finally {

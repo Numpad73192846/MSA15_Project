@@ -20,11 +20,16 @@ export default function GamePage() {
     setAnswer('');
     setHint(false);
     try {
-      const res = await httpClient.get('/game/proverb/random');
-      setProverb(res.data.data || res.data);
+      const res = await httpClient.get('/game/korean-proverbs/random?count=4');
+      const list = res.data?.data ?? res.data;
+      if (Array.isArray(list) && list.length > 0) {
+        const main = list[0];
+        const choices = list.map((p) => p.answer).sort(() => Math.random() - 0.5);
+        setProverb({ ...main, choices });
+      }
     } catch {
       setProverb({
-        id: 1,
+        no: 1,
         question: '가는 말이 고와야 ?',
         answer: '오는 말이 곱다',
         meaning: '자신이 남에게 잘 대해야 남도 자신에게 잘 대한다는 뜻',

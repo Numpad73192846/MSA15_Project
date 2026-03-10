@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -578,6 +579,20 @@ public class TutorController {
         } catch (Exception e) {
             log.error("튜터 프로필 수정 실패", e);
             return ApiResponse.error("프로필 수정에 실패했습니다.");
+        }
+    }
+
+    @GetMapping("/public/{userId}")
+    public ApiResponse<TutorList> getTutorById(@PathVariable String userId) {
+        try {
+            TutorList tutor = tutorListService.selectTutorById(userId);
+            if (tutor == null) {
+                return ApiResponse.error("튜터를 찾을 수 없습니다.");
+            }
+            return ApiResponse.ok(tutor);
+        } catch (Throwable t) {
+            log.error("튜터 조회 실패: {}", userId, t);
+            return ApiResponse.error("튜터 정보를 불러올 수 없습니다.");
         }
     }
 

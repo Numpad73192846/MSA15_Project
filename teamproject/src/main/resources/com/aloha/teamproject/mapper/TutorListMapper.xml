@@ -208,8 +208,7 @@
             ) AS certificates
         FROM tutor_profile tp
         JOIN users u ON tp.user_id = u.id
-        WHERE tp.id = #{userId}
-          AND EXISTS ( SELECT 1 FROM lesson l WHERE l.user_id = tp.user_id AND l.status = 'OPEN' )
+        WHERE tp.user_id = #{userId}
     </select>
 
     <select id="selectTutorsBySubject" resultMap="TutorListMap">
