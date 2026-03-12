@@ -1,1 +1,23 @@
 @import 'tailwindcss';
+
+@layer components {
+	.btn {
+		@apply inline-flex items-center justify-center px-3 py-1 rounded-md
+		font-medium transition;
+	}
+	.btn-sm {
+		@apply text-sm;
+	}
+	.btn-outline-primary {
+		@apply border border-primary text-primary hover:bg-primary/10;
+	}
+	.btn-outline-dark {
+		@apply border border-gray-700 text-gray-700 hover:bg-gray-700/10;
+	}
+	.btn-outline-secondary {
+		@apply border border-gray-500 text-gray-500 hover:bg-gray-500/10;
+	}
+	.btn-primary {
+		@apply bg-primary text-white hover:bg-primary-hover;
+	}
+}

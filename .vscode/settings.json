@@ -1,4 +1,4 @@
-﻿﻿{
+﻿{
     "cSpell.words": [
         "mypages",
         "teamproject",
@@ -19,6 +19,7 @@
                 "cmd": "powershell -NoProfile -Command \"(Get-Content -Raw -Encoding UTF8 '%file%') | Set-Content -Encoding UTF8 '%file%'\""
             }
         ]
-    }
+    },
+    "liveServer.settings.port": 5501
     
 }
