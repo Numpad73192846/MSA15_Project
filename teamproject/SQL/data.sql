@@ -3,7 +3,7 @@
 -- 관리자 계정 생성 id: admin@local.com password: Admin102938$&
 SET @admin_id = UUID();
 
-INSERT INTO users (id, username, password, name, nickname, status)
+INSERT IGNORE INTO users (id, username, password, name, nickname, status)
 VALUES (
   @admin_id,
   'admin@local.com',
@@ -13,14 +13,14 @@ VALUES (
   'ACTIVE'
 );
 
-INSERT INTO user_auth (user_id, id, auth)
+INSERT IGNORE INTO user_auth (user_id, id, auth)
 VALUES (@admin_id, UUID(), 'ROLE_ADMIN');
 
 -- Shared bcrypt hash for password: Admin102938$&
 SET @pw = '$2a$10$eZzE7fa53G86AOcvAN8wbOVoAnOVq5YnvLEAgsFaNDzsgFYCVXRye';
 
 -- Users
-INSERT INTO users (id, username, password, name, nickname, status)
+INSERT IGNORE INTO users (id, username, password, name, nickname, status)
 VALUES
 ('u-student-1','student1@test.com', @pw, '박학생', '열공중', 'ACTIVE'),
 ('u-student-2','student2@test.com', @pw, '김학생', '공부천재', 'ACTIVE'),
@@ -53,9 +53,28 @@ VALUES
 ('u-tutor-19','tutor19@test.com', @pw, '김찬튜터', '화학전문', 'ACTIVE'),
 ('u-tutor-20','tutor20@test.com', @pw, '김태튜터', '생물전문', 'ACTIVE');
 
-UPDATE users
-SET profile_img = '/img/tutors/default.png'
-WHERE id LIKE 'u-tutor-%';
+-- 각 튜터에게 랜덤한 프로필 이미지 할당 (16개의 동물 이미지)
+UPDATE users SET profile_img = '/img/profil/bear.svg' WHERE id = 'u-tutor-1';
+UPDATE users SET profile_img = '/img/profil/cat.svg' WHERE id = 'u-tutor-2';
+UPDATE users SET profile_img = '/img/profil/panda.svg' WHERE id = 'u-tutor-3';
+UPDATE users SET profile_img = '/img/profil/dog.svg' WHERE id = 'u-tutor-4';
+UPDATE users SET profile_img = '/img/profil/fox.svg' WHERE id = 'u-tutor-5';
+UPDATE users SET profile_img = '/img/profil/lion.svg' WHERE id = 'u-tutor-6';
+UPDATE users SET profile_img = '/img/profil/tiger.svg' WHERE id = 'u-tutor-7';
+UPDATE users SET profile_img = '/img/profil/koala.svg' WHERE id = 'u-tutor-8';
+UPDATE users SET profile_img = '/img/profil/rabbit.svg' WHERE id = 'u-tutor-9';
+UPDATE users SET profile_img = '/img/profil/deer.svg' WHERE id = 'u-tutor-10';
+UPDATE users SET profile_img = '/img/profil/raccoon.svg' WHERE id = 'u-tutor-11';
+UPDATE users SET profile_img = '/img/profil/monkey.svg' WHERE id = 'u-tutor-12';
+UPDATE users SET profile_img = '/img/profil/giraffe.svg' WHERE id = 'u-tutor-13';
+UPDATE users SET profile_img = '/img/profil/cow.svg' WHERE id = 'u-tutor-14';
+UPDATE users SET profile_img = '/img/profil/sloth.svg' WHERE id = 'u-tutor-15';
+UPDATE users SET profile_img = '/img/profil/koala2.svg' WHERE id = 'u-tutor-16';
+UPDATE users SET profile_img = '/img/profil/bear.svg' WHERE id = 'u-tutor-17';
+UPDATE users SET profile_img = '/img/profil/cat.svg' WHERE id = 'u-tutor-18';
+UPDATE users SET profile_img = '/img/profil/panda.svg' WHERE id = 'u-tutor-19';
+UPDATE users SET profile_img = '/img/profil/dog.svg' WHERE id = 'u-tutor-20';
+
 
 -- Roles
 INSERT INTO user_auth (user_id, id, auth)
@@ -698,7 +717,10 @@ INSERT INTO tmp_seed_tutor_nums (n)
 VALUES
 (21),(22),(23),(24),(25),(26),(27),(28),(29),(30),
 (31),(32),(33),(34),(35),(36),(37),(38),(39),(40),
-(41),(42),(43),(44),(45),(46),(47),(48),(49),(50);
+(41),(42),(43),(44),(45),(46),(47),(48),(49),(50),
+(51),(52),(53),(54),(55),(56),(57),(58),(59),(60),
+(61),(62),(63),(64),(65),(66),(67),(68),(69),(70),
+(71),(72),(73),(74),(75),(76),(77),(78),(79),(80);
 
 DROP TEMPORARY TABLE IF EXISTS tmp_seed_student_nums;
 CREATE TEMPORARY TABLE tmp_seed_student_nums (
@@ -708,25 +730,90 @@ CREATE TEMPORARY TABLE tmp_seed_student_nums (
 INSERT INTO tmp_seed_student_nums (n)
 VALUES (11),(12),(13),(14),(15),(16),(17),(18),(19),(20);
 
-INSERT INTO users (id, username, password, name, nickname, status)
-SELECT
-    CONCAT('u-student-', s.n),
-    CONCAT('student', s.n, '@test.com'),
-    @pw,
-    CONCAT('신규학생', s.n),
-    CONCAT('학습러', s.n),
-    'ACTIVE'
-FROM tmp_seed_student_nums s;
+-- Clean up existing students 11-20 if they exist (to update names)
+DELETE FROM users WHERE id IN (
+  'u-student-11', 'u-student-12', 'u-student-13', 'u-student-14', 'u-student-15',
+  'u-student-16', 'u-student-17', 'u-student-18', 'u-student-19', 'u-student-20'
+);
 
 INSERT INTO users (id, username, password, name, nickname, status)
-SELECT
-    CONCAT('u-tutor-', t.n),
-    CONCAT('tutor', t.n, '@test.com'),
-    @pw,
-    CONCAT('신규튜터', t.n),
-    CONCAT('튜터확장', t.n),
-    'ACTIVE'
-FROM tmp_seed_tutor_nums t;
+VALUES
+('u-student-11', 'student11@test.com', @pw, '강민지', '열공하는민지', 'ACTIVE'),
+('u-student-12', 'student12@test.com', @pw, '조현우', '독서왕현우', 'ACTIVE'),
+('u-student-13', 'student13@test.com', @pw, '윤지아', '꿈꾸는지아', 'ACTIVE'),
+('u-student-14', 'student14@test.com', @pw, '장서윤', '질문왕서윤', 'ACTIVE'),
+('u-student-15', 'student15@test.com', @pw, '임주원', '성실한주원', 'ACTIVE'),
+('u-student-16', 'student16@test.com', @pw, '한도현', '도전하는도현', 'ACTIVE'),
+('u-student-17', 'student17@test.com', @pw, '오지우', '필기왕지우', 'ACTIVE'),
+('u-student-18', 'student18@test.com', @pw, '서예준', '복습철저예준', 'ACTIVE'),
+('u-student-19', 'student19@test.com', @pw, '권하은', '지각없는하은', 'ACTIVE'),
+('u-student-20', 'student20@test.com', @pw, '송민재', '만점목표민재', 'ACTIVE');
+
+-- Clean up existing tutors 21-80 if they exist
+DELETE FROM users WHERE id LIKE 'u-tutor-%' AND CAST(SUBSTRING_INDEX(id, '-', -1) AS UNSIGNED) BETWEEN 21 AND 80;
+
+INSERT INTO users (id, username, password, name, nickname, status)
+VALUES
+('u-tutor-21', 'tutor21@test.com', @pw, '김민준', '친절한민준쌤', 'ACTIVE'),
+('u-tutor-22', 'tutor22@test.com', @pw, '이서준', '이해쏙쏙서준', 'ACTIVE'),
+('u-tutor-23', 'tutor23@test.com', @pw, '박도현', '문법마스터도현', 'ACTIVE'),
+('u-tutor-24', 'tutor24@test.com', @pw, '최예준', '발음교정예준', 'ACTIVE'),
+('u-tutor-25', 'tutor25@test.com', @pw, '정지호', '회화전문지호', 'ACTIVE'),
+('u-tutor-26', 'tutor26@test.com', @pw, '강하준', '토익만점하준', 'ACTIVE'),
+('u-tutor-27', 'tutor27@test.com', @pw, '조주원', '스피킹강자주원', 'ACTIVE'),
+('u-tutor-28', 'tutor28@test.com', @pw, '윤지후', '기초탈출지후', 'ACTIVE'),
+('u-tutor-29', 'tutor29@test.com', @pw, '장준우', '비즈니스준우', 'ACTIVE'),
+('u-tutor-30', 'tutor30@test.com', @pw, '임유준', '여행영어유준', 'ACTIVE'),
+('u-tutor-31', 'tutor31@test.com', @pw, '한시우', '중국어통시우', 'ACTIVE'),
+('u-tutor-32', 'tutor32@test.com', @pw, '오진우', '일본어고수진우', 'ACTIVE'),
+('u-tutor-33', 'tutor33@test.com', @pw, '서건우', '스페인어건우', 'ACTIVE'),
+('u-tutor-34', 'tutor34@test.com', @pw, '권선우', '프랑스어선우', 'ACTIVE'),
+('u-tutor-35', 'tutor35@test.com', @pw, '송우진', '독일어우진', 'ACTIVE'),
+('u-tutor-36', 'tutor36@test.com', @pw, '황연우', '러시아어연우', 'ACTIVE'),
+('u-tutor-37', 'tutor37@test.com', @pw, '안민재', '꼼꼼한민재쌤', 'ACTIVE'),
+('u-tutor-38', 'tutor38@test.com', @pw, '김현준', '열정가득현준', 'ACTIVE'),
+('u-tutor-39', 'tutor39@test.com', @pw, '이도윤', '성적상승도윤', 'ACTIVE'),
+('u-tutor-40', 'tutor40@test.com', @pw, '박은우', '핵심콕콕은우', 'ACTIVE'),
+('u-tutor-41', 'tutor41@test.com', @pw, '최우빈', '속성마스터우빈', 'ACTIVE'),
+('u-tutor-42', 'tutor42@test.com', @pw, '정하진', '재밋는수업하진', 'ACTIVE'),
+('u-tutor-43', 'tutor43@test.com', @pw, '조재윤', '소통하는재윤', 'ACTIVE'),
+('u-tutor-44', 'tutor44@test.com', @pw, '윤서진', '실력파서진', 'ACTIVE'),
+('u-tutor-45', 'tutor45@test.com', @pw, '장수호', '든든한수호쌤', 'ACTIVE'),
+('u-tutor-46', 'tutor46@test.com', @pw, '임이준', '친근한이준', 'ACTIVE'),
+('u-tutor-47', 'tutor47@test.com', @pw, '한시현', '명쾌한시현', 'ACTIVE'),
+('u-tutor-48', 'tutor48@test.com', @pw, '오동현', '체계적인동현', 'ACTIVE'),
+('u-tutor-49', 'tutor49@test.com', @pw, '서지한', '집중케어지한', 'ACTIVE'),
+('u-tutor-50', 'tutor50@test.com', @pw, '권태현', '동기부여태현', 'ACTIVE'),
+('u-tutor-51', 'tutor51@test.com', @pw, '송민규', '원어민감각민규', 'ACTIVE'),
+('u-tutor-52', 'tutor52@test.com', @pw, '황준서', '실전회화준서', 'ACTIVE'),
+('u-tutor-53', 'tutor53@test.com', @pw, '안시율', '감성티칭시율', 'ACTIVE'),
+('u-tutor-54', 'tutor54@test.com', @pw, '김승우', '논리적인승우', 'ACTIVE'),
+('u-tutor-55', 'tutor55@test.com', @pw, '이지훈', '다정하지훈쌤', 'ACTIVE'),
+('u-tutor-56', 'tutor56@test.com', @pw, '박성현', '카리스마성현', 'ACTIVE'),
+('u-tutor-57', 'tutor57@test.com', @pw, '최지성', '스마트지성', 'ACTIVE'),
+('u-tutor-58', 'tutor58@test.com', @pw, '정현우', '믿고듣는현우', 'ACTIVE'),
+('u-tutor-59', 'tutor59@test.com', @pw, '조민수', '꼼꼼티칭민수', 'ACTIVE'),
+('u-tutor-60', 'tutor60@test.com', @pw, '윤정우', '핵심요약정우', 'ACTIVE'),
+('u-tutor-61', 'tutor61@test.com', @pw, '장우진', '합격보장우진', 'ACTIVE'),
+('u-tutor-62', 'tutor62@test.com', @pw, '임상우', '실력향상상우', 'ACTIVE'),
+('u-tutor-63', 'tutor63@test.com', @pw, '한도윤', '멘토링도윤', 'ACTIVE'),
+('u-tutor-64', 'tutor64@test.com', @pw, '오건호', '친구같은건호', 'ACTIVE'),
+('u-tutor-65', 'tutor65@test.com', @pw, '서지민', '섬세한지민', 'ACTIVE'),
+('u-tutor-66', 'tutor66@test.com', @pw, '권현수', '빠른피드백현수', 'ACTIVE'),
+('u-tutor-67', 'tutor67@test.com', @pw, '송다윗', '글로벌다윗', 'ACTIVE'),
+('u-tutor-68', 'tutor68@test.com', @pw, '황요한', '열린마음요한', 'ACTIVE'),
+('u-tutor-69', 'tutor69@test.com', @pw, '안다니엘','유쾌한다니엘', 'ACTIVE'),
+('u-tutor-70', 'tutor70@test.com', @pw, '김지아', '상냥한지아쌤', 'ACTIVE'),
+('u-tutor-71', 'tutor71@test.com', @pw, '이서아', '꼼꼼한서아', 'ACTIVE'),
+('u-tutor-72', 'tutor72@test.com', @pw, '박나은', '밝은에너지나은', 'ACTIVE'),
+('u-tutor-73', 'tutor73@test.com', @pw, '최유진', '차분한유진', 'ACTIVE'),
+('u-tutor-74', 'tutor74@test.com', @pw, '정민서', '똑부러진민서', 'ACTIVE'),
+('u-tutor-75', 'tutor75@test.com', @pw, '조수아', '친절한수아', 'ACTIVE'),
+('u-tutor-76', 'tutor76@test.com', @pw, '윤하은', '미소천사하은', 'ACTIVE'),
+('u-tutor-77', 'tutor77@test.com', @pw, '장지유', '센스쟁이지유', 'ACTIVE'),
+('u-tutor-78', 'tutor78@test.com', @pw, '임윤아', '감각적인윤아', 'ACTIVE'),
+('u-tutor-79', 'tutor79@test.com', @pw, '한채원', '따뜻한채원', 'ACTIVE'),
+('u-tutor-80', 'tutor80@test.com', @pw, '오지안', '성실한지안', 'ACTIVE');
 
 UPDATE users
 SET profile_img = '/img/tutors/default.png'
@@ -849,6 +936,91 @@ SELECT
     1 AS seq
 FROM tmp_seed_tutor_nums t;
 
+-- Normalize subjects: ensure exactly 10 tutors per subject_group (80 tutors total)
+DELETE FROM tutor_subject WHERE user_id LIKE 'u-tutor-%';
+DELETE FROM lesson WHERE user_id LIKE 'u-tutor-%';
+
+INSERT INTO lesson (user_id, subject_id, field_id, id, title, description, status, price)
+SELECT
+    CONCAT('u-tutor-', nums.n) AS user_id,
+    CASE FLOOR((nums.n - 1) / 10)
+        WHEN 0 THEN 'sub-kor-basic'
+        WHEN 1 THEN 'sub-eng-basic'
+        WHEN 2 THEN 'sub-jpn-basic'
+        WHEN 3 THEN 'sub-chn-basic'
+        WHEN 4 THEN 'sub-fra-basic'
+        WHEN 5 THEN 'sub-spa-basic'
+        WHEN 6 THEN 'sub-ger-basic'
+        ELSE 'sub-rus-basic'
+    END AS subject_id,
+    CASE FLOOR((nums.n - 1) / 10)
+        WHEN 0 THEN 'lf-domain-school' ELSE 'lf-general-conversation' END AS field_id,
+    CONCAT('lesson-', nums.n) AS id,
+    CONCAT('맞춤 수업 ', nums.n) AS title,
+    CONCAT('레벨 진단 후 핵심 약점을 보완하는 ', nums.n, '번 튜터의 맞춤 수업입니다.') AS description,
+    'OPEN' AS status,
+    (28000 + (MOD(nums.n, 8) * 3000)) AS price
+FROM (
+    SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+    SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+    SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12 UNION ALL
+    SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL
+    SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL SELECT 20 UNION ALL
+    SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL SELECT 24 UNION ALL
+    SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL SELECT 28 UNION ALL
+    SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31 UNION ALL SELECT 32 UNION ALL
+    SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35 UNION ALL SELECT 36 UNION ALL
+    SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL SELECT 40 UNION ALL
+    SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43 UNION ALL SELECT 44 UNION ALL
+    SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL SELECT 48 UNION ALL
+    SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51 UNION ALL SELECT 52 UNION ALL
+    SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55 UNION ALL SELECT 56 UNION ALL
+    SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59 UNION ALL SELECT 60 UNION ALL
+    SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63 UNION ALL SELECT 64 UNION ALL
+    SELECT 65 UNION ALL SELECT 66 UNION ALL SELECT 67 UNION ALL SELECT 68 UNION ALL
+    SELECT 69 UNION ALL SELECT 70 UNION ALL SELECT 71 UNION ALL SELECT 72 UNION ALL
+    SELECT 73 UNION ALL SELECT 74 UNION ALL SELECT 75 UNION ALL SELECT 76 UNION ALL
+    SELECT 77 UNION ALL SELECT 78 UNION ALL SELECT 79 UNION ALL SELECT 80
+) nums;
+
+INSERT INTO tutor_subject (user_id, subject_id, id, seq)
+SELECT
+    CONCAT('u-tutor-', nums.n) AS user_id,
+    CASE FLOOR((nums.n - 1) / 10)
+        WHEN 0 THEN 'sub-kor-basic'
+        WHEN 1 THEN 'sub-eng-basic'
+        WHEN 2 THEN 'sub-jpn-basic'
+        WHEN 3 THEN 'sub-chn-basic'
+        WHEN 4 THEN 'sub-fra-basic'
+        WHEN 5 THEN 'sub-spa-basic'
+        WHEN 6 THEN 'sub-ger-basic'
+        ELSE 'sub-rus-basic'
+    END AS subject_id,
+    CONCAT('ts-', nums.n, '-1') AS id,
+    1 AS seq
+FROM (
+    SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+    SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+    SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 UNION ALL SELECT 12 UNION ALL
+    SELECT 13 UNION ALL SELECT 14 UNION ALL SELECT 15 UNION ALL SELECT 16 UNION ALL
+    SELECT 17 UNION ALL SELECT 18 UNION ALL SELECT 19 UNION ALL SELECT 20 UNION ALL
+    SELECT 21 UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL SELECT 24 UNION ALL
+    SELECT 25 UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL SELECT 28 UNION ALL
+    SELECT 29 UNION ALL SELECT 30 UNION ALL SELECT 31 UNION ALL SELECT 32 UNION ALL
+    SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35 UNION ALL SELECT 36 UNION ALL
+    SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL SELECT 40 UNION ALL
+    SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43 UNION ALL SELECT 44 UNION ALL
+    SELECT 45 UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL SELECT 48 UNION ALL
+    SELECT 49 UNION ALL SELECT 50 UNION ALL SELECT 51 UNION ALL SELECT 52 UNION ALL
+    SELECT 53 UNION ALL SELECT 54 UNION ALL SELECT 55 UNION ALL SELECT 56 UNION ALL
+    SELECT 57 UNION ALL SELECT 58 UNION ALL SELECT 59 UNION ALL SELECT 60 UNION ALL
+    SELECT 61 UNION ALL SELECT 62 UNION ALL SELECT 63 UNION ALL SELECT 64 UNION ALL
+    SELECT 65 UNION ALL SELECT 66 UNION ALL SELECT 67 UNION ALL SELECT 68 UNION ALL
+    SELECT 69 UNION ALL SELECT 70 UNION ALL SELECT 71 UNION ALL SELECT 72 UNION ALL
+    SELECT 73 UNION ALL SELECT 74 UNION ALL SELECT 75 UNION ALL SELECT 76 UNION ALL
+    SELECT 77 UNION ALL SELECT 78 UNION ALL SELECT 79 UNION ALL SELECT 80
+) nums;
+
 INSERT INTO tutor_career (user_id, id, company_name, job_category, job_role, start_year, end_year)
 SELECT
     CONCAT('u-tutor-', t.n) AS user_id,
@@ -916,19 +1088,34 @@ SELECT
     CONCAT('u-tutor-', t.n) AS user_id,
     CONCAT('tr-', t.n, '-', r.seq) AS id,
     CASE r.seq
-        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '18:00:00' WHEN 1 THEN '19:00:00' ELSE '20:00:00' END
-        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '18:00:00' WHEN 1 THEN '19:00:00' ELSE '20:00:00' END
-        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '10:00:00' WHEN 1 THEN '11:00:00' ELSE '13:00:00' END
+        WHEN 1 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '17:00:00' WHEN 1 THEN '18:00:00' WHEN 2 THEN '19:00:00'
+                        WHEN 3 THEN '20:00:00' WHEN 4 THEN '16:00:00' WHEN 5 THEN '15:00:00' ELSE '21:00:00' END
+        WHEN 2 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '19:00:00' WHEN 1 THEN '20:00:00' WHEN 2 THEN '21:00:00'
+                        WHEN 3 THEN '18:00:00' WHEN 4 THEN '17:00:00' WHEN 5 THEN '16:00:00' ELSE '22:00:00' END
+        ELSE CASE MOD(t.n, 7)
+                        WHEN 0 THEN '09:00:00' WHEN 1 THEN '10:00:00' WHEN 2 THEN '11:00:00'
+                        WHEN 3 THEN '12:00:00' WHEN 4 THEN '13:00:00' WHEN 5 THEN '14:00:00' ELSE '15:00:00' END
     END AS start_at,
     CASE r.seq
-        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '21:00:00' WHEN 1 THEN '22:00:00' ELSE '23:00:00' END
-        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '21:00:00' WHEN 1 THEN '22:00:00' ELSE '23:00:00' END
-        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '13:00:00' WHEN 1 THEN '14:00:00' ELSE '16:00:00' END
+        WHEN 1 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '20:30:00' WHEN 1 THEN '21:30:00' WHEN 2 THEN '22:30:00'
+                        WHEN 3 THEN '23:00:00' WHEN 4 THEN '19:30:00' WHEN 5 THEN '18:30:00' ELSE '23:30:00' END
+        WHEN 2 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '22:00:00' WHEN 1 THEN '23:00:00' WHEN 2 THEN '23:30:00'
+                        WHEN 3 THEN '21:30:00' WHEN 4 THEN '20:30:00' WHEN 5 THEN '19:30:00' ELSE '23:59:00' END
+        ELSE CASE MOD(t.n, 7)
+                        WHEN 0 THEN '12:30:00' WHEN 1 THEN '13:30:00' WHEN 2 THEN '14:30:00'
+                        WHEN 3 THEN '15:30:00' WHEN 4 THEN '16:30:00' WHEN 5 THEN '17:30:00' ELSE '18:30:00' END
     END AS end_at,
     CASE r.seq
-        WHEN 1 THEN CASE MOD(t.n, 3) WHEN 0 THEN '월' WHEN 1 THEN '화' ELSE '수' END
-        WHEN 2 THEN CASE MOD(t.n, 3) WHEN 0 THEN '수' WHEN 1 THEN '목' ELSE '금' END
-        ELSE CASE MOD(t.n, 3) WHEN 0 THEN '토' WHEN 1 THEN '일' ELSE '토' END
+        WHEN 1 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '월' WHEN 1 THEN '화' WHEN 2 THEN '수' WHEN 3 THEN '목' WHEN 4 THEN '금' WHEN 5 THEN '토' ELSE '일' END
+        WHEN 2 THEN CASE MOD(t.n, 7)
+                        WHEN 0 THEN '화' WHEN 1 THEN '수' WHEN 2 THEN '목' WHEN 3 THEN '금' WHEN 4 THEN '토' WHEN 5 THEN '일' ELSE '월' END
+        ELSE CASE MOD(t.n, 7)
+                        WHEN 0 THEN '토' WHEN 1 THEN '일' WHEN 2 THEN '월' WHEN 3 THEN '화' WHEN 4 THEN '수' WHEN 5 THEN '목' ELSE '금' END
     END AS day_of_week
 FROM tmp_seed_tutor_nums t
 JOIN (
@@ -999,6 +1186,8 @@ SELECT
         'availb-',
         REPLACE(tr.user_id, 'u-tutor-', ''),
         '-',
+        r.seq,
+        '-',
         DATE_FORMAT(
             DATE_ADD(
                 DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
@@ -1013,9 +1202,7 @@ SELECT
                 END DAY
             ),
             '%m%d'
-        ),
-        '-',
-        DATE_FORMAT(tr.start_at, '%H%i')
+        )
     ) AS id,
     TIMESTAMP(
         DATE_ADD(
@@ -1030,7 +1217,7 @@ SELECT
                 ELSE 6
             END DAY
         ),
-        tr.start_at
+        ADDTIME(tr.start_at, SEC_TO_TIME((r.seq - 1) * 1800))
     ) AS start_at,
     TIMESTAMP(
         DATE_ADD(
@@ -1045,11 +1232,17 @@ SELECT
                 ELSE 6
             END DAY
         ),
-        ADDTIME(tr.start_at, '00:30:00')
+        ADDTIME(ADDTIME(tr.start_at, SEC_TO_TIME((r.seq - 1) * 1800)), '00:30:00')
     ) AS end_at,
     'BOOKED' AS status
 FROM tutor_time_range tr
-WHERE tr.id LIKE '%-1';
+JOIN (
+    SELECT 1 AS seq UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4
+    UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8
+) r
+ON 1=1
+WHERE tr.id LIKE '%-1'
+  AND ADDTIME(ADDTIME(tr.start_at, SEC_TO_TIME((r.seq - 1) * 1800)), '00:30:00') <= tr.end_at;
 
 -- Bookings
 INSERT INTO booking (
@@ -1218,6 +1411,22 @@ SELECT
 FROM booking b
 WHERE b.id LIKE 'bookx-%'
   AND MOD(CAST(SUBSTRING_INDEX(b.tutor_id, '-', -1) AS UNSIGNED), 3) = 0;
+
+-- Ensure at least 10 reviews per tutor: insert 10 auto reviews referencing one generated booking per tutor
+INSERT INTO review (booking_id, id, rating, content)
+SELECT
+    mb.bid AS booking_id,
+    CONCAT('reviewx-', REPLACE(mb.tutor_id,'u-tutor-',''), '-', LPAD(r.n,2,'0')) AS id,
+    3 + MOD(r.n,3) AS rating,
+    CONCAT('자동 생성 리뷰 (튜터 ', REPLACE(mb.tutor_id,'u-tutor-',''), ') - No.', r.n) AS content
+FROM (
+    SELECT tutor_id, MIN(id) AS bid FROM booking WHERE id LIKE 'bookx-%' GROUP BY tutor_id
+) mb
+JOIN (
+    SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+    SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+    SELECT 9 UNION ALL SELECT 10
+) r;
 
 -- Tutor notes
 INSERT INTO tutor_student_note (id, tutor_id, student_id, progress, notes)
