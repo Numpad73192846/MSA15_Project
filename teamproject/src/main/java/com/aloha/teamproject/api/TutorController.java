@@ -8,7 +8,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -109,6 +112,46 @@ public class TutorController {
         } catch (Exception e) {
             log.error("/api/tutors/me 조회 실패", e);
             return ApiResponse.error("튜터 정보를 조회하지 못했습니다.");
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<Map<String, Object>> detail(@org.springframework.web.bind.annotation.PathVariable("id") String id,
+            Authentication authentication) {
+        try {
+            TutorList tutor = tutorListService.selectTutorById(id);
+            if (tutor == null) {
+                return ApiResponse.error("튜터를 찾을 수 없습니다.");
+            }
+
+            List<TutorDocument> documents = tutorDocumentService.selectByUserId(tutor.getUserId());
+            boolean educationApproved = hasApprovedDocument(documents, "EDUCATION");
+            boolean degreeApproved = hasApprovedDocument(documents, "DEGREE");
+            boolean certificateApproved = hasApprovedDocument(documents, "CERTIFICATE")
+                    || hasApprovedDocument(documents, "CERTIFICATE_TEXT");
+
+            if (!educationApproved) {
+                tutor.setEducationSchools("");
+                tutor.setEducationDocuments("");
+            }
+            if (!degreeApproved) {
+                tutor.setEducationDegrees("");
+                tutor.setDegreeDocuments("");
+            }
+            if (!(educationApproved && degreeApproved)) {
+                tutor.setEducationTimeline("");
+            }
+            if (!certificateApproved) {
+                tutor.setCertificates("");
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("tutor", tutor);
+            result.put("canBook", !hasTutorAuthority(authentication));
+            return ApiResponse.ok(result);
+        } catch (Exception e) {
+            log.error("튜터 상세 조회 실패", e);
+            return ApiResponse.error("튜터 상세 정보를 조회하지 못했습니다.");
         }
     }
 
@@ -642,6 +685,26 @@ public class TutorController {
         } catch (Exception e) {
             return ApiResponse.error("튜터 목록을 조회할 수 없습니다.");
         }
+    }
+
+    private boolean hasApprovedDocument(List<TutorDocument> docs, String docType) {
+        if (!StringUtils.hasText(docType) || docs == null || docs.isEmpty()) {
+            return false;
+        }
+        return docs.stream()
+                .filter(Objects::nonNull)
+                .filter(doc -> docType.equalsIgnoreCase(doc.getDocType()))
+                .anyMatch(doc -> doc.getReviewedAt() != null && !StringUtils.hasText(doc.getRejectReason()));
+    }
+
+    private boolean hasTutorAuthority(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_TUTOR")
+                        || authority.getAuthority().equals("ROLE_TUTOR_PENDING")
+                        || authority.getAuthority().equals("ROLE_ADMIN"));
     }
 
 }

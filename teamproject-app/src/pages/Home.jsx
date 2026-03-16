@@ -1,11 +1,7 @@
-﻿import React from 'react'
-import Layout from '../components/common/Layout'
+﻿import HomeContent from '../components/pages/HomeContent'
 
-const Home = () => {
-	return (
-		<Layout>
-		</Layout>
-	)
-}
+const Home = (props) => <HomeContent {...props} />
 
 export default Home
+
+

@@ -31,7 +31,7 @@ public class KoreanProverbController {
      */
     @GetMapping("/random")
     public ApiResponse<List<KoreanProverb.GameResponse>> getRandomProverbs(
-            @RequestParam(defaultValue = "10") int count) {
+            @RequestParam(value = "count", defaultValue = "10") int count) {
         try {
             log.info("랜덤 속담 {}개 조회 요청", count);
             List<KoreanProverb> proverbs = koreanProverbService.getRandomProverbs(count);

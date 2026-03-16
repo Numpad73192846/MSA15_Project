@@ -11,13 +11,20 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://lacalhost:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy) => 
           proxy.on('proxyReq', (proxyReq) => {
             proxyReq.removeHeader('origin')
           })
+      },
+      '/img': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
       }
     }
   }

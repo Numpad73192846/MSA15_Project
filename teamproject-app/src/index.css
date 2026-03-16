@@ -1,23 +1,80 @@
 @import 'tailwindcss';
 
-@layer components {
-	.btn {
-		@apply inline-flex items-center justify-center px-3 py-1 rounded-md
-		font-medium transition;
-	}
-	.btn-sm {
-		@apply text-sm;
-	}
-	.btn-outline-primary {
-		@apply border border-primary text-primary hover:bg-primary/10;
-	}
-	.btn-outline-dark {
-		@apply border border-gray-700 text-gray-700 hover:bg-gray-700/10;
-	}
-	.btn-outline-secondary {
-		@apply border border-gray-500 text-gray-500 hover:bg-gray-500/10;
-	}
-	.btn-primary {
-		@apply bg-primary text-white hover:bg-primary-hover;
-	}
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+	background: #f8fafc;
+	color: #1e293b;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button {
+	font: inherit;
+	cursor: pointer;
+}
+
+.hero-gradient-text {
+	background: linear-gradient(90deg, #00e34f, #7a60ff, #00e34f, #7a60ff);
+	background-size: 200% 100%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+	animation: gradientAni 3s ease-in-out infinite;
+}
+
+.hero-orb {
+	position: absolute;
+	border-radius: 9999px;
+	filter: blur(2.5rem);
+	opacity: 0.6;
+	animation: scaleAni 6s ease-in-out infinite;
+}
+
+.hero-orb-1 {
+	height: 34rem;
+	width: 34rem;
+	top: -3rem;
+	left: -2rem;
+	background: linear-gradient(45deg, #00e34f, #4f46e5, #0d6efd, #00e34f);
+	animation-duration: 7s;
+}
+
+.hero-orb-2 {
+	height: 18rem;
+	width: 18rem;
+	right: 2rem;
+	bottom: 2rem;
+	background: linear-gradient(45deg, #00e34f, #4f46e5, #fd0dd5);
+	animation-duration: 4s;
+}
+
+.home-cta {
+	background: linear-gradient(-45deg, #1a1a2e, #16213e, #211433, #0b0b1a);
+	background-size: 400% 400%;
+	animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+	0% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+	100% { background-position: 0% 50%; }
+}
+
+@keyframes gradientAni {
+	0%, 100% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+}
+
+@keyframes scaleAni {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.4); }
 }
