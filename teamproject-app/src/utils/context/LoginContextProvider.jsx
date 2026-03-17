@@ -108,7 +108,7 @@ const LoginContextProvider = ({ children }) => {
 		} finally {
 			clearAuthState()
 			setIsLoading( false )
-			navigate( '/login' )
+			navigate( '/' )
 		}
 	}
 

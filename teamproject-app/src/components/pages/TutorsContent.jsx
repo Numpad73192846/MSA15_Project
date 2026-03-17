@@ -130,8 +130,8 @@ const TutorsContent = () => {
 
 	return (
 		<Layout>
-			<section className='px-3 py-12'>
-				<div className='mx-auto w-full max-w-[1320px]' ref={dropdownRef}>
+			<section className='py-12'>
+				<div className='mx-auto w-full max-w-[1140px] px-3' ref={dropdownRef}>
 					<div className='mb-4'>
 						<h2 className='mb-1 text-[1.75rem] font-bold leading-tight text-[#212529]'>튜터 찾기</h2>
 						<p className='mb-0 text-base text-[#6c757d]'>나에게 맞는 전문 튜터를 찾아보세요</p>
@@ -139,7 +139,7 @@ const TutorsContent = () => {
 
 					<div className='mb-4 rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
 						<div className='p-4'>
-							<div className='grid grid-cols-1 items-end gap-4 md:grid-cols-4'>
+							<div className='grid grid-cols-1 items-end gap-3 md:grid-cols-4'>
 								<div>
 									<label className='mb-2 block text-base text-[#212529]'>검색</label>
 									<input

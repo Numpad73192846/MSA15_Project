@@ -81,6 +81,28 @@
   line-height: 1.65;
 }
 
+.tutor-detail-page .review-item {
+  border-left: 4px solid #10b981;
+  border-left-width: 4px;
+}
+
+.tutor-detail-page .tutorVideo-wrap .resize {
+  position: relative;
+  display: block;
+  height: 0;
+  padding-bottom: 56.25%;
+}
+
+.tutor-detail-page .tutorVideo-wrap .resize .re {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .tutor-detail-page .tc-toolbar {
   display: flex;
   align-items: center;

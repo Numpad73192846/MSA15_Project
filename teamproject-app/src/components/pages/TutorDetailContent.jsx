@@ -31,14 +31,27 @@ const buildDateRange = () => {
 const parseTimeline = (timeline) => {
 	if (!timeline) return []
 	return timeline
-		.split('|')
+		.split(/\s*\|\|\|\s*/)
 		.map((item) => item.trim())
 		.filter(Boolean)
 		.map((item) => {
-			const [year, ...rest] = item.split(':')
+			const tripleSeparatorIndex = item.indexOf(':::')
+			if (tripleSeparatorIndex >= 0) {
+				return {
+					year: item.slice(0, tripleSeparatorIndex).trim(),
+					text: item.slice(tripleSeparatorIndex + 3).trim(),
+				}
+			}
+			const singleSeparatorIndex = item.indexOf(':')
+			if (singleSeparatorIndex >= 0) {
+				return {
+					year: item.slice(0, singleSeparatorIndex).trim(),
+					text: item.slice(singleSeparatorIndex + 1).trim(),
+				}
+			}
 			return {
-				year: rest.length > 0 ? year.trim() : '',
-				text: rest.length > 0 ? rest.join(':').trim() : item,
+				year: '',
+				text: item,
 			}
 		})
 }
@@ -206,7 +219,7 @@ const TutorDetailContent = () => {
 
 	const tutor = detail?.tutor
 	const isTutorViewer = hasRole('ROLE_TUTOR') || hasRole('ROLE_TUTOR_PENDING') || hasRole('ROLE_ADMIN')
-	const canBook = detail?.canBook && !isTutorViewer && isLogin
+	const canBook = detail?.canBook && !isTutorViewer
 	const canWriteReview = isLogin && !isTutorViewer
 	const currentUserId = userInfo?.userId || userInfo?.id || ''
 	const isEditReview = Boolean(reviewForm.id)
@@ -280,12 +293,10 @@ const TutorDetailContent = () => {
 			const eligible = (bookingsResponse.data?.data || [])
 				.filter((booking) => booking.status === 'COMPLETED' && !booking.reviewId)
 			setReviewBookingOptions(eligible)
-			if (eligible.length > 0) {
-				const preselected = preselectBookingId
-					? eligible.find((booking) => (booking.bookingId || booking.id) === preselectBookingId)
-					: null
-				setReviewForm((prev) => ({ ...prev, bookingId: (preselected?.bookingId || preselected?.id || eligible[0].bookingId || eligible[0].id || '') }))
-			}
+			const preselected = preselectBookingId
+				? eligible.find((booking) => (booking.bookingId || booking.id) === preselectBookingId)
+				: null
+			setReviewForm((prev) => ({ ...prev, bookingId: (preselected?.bookingId || preselected?.id || '') }))
 		} catch (err) {
 			setReviewError(err?.response?.data?.message || '리뷰 작성 가능한 수업을 불러오지 못했습니다.')
 		} finally {
@@ -367,6 +378,11 @@ const TutorDetailContent = () => {
 		}
 		if (!bookingSubject) {
 			setBookingError('과목을 선택해주세요.')
+			return
+		}
+		if (!isLogin) {
+			window.alert('로그인이 필요합니다.')
+			window.location.href = '/login'
 			return
 		}
 		setBookingLoading(true)
@@ -586,7 +602,7 @@ const TutorDetailContent = () => {
 												{reviews.map((review) => {
 													const canManageReview = Boolean(currentUserId) && review.studentId === currentUserId
 													return (
-													<div key={review.id} className='rounded-md border border-black/15 bg-white'>
+													<div key={review.id} className='review-item rounded-md border border-black/15 bg-white'>
 														<div className='p-4'>
 															<div className='mb-2 flex items-start justify-between'>
 																<div className='font-bold'>
@@ -627,9 +643,16 @@ const TutorDetailContent = () => {
 							<div className='lg:col-span-4'>
 								<div className='sticky top-[90px] rounded-md border border-black/15 bg-white shadow-[0_.125rem_.25rem_rgba(0,0,0,0.075)]'>
 									{tutor.videoUrl && (
-										<div className='overflow-hidden border-b border-black/10'>
-											<div className='aspect-video'>
-												<iframe src={tutor.videoUrl} className='h-full w-full' title='Tutor video' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowFullScreen />
+										<div className='tutorVideo-wrap border-b border-black/10' id='videoWrap'>
+											<div className='resize'>
+												<iframe
+													id='tutorVideo'
+													src={tutor.videoUrl}
+													className='re'
+													title='YouTube video player'
+													allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+													allowFullScreen
+												/>
 											</div>
 										</div>
 									)}
@@ -732,12 +755,10 @@ const TutorDetailContent = () => {
 										)}
 
 										{bookingError && <p className='mb-3 text-sm text-[#dc3545]'>{bookingError}</p>}
-										{canBook ? (
+										{canBook && (
 											<button type='button' onClick={handleBook} disabled={mergedSelectedBlocks.length === 0 || bookingLoading} className='inline-flex w-full items-center justify-center rounded-md border border-[#4f46e5] bg-[#4f46e5] px-3 py-[0.375rem] text-base text-white transition-colors hover:border-[#4338ca] hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60'>
 												{bookingLoading ? '예약 처리 중...' : '예약하기'}
 											</button>
-										) : (
-											<p className='text-sm text-[#6c757d]'>{isLogin ? '튜터 계정은 자신의 수업을 예약할 수 없습니다.' : '로그인 후 예약 기능을 이용할 수 있습니다.'}</p>
 										)}
 									</div>
 								</div>
@@ -777,6 +798,7 @@ const TutorDetailContent = () => {
 									>
 										{reviewLoadingBookings && <option value=''>불러오는 중...</option>}
 										{!reviewLoadingBookings && reviewSelectOptions.length === 0 && <option value=''>완료된 수업이 없습니다.</option>}
+										{!reviewLoadingBookings && !isEditReview && reviewSelectOptions.length > 0 && <option value=''>수업 선택 (필수)</option>}
 										{!reviewLoadingBookings && reviewSelectOptions.map((booking) => (
 											<option key={booking.bookingId || booking.id || 'selected'} value={booking.bookingId || booking.id || ''}>
 												{booking.lessonDate && booking.startTime

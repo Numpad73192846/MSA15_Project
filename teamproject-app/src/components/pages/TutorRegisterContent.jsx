@@ -290,7 +290,7 @@ const TutorRegisterContent = () => {
 		)
 	}
 
-	if (hasAnyRole('ROLE_TUTOR', 'ROLE_TUTOR_PENDING')) {
+	if (hasAnyRole('ROLE_TUTOR')) {
 		return (
 			<Layout>
 				<div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>

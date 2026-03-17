@@ -3,29 +3,39 @@ import { Link } from 'react-router-dom'
 import Layout from '../common/Layout'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
+import classIcon from '../../assets/image/tutors/class.svg'
+import moneyIcon from '../../assets/image/tutors/money.svg'
+import studentIcon from '../../assets/image/tutors/student.svg'
+import defaultProfileImage from '../../assets/image/tutors/default.png'
 
 const tabItems = [
-	{ key: 'upcoming', label: '예정 수업' },
-	{ key: 'past', label: '지난 수업' },
-	{ key: 'reviews', label: '수강생 리뷰' },
-	{ key: 'earnings', label: '수익 현황' },
+	{ key: 'schedule', label: '일정' },
+	{ key: 'reviews', label: '리뷰' },
+	{ key: 'earnings', label: '수익' },
+	{ key: 'weekly', label: '주간 스케줄' },
 ]
 
 const EMPTY_LIST = []
 
+const parseDate = (value) => {
+	if (!value) return null
+	const date = value instanceof Date ? value : new Date(value)
+	return Number.isNaN(date.getTime()) ? null : date
+}
+
 const formatDate = (value, options) => {
-	if (!value) return '-'
-	const date = new Date(value)
-	if (Number.isNaN(date.getTime())) return '-'
+	const date = parseDate(value)
+	if (!date) return '-'
 	return new Intl.DateTimeFormat('ko-KR', options).format(date)
 }
 
 const formatDateTime = (value) => formatDate(value, {
 	year: 'numeric',
-	month: 'long',
-	day: 'numeric',
+	month: '2-digit',
+	day: '2-digit',
 	hour: '2-digit',
 	minute: '2-digit',
+	hour12: false,
 })
 
 const formatCurrency = (value) => {
@@ -33,58 +43,129 @@ const formatCurrency = (value) => {
 	return `${amount.toLocaleString('ko-KR')}원`
 }
 
-const StarRating = ({ rating = 0 }) => (
-	<div className='flex items-center gap-1'>
-		{[1, 2, 3, 4, 5].map((star) => (
-			<span key={star} className={star <= rating ? 'text-amber-400' : 'text-slate-200'}>★</span>
-		))}
-		<span className='ml-1 text-sm font-semibold text-slate-700'>{Number(rating || 0).toFixed(1)}</span>
+const formatHours = (value) => {
+	const hours = Number(value)
+	if (!Number.isFinite(hours) || hours <= 0) return '-'
+	return Number.isInteger(hours) ? `${hours}시간` : `${hours.toFixed(1)}시간`
+}
+
+const formatYearMonth = (value) => {
+	if (!value) return '-'
+	const [year, month] = String(value).split('-')
+	if (!year || !month) return String(value)
+	return `${year}년 ${Number(month)}월`
+}
+
+const toTimeValue = (value) => {
+	const date = parseDate(value)
+	return date ? date.getTime() : Number.MAX_SAFE_INTEGER
+}
+
+const getWeekStart = (baseDate) => {
+	const date = new Date(baseDate)
+	date.setHours(0, 0, 0, 0)
+	date.setDate(date.getDate() - date.getDay())
+	return date
+}
+
+const isSameDay = (left, right) => (
+	left.getFullYear() === right.getFullYear()
+	&& left.getMonth() === right.getMonth()
+	&& left.getDate() === right.getDate()
+)
+
+const getStudentKey = (lesson) => String(
+	lesson?.studentId
+	|| lesson?.studentName
+	|| lesson?.studentNickname
+	|| lesson?.bookingId
+	|| ''
+)
+
+const getStatusMeta = (status) => {
+	switch (status) {
+		case 'CONFIRMED':
+			return { label: '확정', className: 'bg-emerald-100 text-emerald-700' }
+		case 'PENDING':
+			return { label: '대기', className: 'bg-amber-100 text-amber-700' }
+		case 'COMPLETED':
+			return { label: '완료', className: 'bg-slate-200 text-slate-700' }
+		case 'CANCELLED':
+			return { label: '취소', className: 'bg-rose-100 text-rose-700' }
+		default:
+			return { label: status || '확인 중', className: 'bg-slate-100 text-slate-600' }
+	}
+}
+
+const resolveReviewWriter = (review) => (
+	review?.studentName
+	|| review?.studentNickname
+	|| review?.nickname
+	|| '익명'
+)
+
+const renderStars = (rating) => {
+	const rounded = Math.max(0, Math.min(5, Math.round(Number(rating || 0))))
+	return `${'★'.repeat(rounded)}${'☆'.repeat(5 - rounded)}`
+}
+
+const toEmbedVideoUrl = (value) => {
+	const url = String(value || '').trim()
+	if (!url) return ''
+	if (url.includes('youtube.com/embed/')) return url
+	const shortMatch = url.match(/youtu\.be\/([^?&/]+)/)
+	if (shortMatch?.[1]) return `https://www.youtube.com/embed/${shortMatch[1]}`
+	const watchMatch = url.match(/[?&]v=([^&]+)/)
+	if (watchMatch?.[1]) return `https://www.youtube.com/embed/${watchMatch[1]}`
+	return url
+}
+
+const StatCard = ({ icon, alt, value, label, valueClassName }) => (
+	<div className='min-w-0 flex-1 rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+		<div className='px-4 py-5 text-center'>
+			<div className='mb-2 flex justify-center'>
+				<img src={icon} alt={alt} className='h-9 w-9' />
+			</div>
+			<div className={`text-[1.25rem] font-bold ${valueClassName}`}>{value}</div>
+			<div className='mt-1 text-xs text-slate-500'>{label}</div>
+		</div>
 	</div>
 )
 
-const statusBadge = (status) => {
-	const map = {
-		CONFIRMED: { label: '확정', color: 'bg-green-100 text-green-700' },
-		PENDING:   { label: '대기', color: 'bg-yellow-100 text-yellow-700' },
-		CANCELLED: { label: '취소', color: 'bg-red-100 text-red-700' },
-		COMPLETED: { label: '완료', color: 'bg-slate-100 text-slate-600' },
-	}
-	const info = map[status] ?? { label: status || '확인 중', color: 'bg-slate-100 text-slate-600' }
+const LessonListItem = ({ lesson, muted = false }) => {
+	const status = getStatusMeta(lesson?.status)
 	return (
-		<span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${info.color}`}>{info.label}</span>
+		<div className={`rounded-[14px] border border-[#e9edf5] bg-white px-4 py-3 ${muted ? 'opacity-85' : ''}`}>
+			<div className='mb-1 flex flex-wrap items-center justify-between gap-2'>
+				<div className='text-sm font-semibold text-slate-900'>{lesson?.studentName || '-'}</div>
+				<span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${status.className}`}>{status.label}</span>
+			</div>
+			<div className='text-sm text-slate-700'>{lesson?.subject || '수업'}</div>
+			<div className='mt-1 text-xs text-slate-500'>
+				{formatDateTime(lesson?.startAt)} ~ {formatDate(lesson?.endAt, { hour: '2-digit', minute: '2-digit', hour12: false })}
+			</div>
+			<div className='mt-1 text-xs text-[#4f46e5]'>수업료 {formatCurrency(lesson?.price)}</div>
+		</div>
 	)
 }
 
-const LessonCard = ({ lesson, compact = false }) => (
-	<div className={`rounded-2xl border border-slate-200 bg-white ${compact ? 'p-3' : 'p-4'}`}>
-		<div className='flex flex-wrap items-start justify-between gap-2'>
-			<div>
-				<div className='text-base font-bold text-slate-900'>{lesson.subject || '수업'}</div>
-				<div className='mt-0.5 text-sm text-slate-500'>학생: {lesson.studentName || '-'}</div>
-			</div>
-			{statusBadge(lesson.status)}
-		</div>
-		<div className='mt-3 grid gap-1.5 text-sm text-slate-600 sm:grid-cols-2'>
-			<div>시작: {formatDateTime(lesson.startAt)}</div>
-			<div>종료: {formatDate(lesson.endAt, { hour: '2-digit', minute: '2-digit' })}</div>
-			<div>수업료: {formatCurrency(lesson.price)}</div>
-			<div>수업 시간: {lesson.durationHours ? `${lesson.durationHours}시간` : '-'}</div>
-		</div>
+const EmptyPanel = ({ message }) => (
+	<div className='rounded-[14px] border border-dashed border-slate-300 py-6 text-center text-sm text-slate-500'>
+		{message}
 	</div>
 )
 
 const TutorMyPage = () => {
 	const { isLoading: authLoading, isLogin, hasRole } = useAuth()
-	const [activeTab, setActiveTab] = useState('upcoming')
+	const [activeTab, setActiveTab] = useState('schedule')
+	const [weekOffset, setWeekOffset] = useState(0)
+	const [selectedStudentKey, setSelectedStudentKey] = useState('')
 	const [mypage, setMypage] = useState(null)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState('')
 
 	useEffect(() => {
-		if (authLoading) {
-			return
-		}
-
+		if (authLoading) return
 		if (!isLogin) {
 			setLoading(false)
 			return
@@ -107,26 +188,90 @@ const TutorMyPage = () => {
 		fetchMypage()
 	}, [authLoading, isLogin])
 
+	const profile = mypage?.tutorProfile || null
+	const languageFields = mypage?.languageFields ?? EMPTY_LIST
 	const upcomingLessons = mypage?.upcomingLessons ?? EMPTY_LIST
 	const pastLessons = mypage?.pastLessons ?? EMPTY_LIST
 	const tutorReviews = mypage?.tutorReviews ?? EMPTY_LIST
 	const monthlyEarnings = mypage?.monthlyEarnings ?? EMPTY_LIST
-	const languageFields = mypage?.languageFields ?? EMPTY_LIST
 
 	const stats = useMemo(() => ({
 		totalLessons: mypage?.tutorStats?.totalLessons ?? 0,
 		totalEarnings: mypage?.tutorStats?.totalEarnings ?? 0,
 		activeStudents: mypage?.tutorStats?.activeStudents ?? 0,
-		ratingAvg: mypage?.tutorStats?.ratingAvg ?? mypage?.tutorProfile?.ratingAvg ?? 0,
-		reviewCount: mypage?.tutorStats?.reviewCount ?? mypage?.tutorProfile?.reviewCount ?? 0,
-	}), [mypage])
+		ratingAvg: mypage?.tutorStats?.ratingAvg ?? profile?.ratingAvg ?? 0,
+		reviewCount: mypage?.tutorStats?.reviewCount ?? profile?.reviewCount ?? 0,
+	}), [mypage, profile])
+
+	const allLessons = useMemo(
+		() => [...upcomingLessons, ...pastLessons].filter((lesson) => lesson && lesson.status !== 'CANCELLED'),
+		[upcomingLessons, pastLessons]
+	)
+
+	const studentOptions = useMemo(() => {
+		const map = new Map()
+		allLessons.forEach((lesson) => {
+			const key = getStudentKey(lesson)
+			if (!key) return
+			if (!map.has(key)) {
+				map.set(key, lesson?.studentName || lesson?.studentNickname || '학생')
+			}
+		})
+		return Array.from(map.entries()).map(([value, label]) => ({ value, label }))
+	}, [allLessons])
+
+	useEffect(() => {
+		if (!selectedStudentKey) return
+		const exists = studentOptions.some((option) => option.value === selectedStudentKey)
+		if (!exists) setSelectedStudentKey('')
+	}, [selectedStudentKey, studentOptions])
+
+	const currentWeekStart = useMemo(() => {
+		const today = new Date()
+		today.setDate(today.getDate() + (weekOffset * 7))
+		return getWeekStart(today)
+	}, [weekOffset])
+
+	const weekDays = useMemo(() => Array.from({ length: 7 }, (_, index) => {
+		const day = new Date(currentWeekStart)
+		day.setDate(currentWeekStart.getDate() + index)
+		return day
+	}), [currentWeekStart])
+
+	const weeklySourceLessons = useMemo(() => {
+		if (!selectedStudentKey) return allLessons
+		return allLessons.filter((lesson) => getStudentKey(lesson) === selectedStudentKey)
+	}, [allLessons, selectedStudentKey])
+
+	const weeklyByDay = useMemo(() => weekDays.map((day) => ({
+		day,
+		items: weeklySourceLessons
+			.filter((lesson) => {
+				const lessonDate = parseDate(lesson?.startAt)
+				return lessonDate ? isSameDay(lessonDate, day) : false
+			})
+			.sort((left, right) => toTimeValue(left?.startAt) - toTimeValue(right?.startAt)),
+	})), [weekDays, weeklySourceLessons])
+
+	const weekRangeLabel = useMemo(() => (
+		`${formatDate(weekDays[0], { year: 'numeric', month: '2-digit', day: '2-digit' })} ~ ${formatDate(weekDays[6], { month: '2-digit', day: '2-digit' })}`
+	), [weekDays])
+
+	const isTutor = hasRole('ROLE_TUTOR') || hasRole('ROLE_TUTOR_PENDING')
+	const profileName = profile?.name || profile?.nickname || '-'
+	const profileEmail = profile?.email || '-'
+	const profileHeadline = profile?.headline || '등록된 한 줄 소개가 없습니다.'
+	const profileBio = profile?.bio || profile?.selfIntro || '등록된 소개가 없습니다.'
+	const profileVideoUrl = toEmbedVideoUrl(profile?.videoUrl)
 
 	if (authLoading || loading) {
 		return (
 			<Layout>
-				<div className='flex min-h-[60vh] items-center justify-center'>
-					<div className='h-10 w-10 animate-spin rounded-full border-4 border-[#4f46e5] border-t-transparent' />
-				</div>
+				<section className='bg-[#f8fafc] py-12'>
+					<div className='mx-auto flex min-h-[50vh] w-full max-w-[1140px] items-center justify-center px-3'>
+						<div className='h-10 w-10 animate-spin rounded-full border-4 border-[#4f46e5] border-t-transparent' />
+					</div>
+				</section>
 			</Layout>
 		)
 	}
@@ -134,29 +279,35 @@ const TutorMyPage = () => {
 	if (!isLogin) {
 		return (
 			<Layout>
-				<div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>
-					<div className='text-5xl'>??</div>
-					<h2 className='text-2xl font-bold text-slate-900'>로그인이 필요합니다</h2>
-					<p className='text-slate-500'>튜터 마이페이지를 이용하려면 로그인 후 접근해 주세요.</p>
-					<Link to='/login' className='mt-2 rounded-xl bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338ca]'>
-						로그인하기
-					</Link>
-				</div>
+				<section className='bg-[#f8fafc] py-12'>
+					<div className='mx-auto w-full max-w-[1140px] px-3'>
+						<div className='rounded-[18px] border border-[#e5e7eb] bg-white px-6 py-16 text-center shadow-sm'>
+							<h2 className='text-2xl font-bold text-slate-900'>로그인이 필요합니다</h2>
+							<p className='mt-2 text-slate-500'>튜터 마이페이지는 로그인 후 이용할 수 있습니다.</p>
+							<Link to='/login' className='mt-6 inline-flex h-[38px] items-center rounded-md bg-[#4f46e5] px-5 text-sm font-semibold text-white hover:bg-[#4338ca]'>
+								로그인하기
+							</Link>
+						</div>
+					</div>
+				</section>
 			</Layout>
 		)
 	}
 
-	if (!hasRole('ROLE_TUTOR') && !hasRole('ROLE_TUTOR_PENDING')) {
+	if (!isTutor) {
 		return (
 			<Layout>
-				<div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>
-					<div className='text-5xl'>??</div>
-					<h2 className='text-2xl font-bold text-slate-900'>접근 권한이 없습니다</h2>
-					<p className='text-slate-500'>튜터 마이페이지는 튜터 계정에서만 이용 가능합니다.</p>
-					<Link to='/member/mypage' className='mt-2 rounded-xl bg-slate-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-800'>
-						회원 마이페이지로
-					</Link>
-				</div>
+				<section className='bg-[#f8fafc] py-12'>
+					<div className='mx-auto w-full max-w-[1140px] px-3'>
+						<div className='rounded-[18px] border border-[#e5e7eb] bg-white px-6 py-16 text-center shadow-sm'>
+							<h2 className='text-2xl font-bold text-slate-900'>접근 권한이 없습니다</h2>
+							<p className='mt-2 text-slate-500'>튜터 계정에서만 접근 가능합니다.</p>
+							<Link to='/member/mypage' className='mt-6 inline-flex h-[38px] items-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50'>
+								회원 마이페이지로
+							</Link>
+						</div>
+					</div>
+				</section>
 			</Layout>
 		)
 	}
@@ -164,285 +315,313 @@ const TutorMyPage = () => {
 	if (error) {
 		return (
 			<Layout>
-				<div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>
-					<div className='text-5xl'>??</div>
-					<h2 className='text-2xl font-bold text-slate-900'>오류가 발생했습니다</h2>
-					<p className='text-slate-500'>{error}</p>
-					<button
-						type='button'
-						onClick={() => window.location.reload()}
-						className='mt-2 rounded-xl bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338ca]'
-					>
-						다시 시도
-					</button>
-				</div>
+				<section className='bg-[#f8fafc] py-12'>
+					<div className='mx-auto w-full max-w-[1140px] px-3'>
+						<div className='rounded-[18px] border border-[#e5e7eb] bg-white px-6 py-16 text-center shadow-sm'>
+							<h2 className='text-2xl font-bold text-slate-900'>오류가 발생했습니다</h2>
+							<p className='mt-2 text-slate-500'>{error}</p>
+							<button
+								type='button'
+								onClick={() => window.location.reload()}
+								className='mt-6 inline-flex h-[38px] items-center rounded-md bg-[#4f46e5] px-5 text-sm font-semibold text-white hover:bg-[#4338ca]'
+							>
+								다시 시도
+							</button>
+						</div>
+					</div>
+				</section>
 			</Layout>
 		)
 	}
 
-	const profile = mypage?.tutorProfile
-
 	return (
 		<Layout>
-			<div className='mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8'>
-				{/* 페이지 헤더 */}
-				<div className='mb-8'>
-					<h1 className='text-2xl font-extrabold text-slate-900'>튜터 마이페이지</h1>
-					<p className='mt-1 text-sm text-slate-500'>수업 현황 및 튜터 프로필을 관리합니다.</p>
-				</div>
+			<section className='bg-[#f8fafc] py-12'>
+				<div className='mx-auto w-full max-w-[1140px] px-3'>
+					<div className='mb-6 rounded-md border-l-4 border-[#4f46e5] bg-[#f8f9fa] p-4'>
+						<h2 className='mb-1 text-[1.75rem] font-bold text-slate-900'>튜터 마이페이지</h2>
+						<p className='mb-0 text-sm text-slate-500'>프로필과 활동 내역을 관리하세요</p>
+					</div>
 
-				<div className='grid gap-6 lg:grid-cols-[300px_1fr]'>
-					{/* ── 왼쪽 컬럼 ── */}
-					<aside className='flex flex-col gap-4'>
-						{/* 프로필 카드 */}
-						<div className='rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm'>
-							<div className='mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full bg-indigo-100'>
-								{profile?.profileImg ? (
-									<img
-										src={profile.profileImg}
-										alt='프로필'
-										className='h-full w-full object-cover'
-									/>
-								) : (
-									<div className='flex h-full w-full items-center justify-center text-4xl'>?????</div>
-								)}
-							</div>
+					<div className='grid gap-6 lg:grid-cols-12'>
+						<aside className='space-y-3 lg:col-span-4'>
+							<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+								<div className='p-7 text-center'>
+									<div className='mx-auto mb-3 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#eef2ff]'>
+										{profile?.profileImg ? (
+											<img src={profile.profileImg} alt='프로필 이미지' className='h-full w-full object-cover' />
+										) : (
+											<img src={defaultProfileImage} alt='기본 프로필 이미지' className='h-full w-full object-cover' />
+										)}
+									</div>
+									<h3 className='mb-1 text-lg font-bold text-slate-900'>{profileName}</h3>
+									<p className='mb-3 text-sm text-slate-500'>{profileEmail}</p>
 
-							<h2 className='text-lg font-bold text-slate-900'>{profile?.name || '-'}</h2>
-							{profile?.headline && (
-								<p className='mt-1 text-sm text-slate-500'>{profile.headline}</p>
-							)}
-
-							<div className='mt-2 flex items-center justify-center gap-2'>
-								{profile?.verified ? (
-									<span className='rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-700'>? 인증 튜터</span>
-								) : (
-									<span className='rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-semibold text-yellow-700'>승인 대기</span>
-								)}
-							</div>
-
-							<div className='mt-3 flex justify-center'>
-								<StarRating rating={stats.ratingAvg} />
-							</div>
-							<div className='mt-0.5 text-xs text-slate-400'>리뷰 {stats.reviewCount}개</div>
-
-							{/* 언어 분야 */}
-							{languageFields.length > 0 && (
-								<div className='mt-4 flex flex-wrap justify-center gap-1.5'>
-									{languageFields.map((field) => (
-										<span
-											key={field.id}
-											className='rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700'
-										>
-											{field.name}
-										</span>
-									))}
-								</div>
-							)}
-
-							<div className='mt-4 text-sm text-slate-500'>{profile?.email || '-'}</div>
-
-							<div className='mt-4 flex flex-col gap-2'>
-								<Link
-									to='/tutor/profile-edit'
-									className='w-full rounded-xl bg-[#4f46e5] py-2 text-sm font-semibold text-white hover:bg-[#4338ca]'
-								>
-									프로필 수정
-								</Link>
-								<Link
-									to='/tutor/dashboard'
-									className='w-full rounded-xl border border-slate-200 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50'
-								>
-									대시보드
-								</Link>
-							</div>
-						</div>
-
-						{/* 오늘의 예정 수업 요약 */}
-						{upcomingLessons.length > 0 && (
-							<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
-								<h3 className='mb-3 font-bold text-slate-800'>다가오는 수업</h3>
-								<div className='flex flex-col gap-2'>
-									{upcomingLessons.slice(0, 2).map((lesson) => (
-										<LessonCard key={lesson.bookingId} lesson={lesson} compact />
-									))}
-									{upcomingLessons.length > 2 && (
-										<button
-											type='button'
-											onClick={() => setActiveTab('upcoming')}
-											className='text-center text-xs font-semibold text-[#4f46e5] hover:underline'
-										>
-											+ {upcomingLessons.length - 2}개 더 보기
-										</button>
+									{languageFields.length > 0 && (
+										<div className='mb-3 flex flex-wrap justify-center gap-2'>
+											{languageFields.map((field) => (
+												<span key={field.id || field.name} className='rounded-full bg-[#4f46e5] px-2.5 py-1 text-xs font-semibold text-white'>
+													{field.name}
+												</span>
+											))}
+										</div>
 									)}
+
+									<div className='mb-3'>
+										<span className='text-base text-amber-400'>{renderStars(stats.ratingAvg)}</span>
+										<span className='ml-1 text-sm font-semibold text-slate-700'>{Number(stats.ratingAvg || 0).toFixed(1)}</span>
+										<span className='ml-1 text-xs text-slate-500'>({stats.reviewCount} 리뷰)</span>
+									</div>
+
+									<Link to='/tutor/profile-edit' className='inline-flex h-[38px] w-full items-center justify-center rounded-md bg-[#4f46e5] px-4 text-sm font-semibold text-white hover:bg-[#4338ca]'>
+										튜터 정보 수정
+									</Link>
 								</div>
 							</div>
-						)}
-					</aside>
 
-					{/* ── 오른쪽 컬럼 ── */}
-					<div className='flex flex-col gap-6'>
-						{/* 통계 카드 4개 */}
-						<div className='grid grid-cols-2 gap-4 sm:grid-cols-4'>
-							<StatCard label='총 수업' value={stats.totalLessons} unit='회' color='indigo' />
-							<StatCard label='활성 학생' value={stats.activeStudents} unit='명' color='emerald' />
-							<StatCard label='누적 수익' value={formatCurrency(stats.totalEarnings)} color='amber' />
-							<StatCard label='평점' value={Number(stats.ratingAvg || 0).toFixed(1)} unit='/ 5.0' color='rose' />
-						</div>
+							<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+								{profileVideoUrl && (
+									<div className='overflow-hidden rounded-t-[18px] border-b border-slate-200'>
+										<div className='relative w-full overflow-hidden pb-[56.25%]'>
+											<iframe
+												title='튜터 소개 영상'
+												src={profileVideoUrl}
+												className='absolute left-0 top-0 h-full w-full'
+												allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+												allowFullScreen
+											/>
+										</div>
+									</div>
+								)}
+								<div className='space-y-4 p-7'>
+									<div>
+										<h4 className='mb-2 text-sm font-bold text-slate-900'>한 줄 소개</h4>
+										<p className='mb-0 text-sm text-slate-500'>{profileHeadline}</p>
+									</div>
+									<div>
+										<h4 className='mb-2 text-sm font-bold text-slate-900'>소개</h4>
+										<p className='mb-0 whitespace-pre-wrap text-sm text-slate-500'>{profileBio}</p>
+									</div>
+								</div>
+							</div>
+						</aside>
 
-						{/* 탭 패널 */}
-						<div className='rounded-2xl border border-slate-200 bg-white shadow-sm'>
-							{/* 탭 헤더 */}
-							<div className='flex border-b border-slate-200'>
-								{tabItems.map((tab) => (
-									<button
-										key={tab.key}
-										type='button'
-										onClick={() => setActiveTab(tab.key)}
-										className={`flex-1 px-4 py-3 text-sm font-semibold transition-colors ${
-											activeTab === tab.key
-												? 'border-b-2 border-[#4f46e5] text-[#4f46e5]'
-												: 'text-slate-500 hover:text-slate-800'
-										}`}
-									>
-										{tab.label}
-									</button>
-								))}
+						<div className='space-y-4 lg:col-span-8'>
+							<div className='flex flex-col gap-3 sm:flex-row'>
+								<StatCard icon={classIcon} alt='총 수업' value={stats.totalLessons} label='총 수업' valueClassName='text-[#4f46e5]' />
+								<StatCard icon={moneyIcon} alt='총 수익' value={formatCurrency(stats.totalEarnings)} label='총 수익 (원)' valueClassName='text-emerald-600' />
+								<StatCard icon={studentIcon} alt='활성 학생' value={stats.activeStudents} label='활성 학생' valueClassName='text-sky-600' />
 							</div>
 
-							{/* 탭 콘텐츠 */}
-							<div className='p-5'>
-								{/* 예정 수업 탭 */}
-								{activeTab === 'upcoming' && (
-									<div className='flex flex-col gap-3'>
-										{upcomingLessons.length === 0 ? (
-											<EmptyState message='예정된 수업이 없습니다.' />
-										) : (
-											upcomingLessons.map((lesson) => (
-												<LessonCard key={lesson.bookingId} lesson={lesson} />
-											))
-										)}
+							<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+								<div className='flex flex-wrap items-center justify-between gap-2 p-5'>
+									<div>
+										<h3 className='mb-1 text-sm font-bold text-slate-900'>AI 수업 도우미</h3>
+										<p className='mb-0 text-sm text-slate-500'>수업 요약과 과제 초안을 빠르게 작성할 수 있습니다.</p>
 									</div>
-								)}
-
-								{/* 지난 수업 탭 */}
-								{activeTab === 'past' && (
-									<div className='flex flex-col gap-3'>
-										{pastLessons.length === 0 ? (
-											<EmptyState message='지난 수업 내역이 없습니다.' />
-										) : (
-											pastLessons.map((lesson) => (
-												<LessonCard key={lesson.bookingId} lesson={lesson} />
-											))
-										)}
+									<div className='flex gap-2'>
+										<Link to='/tutor/dashboard' className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
+											AI 수업 요약
+										</Link>
+										<Link to='/tutor/dashboard' className='inline-flex h-[31px] items-center rounded-md bg-[#4f46e5] px-3 text-xs font-semibold text-white hover:bg-[#4338ca]'>
+											AI 과제 초안
+										</Link>
 									</div>
-								)}
+								</div>
+							</div>
 
-								{/* 수강생 리뷰 탭 */}
-								{activeTab === 'reviews' && (
-									<div className='flex flex-col gap-4'>
-										{tutorReviews.length === 0 ? (
-											<EmptyState message='아직 받은 리뷰가 없습니다.' />
-										) : (
-											tutorReviews.map((review) => (
-												<div key={review.reviewId} className='rounded-xl border border-slate-100 bg-slate-50 p-4'>
-													<div className='flex items-start justify-between gap-2'>
-														<div className='font-semibold text-slate-800'>{review.studentName || '익명'}</div>
-														<StarRating rating={review.rating} />
-													</div>
-													{review.content && (
-														<p className='mt-2 text-sm text-slate-600'>{review.content}</p>
-													)}
-													<div className='mt-2 text-xs text-slate-400'>
-														{formatDate(review.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}
-													</div>
+							<div>
+								<div className='mb-3 flex flex-wrap border-b border-slate-200'>
+									{tabItems.map((tab) => (
+										<button
+											key={tab.key}
+											type='button'
+											onClick={() => setActiveTab(tab.key)}
+											className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold transition ${activeTab === tab.key ? 'border-[#4f46e5] text-[#4f46e5]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+										>
+											{tab.label}
+										</button>
+									))}
+								</div>
+
+								{activeTab === 'schedule' && (
+									<div className='space-y-3'>
+										<div className='rounded-[18px] border border-[#e5e7eb] bg-white p-5 shadow-sm'>
+											<div className='flex flex-wrap items-center justify-between gap-2'>
+												<div>
+													<strong className='text-sm text-slate-900'>스케줄 관리 방식 선택</strong>
+													<p className='mb-0 mt-1 text-sm text-slate-500'>이번 주만 수정하거나 전체 스케줄을 수정할 수 있습니다.</p>
 												</div>
-											))
-										)}
+												<Link to='/tutor/schedule-edit' className='inline-flex h-[31px] items-center rounded-md border border-[#4f46e5] px-3 text-xs font-semibold text-[#4f46e5] hover:bg-indigo-50'>
+													이번 주 편집
+												</Link>
+											</div>
+										</div>
+
+										<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+											<div className='p-6'>
+												<h4 className='mb-3 text-sm font-bold text-slate-900'>다가오는 수업</h4>
+												<div className='grid gap-2'>
+													{upcomingLessons.length === 0
+														? <EmptyPanel message='다가오는 수업이 없습니다.' />
+														: upcomingLessons.map((lesson) => <LessonListItem key={lesson.bookingId || `${lesson.studentId}-${lesson.startAt}`} lesson={lesson} />)
+													}
+												</div>
+											</div>
+										</div>
+
+										<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+											<div className='p-6'>
+												<h4 className='mb-3 text-sm font-bold text-slate-900'>지난 수업</h4>
+												<div className='grid gap-2'>
+													{pastLessons.length === 0
+														? <EmptyPanel message='지난 수업 내역이 없습니다.' />
+														: pastLessons.map((lesson) => <LessonListItem key={lesson.bookingId || `${lesson.studentId}-${lesson.startAt}`} lesson={lesson} muted />)
+													}
+												</div>
+											</div>
+										</div>
 									</div>
 								)}
 
-								{/* 수익 현황 탭 */}
+								{activeTab === 'reviews' && (
+									<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+										<div className='p-6'>
+											<h4 className='mb-3 text-sm font-bold text-slate-900'>최근 리뷰</h4>
+											<div className='grid gap-3'>
+												{tutorReviews.length === 0 ? (
+													<EmptyPanel message='아직 받은 리뷰가 없습니다.' />
+												) : tutorReviews.map((review) => (
+													<div key={review.reviewId || `${review.studentId}-${review.createdAt}`} className='rounded-[14px] bg-[#f8f9fa] p-4'>
+														<div className='mb-2 flex items-center justify-between gap-2'>
+															<div className='text-sm font-semibold text-slate-900'>{resolveReviewWriter(review)}</div>
+															<div className='text-sm text-amber-500'>{renderStars(review.rating)}</div>
+														</div>
+														<p className='mb-1 text-sm text-slate-700'>{review.content || '-'}</p>
+														<div className='text-xs text-slate-500'>
+															{formatDate(review.createdAt, { year: 'numeric', month: '2-digit', day: '2-digit' })}
+														</div>
+													</div>
+												))}
+											</div>
+										</div>
+									</div>
+								)}
+
 								{activeTab === 'earnings' && (
-									<div className='flex flex-col gap-3'>
-										{monthlyEarnings.length === 0 ? (
-											<EmptyState message='수익 데이터가 없습니다.' />
-										) : (
-											<>
+									<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+										<div className='p-6'>
+											<h4 className='mb-3 text-sm font-bold text-slate-900'>월별 수익</h4>
+											{monthlyEarnings.length === 0 ? (
+												<EmptyPanel message='수익 데이터가 없습니다.' />
+											) : (
 												<div className='overflow-x-auto'>
-													<table className='w-full text-sm'>
+													<table className='min-w-full text-sm'>
 														<thead>
 															<tr className='border-b border-slate-200 text-left text-slate-500'>
-																<th className='pb-2 font-semibold'>월</th>
-																<th className='pb-2 font-semibold'>수업 수</th>
-																<th className='pb-2 font-semibold'>총 시간</th>
-																<th className='pb-2 font-semibold'>수익</th>
-																<th className='pb-2 font-semibold'>평균 단가</th>
+																<th className='pb-2 pr-3 font-semibold'>월</th>
+																<th className='pb-2 pr-3 font-semibold'>수업 수</th>
+																<th className='pb-2 pr-3 font-semibold'>총 시간</th>
+																<th className='pb-2 text-right font-semibold'>수익</th>
 															</tr>
 														</thead>
 														<tbody>
 															{monthlyEarnings.map((row) => (
 																<tr key={row.yearMonth} className='border-b border-slate-100 last:border-0'>
-																	<td className='py-2.5 font-medium text-slate-800'>{row.yearMonth}</td>
-																	<td className='py-2.5 text-slate-600'>{row.lessonCount ?? '-'}회</td>
-																	<td className='py-2.5 text-slate-600'>{row.totalHours ? `${Number(row.totalHours).toFixed(1)}h` : '-'}</td>
-																	<td className='py-2.5 font-semibold text-indigo-700'>{formatCurrency(row.totalEarnings)}</td>
-																	<td className='py-2.5 text-slate-600'>{formatCurrency(row.avgLessonPrice)}</td>
+																	<td className='py-2.5 pr-3 text-slate-800'>{formatYearMonth(row.yearMonth)}</td>
+																	<td className='py-2.5 pr-3 text-slate-700'>{row.lessonCount ?? 0}회</td>
+																	<td className='py-2.5 pr-3 text-slate-700'>{formatHours(row.totalHours)}</td>
+																	<td className='py-2.5 text-right font-semibold text-emerald-600'>{formatCurrency(row.totalEarnings)}</td>
 																</tr>
 															))}
 														</tbody>
 													</table>
 												</div>
-												<div className='mt-2 rounded-xl bg-indigo-50 px-4 py-3 text-sm'>
-													<span className='font-semibold text-indigo-700'>누적 총 수익: </span>
-													<span className='text-slate-700'>{formatCurrency(stats.totalEarnings)}</span>
+											)}
+										</div>
+									</div>
+								)}
+
+								{activeTab === 'weekly' && (
+									<div className='rounded-[18px] border border-[#e5e7eb] bg-white shadow-sm'>
+										<div className='p-6'>
+											<h4 className='mb-3 text-sm font-bold text-slate-900'>주간 스케줄</h4>
+
+											<div className='mb-3 flex flex-wrap items-center gap-2'>
+												<label htmlFor='weeklyStudentFilter' className='text-sm text-slate-500'>학생 필터</label>
+												<select
+													id='weeklyStudentFilter'
+													value={selectedStudentKey}
+													onChange={(event) => setSelectedStudentKey(event.target.value)}
+													className='h-[31px] w-full max-w-[220px] rounded-md border border-slate-300 px-3 text-sm focus:border-[#4f46e5] focus:outline-none'
+												>
+													<option value=''>전체 학생</option>
+													{studentOptions.map((student) => (
+														<option key={student.value} value={student.value}>{student.label}</option>
+													))}
+												</select>
+											</div>
+
+											<div className='mb-3 rounded-[12px] border border-slate-200 px-3 py-2 text-sm text-slate-500'>
+												예약된 시간에 마우스를 올리면 학생/수업 정보를 볼 수 있습니다.
+											</div>
+
+											<div className='mb-3 flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-3 py-2'>
+												<button
+													type='button'
+													onClick={() => setWeekOffset((prev) => prev - 1)}
+													className='flex h-[34px] w-[34px] items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50'
+												>
+													&lt;
+												</button>
+												<div className='rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-[#4f46e5]'>
+													{weekRangeLabel}
 												</div>
-											</>
-										)}
+												<button
+													type='button'
+													onClick={() => setWeekOffset((prev) => prev + 1)}
+													className='flex h-[34px] w-[34px] items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50'
+												>
+													&gt;
+												</button>
+											</div>
+
+											<div className='grid gap-2 lg:grid-cols-7'>
+												{weeklyByDay.map(({ day, items }) => (
+													<div key={day.toISOString()} className='rounded-[14px] border border-slate-200 bg-slate-50 p-2.5'>
+														<div className='mb-2 border-b border-slate-200 pb-1.5 text-center'>
+															<div className='text-sm font-bold text-slate-900'>{formatDate(day, { weekday: 'short' })}</div>
+															<div className='text-xs text-slate-500'>{formatDate(day, { month: '2-digit', day: '2-digit' })}</div>
+														</div>
+														<div className='space-y-1.5'>
+															{items.length === 0 ? (
+																<div className='rounded-lg bg-white px-2 py-3 text-center text-xs text-slate-400'>-</div>
+															) : items.map((lesson) => (
+																<div key={lesson.bookingId || `${lesson.studentId}-${lesson.startAt}`} className='rounded-lg bg-white px-2 py-2 text-xs ring-1 ring-slate-200'>
+																	<div className='font-semibold text-slate-900'>{lesson.studentName || '-'}</div>
+																	<div className='text-slate-600'>{lesson.subject || '수업'}</div>
+																	<div className='mt-0.5 font-medium text-rose-500'>● {formatDate(lesson.startAt, { hour: '2-digit', minute: '2-digit', hour12: false })}</div>
+																</div>
+															))}
+														</div>
+													</div>
+												))}
+											</div>
+
+											<small className='mt-2 block text-sm text-slate-500'>
+												<span className='rounded-full bg-[#4f46e5] px-2 py-0.5 text-xs font-semibold text-white'>●</span> 수업 가능
+												<span className='ml-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold text-white'>●</span> 예약됨
+											</small>
+										</div>
 									</div>
 								)}
 							</div>
 						</div>
-
-						{/* 자기소개 카드 */}
-						{profile?.selfIntro && (
-							<div className='rounded-2xl border border-slate-200 bg-white p-5 shadow-sm'>
-								<h3 className='mb-2 font-bold text-slate-800'>자기소개</h3>
-								<p className='whitespace-pre-wrap text-sm text-slate-600'>{profile.selfIntro}</p>
-							</div>
-						)}
 					</div>
 				</div>
-			</div>
+			</section>
 		</Layout>
 	)
 }
 
-const StatCard = ({ label, value, unit, color }) => {
-	const colorMap = {
-		indigo: 'bg-indigo-50 text-indigo-700',
-		emerald: 'bg-emerald-50 text-emerald-700',
-		amber: 'bg-amber-50 text-amber-700',
-		rose: 'bg-rose-50 text-rose-700',
-	}
-	return (
-		<div className={`rounded-2xl p-4 ${colorMap[color] ?? 'bg-slate-50 text-slate-700'}`}>
-			<div className='text-xs font-medium opacity-70'>{label}</div>
-			<div className='mt-1 text-xl font-extrabold'>
-				{value}
-				{unit && <span className='ml-1 text-sm font-medium opacity-60'>{unit}</span>}
-			</div>
-		</div>
-	)
-}
-
-const EmptyState = ({ message }) => (
-	<div className='py-10 text-center text-slate-400'>
-		<div className='text-3xl'>??</div>
-		<p className='mt-2 text-sm'>{message}</p>
-	</div>
-)
-
 export default TutorMyPage
-
-
