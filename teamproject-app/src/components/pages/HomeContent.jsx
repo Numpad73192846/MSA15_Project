@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import {
 	ArrowRight,
@@ -130,10 +129,10 @@ const Home = () => {
 						<div className='text-center'>
 							<h3 className='mb-4 text-[1.75rem] font-bold text-slate-900'>카테고리별로 찾기</h3>
 							<div className='flex flex-wrap justify-center gap-2'>
-								{categories.map(({ name, Icon }) => (
-									<Link key={name} to='/tutors' className='category-badge inline-flex items-center'>
-										<Icon className='mr-2 h-4 w-4' strokeWidth={2.1} />
-										{name}
+								{categories.map((category) => (
+									<Link key={category.name} to='/tutors' className='category-badge inline-flex items-center'>
+										<category.Icon className='mr-2 h-4 w-4' strokeWidth={2.1} />
+										{category.name}
 									</Link>
 								))}
 							</div>

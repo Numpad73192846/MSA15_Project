@@ -1,5 +1,5 @@
-﻿import React, { useContext } from 'react'
-import { LoginContext } from '../context/LoginContextProvider'
+﻿import { useContext } from 'react'
+import LoginContext from '../context/LoginContext'
 
 const useAuth = () => {
 
@@ -14,3 +14,4 @@ const useAuth = () => {
 }
 
 export default useAuth
+

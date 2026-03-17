@@ -1,8 +1,8 @@
-﻿import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../../services/api";
+﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../../services/api'
+import LoginContext from './LoginContext'
 
-export const LoginContext = createContext()
 
 const LoginContextProvider = ({ children }) => {
 
@@ -120,3 +120,5 @@ const LoginContextProvider = ({ children }) => {
 }
 
 export default LoginContextProvider
+
+

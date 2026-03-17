@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import Layout from '../common/Layout'
+import AdminLayout from '../common/AdminLayout'
 import api from '../../services/api'
 import useAuth from '../../utils/hooks/useAuth'
 
@@ -100,38 +100,38 @@ const AdminContent = () => {
 
 	if (authLoading || loading) {
 		return (
-			<Layout>
+			<AdminLayout>
 				<div className='flex min-h-[60vh] items-center justify-center'>
 					<div className='h-10 w-10 animate-spin rounded-full border-4 border-[#4f46e5] border-t-transparent' />
 				</div>
-			</Layout>
+			</AdminLayout>
 		)
 	}
 
 	if (!isLogin) {
 		return (
-			<Layout>
+			<AdminLayout>
 				<div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>
 					<h2 className='text-2xl font-bold text-slate-900'>로그인이 필요합니다</h2>
 					<Link to='/login' className='rounded-xl bg-[#4f46e5] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#4338ca]'>로그인하기</Link>
 				</div>
-			</Layout>
+			</AdminLayout>
 		)
 	}
 
 	if (!hasRole('ROLE_ADMIN')) {
 		return (
-			<Layout>
+			<AdminLayout>
 				<div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>
 					<h2 className='text-2xl font-bold text-slate-900'>관리자 권한이 필요합니다</h2>
 					<Link to='/' className='rounded-xl border border-slate-300 px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50'>홈으로 이동</Link>
 				</div>
-			</Layout>
+			</AdminLayout>
 		)
 	}
 
 	return (
-		<Layout>
+		<AdminLayout>
 			<section className='bg-[#f8fafc] px-4 py-10'>
 				<div className='mx-auto max-w-7xl'>
 					<div className='mb-6 flex items-center justify-between gap-3'>
@@ -250,7 +250,7 @@ const AdminContent = () => {
 					</div>
 				</div>
 			</section>
-		</Layout>
+		</AdminLayout>
 	)
 }
 

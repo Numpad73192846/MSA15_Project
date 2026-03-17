@@ -37,7 +37,8 @@ function App() {
           <Route path='/login' element={ <Auth initialTab='login' /> } />
           <Route path='/join' element={ <Auth initialTab='signup' /> } />
           <Route path='/about' element={ <About /> } />
-          <Route path='/guide' element={ <Guide /> } />
+          <Route path='/guide' element={ <TutorGuide /> } />
+          <Route path='/guide/overview' element={ <Guide /> } />
           <Route path='/guide/tutor-guide' element={ <TutorGuide /> } />
           <Route path='/guide/language' element={ <LanguageGuide /> } />
           <Route path='/guide/policies' element={ <Policies /> } />

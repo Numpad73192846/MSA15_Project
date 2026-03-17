@@ -18,15 +18,6 @@ const formatDate = (value, options) => {
 	return new Intl.DateTimeFormat('ko-KR', options).format(date)
 }
 
-const formatDateTime = (value) => formatDate(value, {
-	year: 'numeric',
-	month: '2-digit',
-	day: '2-digit',
-	hour: '2-digit',
-	minute: '2-digit',
-	hour12: false,
-})
-
 const formatCurrency = (value) => {
 	const amount = Number(value || 0)
 	return `${amount.toLocaleString('ko-KR')}원`
