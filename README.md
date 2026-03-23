@@ -149,14 +149,18 @@
 <details>
   <summary>요구사항 정의서 보기</summary>
 
-  ![요구사항](여기에_이미지)
+  <p align="center">
+    <img src="./docs/images/2026-03-23 15 44 21.png" width="900">
+  </p>
 </details>
 
 ### 기능 정의서
 <details>
   <summary>기능 정의서 보기</summary>
-
-  ![요구사항](여기에_이미지)
+  
+  <p align="center">
+    <img src="./docs/images/2026-03-23 15 41 36.png" width="900">
+  </p>
 </details>
 
 ---
