@@ -192,6 +192,50 @@ teamproject/
   > [ERD 상세 보기 (Interactive)](https://numpad73192846.github.io/MSA15_Project/docs/erd/MSA15기_1조_튜터링고ERD.html)
 </details>
 
+### 간트 차트
+<details>
+  <summary>간트 차트 펼치기</summary>
+  ```mermaid
+  gantt
+      title 튜터링고 프로젝트 일정
+      dateFormat YYYY-MM-DD
+      axisFormat %m/%d
+      excludes weekends
+  
+      section 초기 설정
+      로그인/회원가입 UI      :a1, 2026-01-27, 2d
+      로그인 기능/권한 설정   :a2, 2026-01-27, 2d
+  
+      section 마이페이지
+      마이페이지 UI          :b1, 2026-01-29, 1d
+      마이페이지 데이터 연동  :b2, 2026-01-29, 2d
+      Thymeleaf 연동         :b3, 2026-01-30, 1d
+  
+      section 백엔드 연동
+      DTO/Mapper 구성       :c1, 2026-01-30, 2d
+      파일 업로드 처리       :c2, 2026-01-31, 2d
+      메인 페이지 구성       :c3, 2026-02-02, 1d
+  
+      section 예약/결제
+      캘린더 프론트         :d1, 2026-02-04, 1d
+      예약 API/스케줄러      :d2, 2026-02-04, 2d
+      캘린더 DB 연동        :d3, 2026-02-05, 1d
+      결제 기능 1차         :d4, 2026-02-05, 2d
+  
+      section 기능 개선
+      투두 리스트 개선      :e1, 2026-02-06, 2d
+      비디오 영역 수정      :e2, 2026-02-07, 1d
+      프로젝트 UI 개선      :e3, 2026-02-08, 2d
+  
+      section 마무리
+      계정 페이지 추가      :f1, 2026-02-09, 2d
+      소셜 로그인 완료      :f2, 2026-02-10, 2d
+      관리자 기능 구현      :f3, 2026-02-11, 2d
+      메인 UI 최종 수정     :f4, 2026-02-12, 1d
+      AI 기능 추가         :f5, 2026-02-12, 1d
+  ```
+</details>
+
 ---
 
 ## 6. 화면 UI
