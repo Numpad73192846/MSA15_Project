@@ -167,11 +167,106 @@
 
 ## 7. 화면 UI
 
-### 메인 화면
+## 7. 화면 UI
+
+### 1. 회원가입 / 로그인
+
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_이미지">
+  <img src="여기에_회원가입_이미지">
+  <img src="여기에_로그인_이미지">
+
+</details>
+
+---
+
+### 2. 메인 화면
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_메인_이미지">
+
+</details>
+
+---
+
+### 3. 튜터 검색 / 목록
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_검색_이미지">
+  <img src="여기에_목록_이미지">
+
+</details>
+
+---
+
+### 4. 튜터 상세
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_상세_이미지">
+
+</details>
+
+---
+
+### 5. 예약
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_예약_이미지">
+  <img src="여기에_스케줄_이미지">
+
+</details>
+
+---
+
+### 6. 결제
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_결제_이미지">
+
+</details>
+
+---
+
+### 7. 마이페이지
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_마이페이지_이미지">
+
+</details>
+
+---
+
+### 8. 리뷰
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_리뷰_이미지">
+
+</details>
+
+---
+
+### 9. 관리자 (선택)
+
+<details>
+  <summary>보기</summary>
+
+  <img src="여기에_관리자_이미지">
+
 </details>
 
 ---
