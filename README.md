@@ -156,8 +156,8 @@
     <img src="./images/erd.png" width="900">
   </p>
 
-  > 전체 ERD는 인터랙티브 화면으로 확인할 수 있습니다.
-  [ERD 상세 보기](./erd/튜터링고ERD.html)
+  > 전체 ERD는 인터랙티브 화면으로 확인할 수 있습니다.  
+  > [ERD 상세 보기](./docs/erd/MSA15기_1조_튜터링고ERD.html)
 </details>
 
 ### 요구사항 정의서
