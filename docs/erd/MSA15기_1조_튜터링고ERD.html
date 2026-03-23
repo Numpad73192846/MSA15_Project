@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>튜터 매칭 서비스 ERD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+            padding: 15px 30px;
+            z-index: 1000;
+            border-bottom: 1px solid #0f3460;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            color: #e94560;
+            font-weight: 600;
+        }
+
+        .header-info {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .header-info span {
+            margin-left: 20px;
+            padding: 4px 12px;
+            background: #0f3460;
+            border-radius: 12px;
+            color: #4fbdba;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls button {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: #0f3460;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .controls button:hover {
+            background: #e94560;
+            transform: scale(1.1);
+        }
+
+        .legend {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(15, 52, 96, 0.95);
+            padding: 15px 20px;
+            border-radius: 12px;
+            z-index: 1000;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            cursor: move;
+            user-select: none;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4fbdba;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 5000px;
+            height: 4000px;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        .canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .table {
+            position: absolute;
+            background: linear-gradient(180deg, #16213e 0%, #1a1a2e 100%);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            min-width: 220px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            cursor: move;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .table:hover {
+            box-shadow: 0 8px 30px rgba(233, 69, 96, 0.3);
+            border-color: #e94560;
+        }
+
+        .table-header {
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 7px 7px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-header .icon {
+            font-size: 0.75rem;
+        }
+
+        .table-body {
+            padding: 8px 0;
+        }
+
+        .column {
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+
+        .column:hover {
+            background: rgba(79, 189, 186, 0.1);
+        }
+
+        .column-name {
+            flex: 1;
+            color: #ddd;
+        }
+
+        .column-type {
+            color: #888;
+            font-size: 0.7rem;
+        }
+
+        .badge {
+            font-size: 0.6rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .badge-pk {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .badge-fk {
+            background: #4fbdba;
+            color: #1a1a2e;
+        }
+
+        .badge-uk {
+            background: #f39c12;
+            color: #1a1a2e;
+        }
+
+        .badge-idx {
+            background: #9b59b6;
+            color: #fff;
+        }
+
+        /* Table group colors */
+        .group-user .table-header { background: linear-gradient(135deg, #e94560, #c73e54); }
+        .group-tutor .table-header { background: linear-gradient(135deg, #4fbdba, #3d9997); }
+        .group-subject .table-header { background: linear-gradient(135deg, #f39c12, #d68910); }
+        .group-lesson .table-header { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .group-ai .table-header { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .group-message .table-header { background: linear-gradient(135deg, #1abc9c, #16a085); }
+        .group-payment .table-header { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .group-other .table-header { background: linear-gradient(135deg, #7f8c8d, #6c7a7b); }
+
+        svg.connections {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .connection {
+            stroke: #4fbdba;
+            stroke-width: 2.5;
+            fill: none;
+            opacity: 0.85;
+        }
+
+        .minimap {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(15, 52, 96, 0.9);
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid #e94560;
+            background: rgba(233, 69, 96, 0.1);
+            pointer-events: none;
+        }
+
+        .minimap-table {
+            position: absolute;
+            background: #4fbdba;
+            border-radius: 2px;
+        }
+
+        .search-box {
+            position: fixed;
+            top: 80px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .search-box input {
+            padding: 10px 15px;
+            border: 1px solid #0f3460;
+            border-radius: 20px;
+            background: #16213e;
+            color: #fff;
+            font-size: 0.85rem;
+            width: 200px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #4fbdba;
+            width: 250px;
+        }
+
+        .search-box input::placeholder {
+            color: #666;
+        }
+
+        .highlight {
+            animation: pulse 0.5s ease-in-out 3;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+            50% { box-shadow: 0 0 30px rgba(233, 69, 96, 0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 튜터 매칭 서비스 ERD</h1>
+        <div class="header-info">
+            DB: MySQL (matching)
+            <span>27 Tables</span>
+            <span>드래그로 이동 | 스크롤로 확대/축소</span>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="search" placeholder="🔍 테이블 검색...">
+    </div>
+
+    <div class="legend">
+        <div class="legend-title">테이블 그룹</div>
+        <div class="legend-item"><div class="legend-color" style="background:#e94560"></div>사용자/인증</div>
+        <div class="legend-item"><div class="legend-color" style="background:#4fbdba"></div>튜터 프로필</div>
+        <div class="legend-item"><div class="legend-color" style="background:#f39c12"></div>과목/분야</div>
+        <div class="legend-item"><div class="legend-color" style="background:#3498db"></div>수업/예약</div>
+        <div class="legend-item"><div class="legend-color" style="background:#9b59b6"></div>AI 기능</div>
+        <div class="legend-item"><div class="legend-color" style="background:#1abc9c"></div>메시징</div>
+        <div class="legend-item"><div class="legend-color" style="background:#e67e22"></div>결제</div>
+        <div class="legend-item"><div class="legend-color" style="background:#7f8c8d"></div>기타</div>
+    </div>
+
+    <div class="controls">
+        <button onclick="zoomIn()" title="확대">+</button>
+        <button onclick="zoomOut()" title="축소">−</button>
+        <button onclick="resetView()" title="초기화">⟲</button>
+    </div>
+
+    <div id="canvas">
+        <div class="canvas-bg"></div>
+        <svg class="connections" id="connections"></svg>
+    </div>
+
+    <script>
+        const tables = [
+            // 사용자/인증 그룹
+            {
+                name: 'users',
+                group: 'user',
+                x: 100,
+                y: 100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'username', type: 'VARCHAR(64)', uk: true },
+                    { name: 'password', type: 'VARCHAR(255)' },
+                    { name: 'name', type: 'VARCHAR(64)' },
+                    { name: 'nickname', type: 'VARCHAR(64)', uk: true },
+                    { name: 'profile_img', type: 'VARCHAR(255)', nullable: true },
+                    { name: 'status', type: 'ENUM' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'user_auth',
+                group: 'user',
+                x: 100,
+                y: 420,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'auth', type: 'VARCHAR(64)' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'persistent_logins',
+                group: 'user',
+                x: 100,
+                y: 650,
+                columns: [
+                    { name: 'series', type: 'VARCHAR(64)', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'username', type: 'VARCHAR(64)', idx: true },
+                    { name: 'token', type: 'VARCHAR(255)' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'refresh_token',
+                group: 'user',
+                x: 100,
+                y: 880,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'token_hash', type: 'VARCHAR(255)' },
+                    { name: 'expires_at', type: 'DATETIME', idx: true },
+                    { name: 'revoked_at', type: 'DATETIME', nullable: true },
+                    { name: 'user_agent', type: 'VARCHAR(255)', nullable: true },
+                    { name: 'ip', type: 'VARCHAR(64)', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+
+            // 튜터 프로필 그룹
+            {
+                name: 'tutor_profile',
+                group: 'tutor',
+                x: 400,
+                y: 100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id', uk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'phone', type: 'VARCHAR(20)', nullable: true },
+                    { name: 'headline', type: 'VARCHAR(100)', nullable: true },
+                    { name: 'bio', type: 'TEXT', nullable: true },
+                    { name: 'self_intro', type: 'TEXT', nullable: true },
+                    { name: 'video_url', type: 'VARCHAR(255)', nullable: true },
+                    { name: 'default_zoom_url', type: 'VARCHAR(255)', nullable: true },
+                    { name: 'bank_name', type: 'VARCHAR(50)', nullable: true },
+                    { name: 'account_number', type: 'VARCHAR(50)', nullable: true },
+                    { name: 'account_holder', type: 'VARCHAR(50)', nullable: true },
+                    { name: 'is_verified', type: 'BOOLEAN' },
+                    { name: 'rating_avg', type: 'DECIMAL(3,2)' },
+                    { name: 'review_count', type: 'INT' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_career',
+                group: 'tutor',
+                x: 400,
+                y: 550,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'company_name', type: 'VARCHAR(64)' },
+                    { name: 'job_category', type: 'VARCHAR(64)' },
+                    { name: 'job_role', type: 'VARCHAR(64)' },
+                    { name: 'start_year', type: 'INT' },
+                    { name: 'end_year', type: 'INT', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_education',
+                group: 'tutor',
+                x: 400,
+                y: 830,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'school_name', type: 'VARCHAR(64)' },
+                    { name: 'degree', type: 'VARCHAR(64)' },
+                    { name: 'start_year', type: 'INT' },
+                    { name: 'graduated_year', type: 'INT', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_document',
+                group: 'tutor',
+                x: 400,
+                y: 1100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'doc_type', type: 'VARCHAR(64)' },
+                    { name: 'file_size', type: 'INT' },
+                    { name: 'reviewed_by', type: 'VARCHAR(64)', nullable: true },
+                    { name: 'reviewed_at', type: 'DATETIME', nullable: true },
+                    { name: 'reject_reason', type: 'TEXT', nullable: true },
+                    { name: 'original_name', type: 'VARCHAR(100)', nullable: true },
+                    { name: 'store_name', type: 'VARCHAR(100)', nullable: true },
+                    { name: 'file_path', type: 'VARCHAR(255)' },
+                    { name: 'content_type', type: 'VARCHAR(64)' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_time_range',
+                group: 'tutor',
+                x: 680,
+                y: 550,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'start_at', type: 'TIME' },
+                    { name: 'end_at', type: 'TIME' },
+                    { name: 'day_of_week', type: 'ENUM' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'featured_tutor',
+                group: 'tutor',
+                x: 680,
+                y: 800,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'seq', type: 'INT' },
+                    { name: 'visible', type: 'BOOLEAN', idx: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+
+            // 과목/분야 그룹
+            {
+                name: 'subject_group',
+                group: 'subject',
+                x: 960,
+                y: 100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'name', type: 'VARCHAR(64)', idx: true },
+                    { name: 'seq', type: 'INT' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'subject',
+                group: 'subject',
+                x: 960,
+                y: 340,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'group_id', type: 'VARCHAR(64)', fk: 'subject_group.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'name', type: 'VARCHAR(64)', idx: true },
+                    { name: 'seq_in_group', type: 'INT' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'language_field',
+                group: 'subject',
+                x: 960,
+                y: 570,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'name', type: 'VARCHAR(64)', idx: true },
+                    { name: 'category', type: 'ENUM', idx: true },
+                    { name: 'seq', type: 'INT' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_subject',
+                group: 'subject',
+                x: 960,
+                y: 800,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'subject_id', type: 'VARCHAR(64)', fk: 'subject.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'seq', type: 'INT' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_field',
+                group: 'subject',
+                x: 960,
+                y: 1030,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'field_id', type: 'VARCHAR(64)', fk: 'language_field.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'seq', type: 'INT' },
+                    { name: 'created_at', type: 'TIMESTAMP' }
+                ]
+            },
+
+            // 수업/예약 그룹
+            {
+                name: 'lesson',
+                group: 'lesson',
+                x: 1260,
+                y: 100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'subject_id', type: 'VARCHAR(64)', fk: 'subject.id' },
+                    { name: 'field_id', type: 'VARCHAR(64)', fk: 'language_field.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'title', type: 'VARCHAR(100)' },
+                    { name: 'description', type: 'TEXT', nullable: true },
+                    { name: 'status', type: 'ENUM' },
+                    { name: 'price', type: 'DECIMAL(10,2)' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_availability',
+                group: 'lesson',
+                x: 1260,
+                y: 400,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'start_at', type: 'DATETIME', idx: true },
+                    { name: 'end_at', type: 'DATETIME' },
+                    { name: 'status', type: 'ENUM' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'booking',
+                group: 'lesson',
+                x: 1260,
+                y: 650,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'tutor_id', type: 'VARCHAR(64)', fk: 'users.id', nullable: true },
+                    { name: 'lesson_id', type: 'VARCHAR(64)', fk: 'lesson.id' },
+                    { name: 'availability_id', type: 'VARCHAR(64)', fk: 'tutor_availability.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'title', type: 'VARCHAR(100)' },
+                    { name: 'requested_at', type: 'DATETIME' },
+                    { name: 'confirmed_at', type: 'DATETIME', nullable: true },
+                    { name: 'canceled_at', type: 'DATETIME', nullable: true },
+                    { name: 'done_at', type: 'DATETIME', nullable: true },
+                    { name: 'paid_at', type: 'DATETIME', nullable: true },
+                    { name: 'memo', type: 'VARCHAR(255)', nullable: true },
+                    { name: 'zoom_join_url', type: 'VARCHAR(255)', nullable: true }
+                ]
+            },
+
+            // AI 기능 그룹
+            {
+                name: 'lesson_ai_summary',
+                group: 'ai',
+                x: 1560,
+                y: 100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'booking_id', type: 'VARCHAR(64)', fk: 'booking.id' },
+                    { name: 'tutor_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'student_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'model_name', type: 'VARCHAR(64)', nullable: true },
+                    { name: 'prompt_text', type: 'TEXT', nullable: true },
+                    { name: 'summary_text', type: 'TEXT' },
+                    { name: 'next_action', type: 'TEXT', nullable: true },
+                    { name: 'version', type: 'INT' },
+                    { name: 'status', type: 'ENUM', idx: true },
+                    { name: 'created_by', type: 'ENUM' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'lesson_ai_homework',
+                group: 'ai',
+                x: 1560,
+                y: 480,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'booking_id', type: 'VARCHAR(64)', fk: 'booking.id' },
+                    { name: 'summary_id', type: 'VARCHAR(64)', fk: 'lesson_ai_summary.id', nullable: true },
+                    { name: 'tutor_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'student_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'title', type: 'VARCHAR(200)' },
+                    { name: 'description', type: 'TEXT', nullable: true },
+                    { name: 'due_date', type: 'DATE', nullable: true },
+                    { name: 'status', type: 'ENUM', idx: true },
+                    { name: 'generated_by', type: 'ENUM' },
+                    { name: 'submission_text', type: 'TEXT', nullable: true },
+                    { name: 'feedback_text', type: 'TEXT', nullable: true },
+                    { name: 'submitted_at', type: 'DATETIME', nullable: true },
+                    { name: 'reviewed_at', type: 'DATETIME', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+
+            // 메시징 그룹
+            {
+                name: 'tutor_message',
+                group: 'message',
+                x: 1560,
+                y: 920,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'booking_id', type: 'VARCHAR(64)', fk: 'booking.id' },
+                    { name: 'tutor_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'student_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'sender_role', type: 'ENUM' },
+                    { name: 'content', type: 'VARCHAR(1000)' },
+                    { name: 'created_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'tutor_student_note',
+                group: 'message',
+                x: 1560,
+                y: 1170,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'tutor_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'student_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'progress', type: 'TEXT', nullable: true },
+                    { name: 'notes', type: 'TEXT', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+
+            // 결제 그룹
+            {
+                name: 'payment',
+                group: 'payment',
+                x: 1860,
+                y: 100,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'booking_id', type: 'VARCHAR(64)', fk: 'booking.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'amount', type: 'DECIMAL(10,2)' },
+                    { name: 'provider', type: 'VARCHAR(20)' },
+                    { name: 'status', type: 'VARCHAR(20)', nullable: true },
+                    { name: 'paid_at', type: 'DATETIME', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'toss_payment_order',
+                group: 'payment',
+                x: 1860,
+                y: 380,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'order_id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'tutor_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'tutor_name', type: 'VARCHAR(64)' },
+                    { name: 'booking_count', type: 'INT' },
+                    { name: 'total_amount', type: 'DECIMAL(10,2)' },
+                    { name: 'status', type: 'VARCHAR(20)', idx: true },
+                    { name: 'payment_key', type: 'VARCHAR(200)', nullable: true },
+                    { name: 'paid_at', type: 'DATETIME', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'toss_payment_order_item',
+                group: 'payment',
+                x: 1860,
+                y: 720,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'order_id', type: 'VARCHAR(64)', fk: 'toss_payment_order.order_id' },
+                    { name: 'booking_id', type: 'VARCHAR(64)', fk: 'booking.id' },
+                    { name: 'amount', type: 'DECIMAL(10,2)' },
+                    { name: 'created_at', type: 'TIMESTAMP' }
+                ]
+            },
+            {
+                name: 'review',
+                group: 'payment',
+                x: 1860,
+                y: 950,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'booking_id', type: 'VARCHAR(64)', fk: 'booking.id' },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'rating', type: 'TINYINT', nullable: true },
+                    { name: 'content', type: 'TEXT', nullable: true },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            },
+
+            // 기타 그룹
+            {
+                name: 'admin_inquiry',
+                group: 'other',
+                x: 680,
+                y: 1050,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'user_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'category', type: 'ENUM', idx: true },
+                    { name: 'title', type: 'VARCHAR(200)' },
+                    { name: 'contact_name', type: 'VARCHAR(64)', nullable: true },
+                    { name: 'contact_email', type: 'VARCHAR(128)', nullable: true },
+                    { name: 'contact_phone', type: 'VARCHAR(32)', nullable: true },
+                    { name: 'status', type: 'ENUM', idx: true },
+                    { name: 'created_at', type: 'TIMESTAMP', idx: true },
+                    { name: 'updated_at', type: 'TIMESTAMP' },
+                    { name: 'closed_at', type: 'DATETIME', nullable: true }
+                ]
+            },
+            {
+                name: 'admin_inquiry_message',
+                group: 'other',
+                x: 680,
+                y: 1380,
+                columns: [
+                    { name: 'no', type: 'BIGINT', pk: true },
+                    { name: 'id', type: 'VARCHAR(64)', uk: true },
+                    { name: 'inquiry_id', type: 'VARCHAR(64)', fk: 'admin_inquiry.id' },
+                    { name: 'sender_id', type: 'VARCHAR(64)', fk: 'users.id' },
+                    { name: 'sender_role', type: 'ENUM' },
+                    { name: 'content', type: 'VARCHAR(1000)' },
+                    { name: 'created_at', type: 'TIMESTAMP', idx: true }
+                ]
+            },
+            {
+                name: 'korean_proverb',
+                group: 'other',
+                x: 100,
+                y: 1180,
+                columns: [
+                    { name: 'no', type: 'INT', pk: true },
+                    { name: 'question', type: 'VARCHAR(255)' },
+                    { name: 'answer', type: 'VARCHAR(100)' },
+                    { name: 'option1', type: 'VARCHAR(100)' },
+                    { name: 'option2', type: 'VARCHAR(100)' },
+                    { name: 'option3', type: 'VARCHAR(100)' },
+                    { name: 'option4', type: 'VARCHAR(100)' },
+                    { name: 'meaning', type: 'TEXT', nullable: true },
+                    { name: 'difficulty', type: 'ENUM', idx: true },
+                    { name: 'is_active', type: 'BOOLEAN' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                    { name: 'updated_at', type: 'TIMESTAMP' }
+                ]
+            }
+        ];
+
+        // FK 관계 정의
+        const relations = [
+            { from: 'user_auth', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'refresh_token', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_profile', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_career', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_education', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_document', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_time_range', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'featured_tutor', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_availability', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'subject', to: 'subject_group', fromCol: 'group_id', toCol: 'id' },
+            { from: 'tutor_subject', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_subject', to: 'subject', fromCol: 'subject_id', toCol: 'id' },
+            { from: 'tutor_field', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'tutor_field', to: 'language_field', fromCol: 'field_id', toCol: 'id' },
+            { from: 'lesson', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'lesson', to: 'subject', fromCol: 'subject_id', toCol: 'id' },
+            { from: 'lesson', to: 'language_field', fromCol: 'field_id', toCol: 'id' },
+            { from: 'booking', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'booking', to: 'lesson', fromCol: 'lesson_id', toCol: 'id' },
+            { from: 'booking', to: 'tutor_availability', fromCol: 'availability_id', toCol: 'id' },
+            { from: 'lesson_ai_summary', to: 'booking', fromCol: 'booking_id', toCol: 'id' },
+            { from: 'lesson_ai_homework', to: 'booking', fromCol: 'booking_id', toCol: 'id' },
+            { from: 'lesson_ai_homework', to: 'lesson_ai_summary', fromCol: 'summary_id', toCol: 'id' },
+            { from: 'tutor_message', to: 'booking', fromCol: 'booking_id', toCol: 'id' },
+            { from: 'payment', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'payment', to: 'booking', fromCol: 'booking_id', toCol: 'id' },
+            { from: 'toss_payment_order', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'toss_payment_order_item', to: 'toss_payment_order', fromCol: 'order_id', toCol: 'order_id' },
+            { from: 'toss_payment_order_item', to: 'booking', fromCol: 'booking_id', toCol: 'id' },
+            { from: 'review', to: 'booking', fromCol: 'booking_id', toCol: 'id' },
+            { from: 'admin_inquiry', to: 'users', fromCol: 'user_id', toCol: 'id' },
+            { from: 'admin_inquiry_message', to: 'admin_inquiry', fromCol: 'inquiry_id', toCol: 'id' },
+            { from: 'admin_inquiry_message', to: 'users', fromCol: 'sender_id', toCol: 'id' }
+        ];
+
+        const canvas = document.getElementById('canvas');
+        const connectionsEl = document.getElementById('connections');
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let dragTarget = null;
+        let dragStartX, dragStartY;
+        let tableElements = {};
+
+        function renderTables() {
+            tables.forEach(table => {
+                const div = document.createElement('div');
+                div.className = `table group-${table.group}`;
+                div.id = `table-${table.name}`;
+                div.style.left = table.x + 'px';
+                div.style.top = table.y + 'px';
+
+                let columnsHtml = table.columns.map(col => {
+                    let badges = '';
+                    if (col.pk) badges += '<span class="badge badge-pk">PK</span>';
+                    if (col.fk) badges += '<span class="badge badge-fk">FK</span>';
+                    if (col.uk) badges += '<span class="badge badge-uk">UK</span>';
+                    if (col.idx) badges += '<span class="badge badge-idx">IDX</span>';
+
+                    return `
+                        <div class="column">
+                            ${badges}
+                            <span class="column-name">${col.name}</span>
+                            <span class="column-type">${col.type}${col.nullable ? ' NULL' : ''}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                div.innerHTML = `
+                    <div class="table-header">
+                        <span class="icon">📋</span>
+                        ${table.name}
+                    </div>
+                    <div class="table-body">
+                        ${columnsHtml}
+                    </div>
+                `;
+
+                canvas.appendChild(div);
+                tableElements[table.name] = div;
+
+                // 드래그 이벤트
+                div.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.table-body')) return;
+                    dragTarget = { el: div, table };
+                    dragStartX = e.clientX - table.x * scale;
+                    dragStartY = e.clientY - table.y * scale;
+                    e.stopPropagation();
+                });
+            });
+        }
+
+        function drawConnections() {
+            let svg = '';
+            const canvasRect = canvas.getBoundingClientRect();
+
+            relations.forEach(rel => {
+                const fromEl = tableElements[rel.from];
+                const toEl = tableElements[rel.to];
+
+                if (!fromEl || !toEl) return;
+
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+
+                const fromX = (fromRect.left + fromRect.width / 2 - canvasRect.left) / scale;
+                const fromY = (fromRect.top + fromRect.height / 2 - canvasRect.top) / scale;
+                const toX = (toRect.left + toRect.width / 2 - canvasRect.left) / scale;
+                const toY = (toRect.top + toRect.height / 2 - canvasRect.top) / scale;
+
+                // 베지어 곡선
+                const midX = (fromX + toX) / 2;
+                svg += `<path class="connection" d="M ${fromX} ${fromY} Q ${midX} ${fromY} ${midX} ${(fromY + toY) / 2} Q ${midX} ${toY} ${toX} ${toY}"/>`;
+            });
+
+            connectionsEl.innerHTML = svg;
+            connectionsEl.style.width = '4000px';
+            connectionsEl.style.height = '3000px';
+        }
+
+        function updateCanvasTransform() {
+            canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+            canvas.style.transformOrigin = '0 0';
+        }
+
+        // 캔버스 드래그
+        document.addEventListener('mousedown', (e) => {
+            // UI 요소가 아닌 배경 클릭 시 캔버스 드래그
+            const isBackground = e.target === document.body || 
+                                 e.target === canvas || 
+                                 e.target.tagName === 'svg' || 
+                                 e.target.tagName === 'path' ||
+                                 e.target.classList.contains('connections') ||
+                                 e.target.classList.contains('canvas-bg');
+            
+            if (isBackground && !dragTarget) {
+                isDragging = true;
+                dragStartX = e.clientX - offsetX;
+                dragStartY = e.clientY - offsetY;
+                document.body.style.cursor = 'grabbing';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (dragTarget) {
+                const newX = (e.clientX - dragStartX) / scale;
+                const newY = (e.clientY - dragStartY) / scale;
+                dragTarget.table.x = newX;
+                dragTarget.table.y = newY;
+                dragTarget.el.style.left = newX + 'px';
+                dragTarget.el.style.top = newY + 'px';
+                drawConnections();
+            } else if (isDragging) {
+                offsetX = e.clientX - dragStartX;
+                offsetY = e.clientY - dragStartY;
+                updateCanvasTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            dragTarget = null;
+            document.body.style.cursor = 'default';
+        });
+
+        // 줌
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            scale = Math.min(Math.max(scale * delta, 0.3), 2);
+            updateCanvasTransform();
+        }, { passive: false });
+
+        function zoomIn() {
+            scale = Math.min(scale * 1.2, 2);
+            updateCanvasTransform();
+        }
+
+        function zoomOut() {
+            scale = Math.max(scale * 0.8, 0.3);
+            updateCanvasTransform();
+        }
+
+        function resetView() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            updateCanvasTransform();
+        }
+
+        // 검색
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            tables.forEach(table => {
+                const el = tableElements[table.name];
+                if (table.name.toLowerCase().includes(query)) {
+                    el.style.opacity = '1';
+                    if (query.length > 0) {
+                        el.classList.add('highlight');
+                        setTimeout(() => el.classList.remove('highlight'), 1500);
+                    }
+                } else {
+                    el.style.opacity = query.length > 0 ? '0.3' : '1';
+                }
+            });
+        });
+
+        // 범례 드래그
+        const legend = document.querySelector('.legend');
+        let legendDragging = false;
+        let legendStartX, legendStartY, legendInitX, legendInitY;
+
+        legend.addEventListener('mousedown', (e) => {
+            legendDragging = true;
+            legendStartX = e.clientX;
+            legendStartY = e.clientY;
+            const rect = legend.getBoundingClientRect();
+            legendInitX = rect.left;
+            legendInitY = rect.top;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (legendDragging) {
+                const dx = e.clientX - legendStartX;
+                const dy = e.clientY - legendStartY;
+                legend.style.left = (legendInitX + dx) + 'px';
+                legend.style.top = (legendInitY + dy) + 'px';
+                legend.style.right = 'auto';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            legendDragging = false;
+        });
+
+        // 초기화
+        renderTables();
+        drawConnections();
+    </script>
+</body>
+</html>
