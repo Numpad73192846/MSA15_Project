@@ -138,7 +138,7 @@
 <details>
   <summary>ERD 보기</summary>
   <p align="center">
-    <img src="./images/erd.png" width="900">
+    <img src="./docs/images/erd.png" width="900">
   </p>
 
   > 전체 ERD는 인터랙티브 화면으로 확인할 수 있습니다.  
@@ -150,7 +150,7 @@
   <summary>요구사항 정의서 보기</summary>
 
   <p align="center">
-    <img src="./docs/images/2026-03-23 15 44 21.png" width="900">
+    <img src="./docs/images/2026-03-23 15 48 24.png" width="900">
   </p>
 </details>
 
