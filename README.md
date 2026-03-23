@@ -22,10 +22,9 @@
 - [2. 시스템 구조](#2-시스템-구조)
 - [3. 팀 구성 및 역할](#3-팀-구성-및-역할)
 - [4. 기술 스택](#4-기술-스택)
-- [5. 주요 기능](#5-주요-기능)
-- [6. 프로젝트 산출물](#6-프로젝트-산출물)
-- [7. 화면 UI](#7-화면-ui)
-- [8. 회고](#8-회고)
+- [5. 프로젝트 수행 경과](#5-프로젝트-수행-경과)
+- [6. 화면 UI](#6-화면-ui)
+- [7. 자체 평가 의견](#7-자체-평가-의견)
 
 ---
 
@@ -58,7 +57,32 @@
 
 ## 2. 시스템 구조
 
-### 2-1. 시스템 아키텍처
+### 2-1 Architecture
+```text
+teamproject/
+├── SQL/                           ← 데이터베이스 스키마 및 초기 데이터 스크립트
+├── docs/                          ← 요구사항 정의서, 기능 정의서, ERD 등 프로젝트 산출물
+├── gradle/                        ← Gradle Wrapper
+├── src/main/
+│   ├── java/com/aloha/teamproject/
+│   │   ├── api/                   ← 외부 API 연동
+│   │   ├── common/                ← 공통 모듈
+│   │   ├── config/                ← 애플리케이션 설정
+│   │   ├── controller/            ← 요청 처리 계층
+│   │   ├── dto/                   ← 데이터 전달 객체
+│   │   ├── mapper/                ← MyBatis Mapper
+│   │   ├── model/                 ← 도메인 모델
+│   │   ├── security/              ← JWT / OAuth2 / Spring Security
+│   │   ├── service/               ← 비즈니스 로직
+│   │   ├── util/                  ← 유틸리티
+│   │   ├── ServletInitializer.java
+│   │   └── TeamprojectApplication.java
+│   └── resources/                 ← application 설정, mapper XML, 기타 리소스
+├── build.gradle
+├── settings.gradle
+├── gradlew
+└── gradlew.bat
+```
 
 ### 2-2. 주요 기능
 
@@ -165,9 +189,7 @@
 
 ---
 
-## 7. 화면 UI
-
-## 7. 화면 UI
+## 6. 화면 UI
 
 ### 1. 회원가입 / 로그인
 
@@ -271,7 +293,7 @@
 
 ---
 
-## 8. 자체 평가 의견
+## 7. 자체 평가 의견
 
 ### 잘한 점
 
