@@ -152,8 +152,12 @@
 ### ERD
 <details>
   <summary>ERD 보기</summary>
+  <p align="center">
+    <img src="./images/erd.png" width="900">
+  </p>
 
-  ![ERD](여기에_ERD_이미지)
+  > 전체 ERD는 인터랙티브 화면으로 확인할 수 있습니다.
+  [ERD 상세 보기](./erd/튜터링고ERD.html)
 </details>
 
 ### 요구사항 정의서
