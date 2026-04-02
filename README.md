@@ -277,7 +277,11 @@ gantt
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_메인_이미지">
+  <h4>메인화면</h4>
+  <img src="./docs/images/튜터링고 메인화면.gif">
+
+  <h4>한국어 게임</h4>
+  <img src="./docs/images/튜터링고 한국어 게임.gif">
 
 </details>
 
@@ -286,8 +290,11 @@ gantt
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_검색_이미지">
-  <img src="여기에_목록_이미지">
+  <h4>튜터 찾기</h4>
+  <img src="./docs/images/튜터링고 카테고리.gif">
+
+  <h4>튜터 검색</h4>
+  <img src="./docs/images/튜터링고 검색.gif">
 
 </details>
 
@@ -296,7 +303,8 @@ gantt
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_상세_이미지">
+   <h4>상세 페이지</h4>
+   <img src="./docs/images/튜터링고 상세.gif">
 
 </details>
 
@@ -305,8 +313,17 @@ gantt
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_예약_이미지">
-  <img src="여기에_스케줄_이미지">
+  <h4>예약</h4>
+  <img src="./docs/images/튜터링고 예약.gif">
+
+  <h4>예약 수락</h4>
+  <img src="./docs/images/튜터링고 수락.gif">
+
+  <h4>예약 거절</h4>
+  <img src="./docs/images/튜터링고 거절.gif">
+
+  <h4>예약 취소</h4>
+  <img src="./docs/images/튜터링고 예약취소.gif">
 
 </details>
 
@@ -315,34 +332,147 @@ gantt
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_결제_이미지">
+  <h4>결제</h4>
+  <img src="./docs/images/튜터링고 결제.gif">
+
+  <h4>통합 결제</h4>
+  <img src="./docs/images/튜터링고 통합결제.gif">
 
 </details>
 
-### 7. 마이페이지
+### 7. 대시보드
 
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_마이페이지_이미지">
+  <h4>대시보드</h4>
+  <img src="./docs/images/튜터링고 대시보드.gif">
+
+  <h4>수업 완료</h4>
+  <img src="./docs/images/튜터링고 완료.gif">
+
+  <h4>학생 정보</h4>
+  <img src="./docs/images/튜터링고 대시보드 학생정보수정.gif">
+
+  <h4>메세지</h4>
+  <img src="./docs/images/튜터링고 대시보드 메세지.gif">
 
 </details>
 
-### 8. 리뷰
+### 8. 마이페이지
+
+#### 학생
 
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_리뷰_이미지">
+  <h4>마이페이지</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
+
+  <h4>리뷰 보기</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
+
+  <h4>주간스케쥴</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
+
+  <h4>메세지</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
+
+  <h4>AI</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
+
+  <h4>정보 수정</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
+
+  <h4>비밀번호 변경</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
 
 </details>
 
-### 9. 관리자
+#### 튜터
 
 <details>
   <summary>보기</summary>
 
-  <img src="여기에_관리자_이미지">
+  <h4>마이페이지1</h4>
+  <img src="./docs/images/튜터링고 튜터 마이페이지.gif">
+
+  <h4>마이페이지2</h4>
+  <img src="./docs/images/튜터링고 튜터마이페이지2.gif">
+
+  <h4>일정</h4>
+  <img src="./docs/images/튜터링고 튜터 일정.gif">
+
+  <h4>리뷰 보기</h4>
+  <img src="./docs/images/튜터링고 튜터 리뷰.gif">
+
+  <h4>주간스케쥴</h4>
+  <img src="./docs/images/튜터링고 튜터 주간스케쥴.gif">
+
+  <h4>AI 1</h4>
+  <img src="./docs/images/튜터링고 튜터 AI 1.gif">
+
+  <h4>AI 2</h4>
+  <img src="./docs/images/튜터링고 튜터 AI 2.gif">
+
+  <h4>정보 수정</h4>
+  <img src="./docs/images/튜터링고 튜터 프로필 수정.gif">
+
+  <h4>근무 경력 수정</h4>
+  <img src="./docs/images/튜터링고 튜터 근무 경력.gif">
+
+  <h4>계좌 정보 수정</h4>
+  <img src="./docs/images/튜터링고 튜터 계좌 정보.gif">
+
+  <h4>서류 업로드 및 수정</h4>
+  <img src="./docs/images/튜터링고 튜터 서류.gif">
+
+  <h4>수업 관리</h4>
+  <img src="./docs/images/튜터링고 튜터 수업관리.gif">
+
+  <h4>스케쥴 관리</h4>
+  <img src="./docs/images/튜터링고 튜터 스케쥴관리.gif">
+
+  <h4>줌 관리</h4>
+  <img src="./docs/images/튜터링고 튜터 줌.gif">
+
+  <h4>비밀번호 변경</h4>
+  <img src="./docs/images/튜터링고 튜터 비밀번호변경.gif">
+
+</details>
+
+### 9. 리뷰
+
+<details>
+  <summary>보기</summary>
+
+  <h4>로그인</h4>
+  <img src="./docs/images/튜터링고 학생 리뷰.gif">
+
+</details>
+
+### 10. 관리자
+
+<details>
+  <summary>보기</summary>
+
+  <h4>관리자 페이지</h4>
+  <img src="./docs/images/튜터링고 어드민.gif">
+
+  <h4>서류 검토</h4>
+  <img src="./docs/images/튜터링고 어드민 서류검토.gif">
+
+  <h4>수입 정산</h4>
+  <img src="./docs/images/튜터링고 어드민 수입정산.gif">
+
+  <h4>회원 관리</h4>
+  <img src="./docs/images/튜터링고 어드민 회원관리.gif">
+
+  <h4>문의1</h4>
+  <img src="./docs/images/튜터링고 문의.gif">
+
+  <h4>문의2</h4>
+  <img src="./docs/images/튜터링고 어드민 문의.gif">
 
 </details>
 
