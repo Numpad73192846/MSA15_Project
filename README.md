@@ -1,7 +1,7 @@
 # 프로젝트 : 튜터링고 (Tutoring-Go)
 
 <p align="center">
-  <img src="./teamproject-app/src/assets/image/logo.png" width="200" alt="튜터링고 로고">
+  <img src="./teamproject/src/main/resources/static/img/logo.png" width="200" alt="튜터링고 로고">
 </p>
 
 > 튜터와 튜티를 연결하고, 예약과 결제까지 관리할 수 있는 매칭 플랫폼
@@ -11,7 +11,7 @@
 ## 시연 영상
 
 > 이미지를 클릭하면 시연 영상으로 이동합니다.
-[![시연 영상](./teamproject-app/src/assets/image/logo.png)](https://www.youtube.com/watch?v=ttQkyqMMFas)
+[![시연 영상](./teamproject/src/main/resources/static/img/logo.png)](https://www.youtube.com/watch?v=ttQkyqMMFas)
 
 <br>
 
@@ -248,9 +248,27 @@ gantt
 
 <details>
   <summary>보기</summary>
+  
+  <h4>로그인</h4>
+  <img src="./docs/images/튜터링고 로그인.gif">
 
-  <img src="여기에_회원가입_이미지">
-  <img src="여기에_로그인_이미지">
+  <h4>학생 회원가입</h4>
+  <img src="./docs/images/튜터링고 학생회원가입.gif">
+
+  <h4>튜터 회원가입1</h4>
+  <img src="./docs/images/튜터링고 튜터회원가입1.gif">
+
+  <h4>튜터 회원가입2</h4>
+  <img src="./docs/images/튜터링고 튜터회원가입2.gif">
+
+  <h4>튜터 회원가입3</h4>
+  <img src="./docs/images/튜터링고 튜터회원가입3.gif">
+
+  <h4>튜터 회원가입4</h4>
+  <img src="./docs/images/튜터링고 튜터회원가입4.gif">
+
+  <h4>튜터 회원가입5</h4>
+  <img src="./docs/images/튜터링고 튜터회원가입5.gif">
 
 </details>
 
