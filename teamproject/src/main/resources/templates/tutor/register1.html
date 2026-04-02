@@ -545,31 +545,104 @@
                 });
             }
 
+            // docType 매핑 (input id 기준)
+            function getDocTypeByInputId(inputId) {
+                switch (inputId) {
+                    case 'academicCertificate':
+                        return 'EDUCATION';
+                    case 'educationCertificate':
+                        return 'DEGREE';
+                    case 'certificateFiles':
+                        return 'CERTIFICATE';
+                    default:
+                        return null;
+                }
+            }
+
+            async function uploadTutorDocument(docType, file) {
+                const tokens = getStoredTokens();
+                if (!tokens.accessToken) {
+                    throw new Error('로그인이 필요합니다.');
+                }
+
+                const formData = new FormData();
+                formData.append('docType', docType);
+                formData.append('file', file);
+
+                const response = await fetch('/api/tutors/documents', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${tokens.accessToken}`
+                    },
+                    body: formData
+                });
+
+                const payload = await response.json();
+                if (!response.ok || !payload || !payload.success) {
+                    throw new Error(payload?.message || '서류 업로드에 실패했습니다.');
+                }
+
+                return payload.data;
+            }
+
             // 파일 선택 처리: 새 파일 추가 또는 특정 인덱스 교체
             async function handleFilesSelected(inputElem, storageKey, containerId, cardId) {
-                const files = inputElem.files;
-                if (!files || files.length === 0) return;
+                const files = Array.from(inputElem.files || []);
+                if (files.length === 0) return;
+
+                const docType = getDocTypeByInputId(inputElem.id);
+                if (!docType) {
+                    alert('지원되지 않는 파일 입력입니다.');
+                    return;
+                }
+
                 const saved = JSON.parse(sessionStorage.getItem('tutorRegisterStep2') || '{}');
-                const existing = saved[storageKey] || [];
+                const existing = Array.isArray(saved[storageKey]) ? saved[storageKey] : [];
 
-                const objs = await filesToObjectArray(files);
+                const maxBytes = 8 * 1024 * 1024;
+                let totalSize = existing.reduce((sum, item) => sum + (item.size || 0), 0);
 
-                if (inputElem.dataset.replaceIndex) {
-                    const idx = parseInt(inputElem.dataset.replaceIndex, 10);
-                    if (!isNaN(idx) && idx >= 0 && idx < existing.length) {
-                        existing.splice(idx, 1, objs[0]);
-                    } else {
-                        // index invalid -> append
-                        existing.push(...objs);
+                for (let file of files) {
+                    if (file.size + totalSize > maxBytes) {
+                        alert('업로드 가능한 총 파일 용량을 초과했습니다. 최대 8MB까지 업로드하세요.');
+                        break;
                     }
-                    delete inputElem.dataset.replaceIndex;
-                } else {
-                    existing.push(...objs);
+
+                    let uploadedId;
+                    try {
+                        uploadedId = await uploadTutorDocument(docType, file);
+                    } catch (error) {
+                        console.error('파일 업로드 실패:', error);
+                        alert(`파일 업로드 실패: ${file.name}`);
+                        continue;
+                    }
+
+                    const item = {
+                        id: uploadedId,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type
+                    };
+
+                    if (inputElem.dataset.replaceIndex) {
+                        const idx = parseInt(inputElem.dataset.replaceIndex, 10);
+                        if (!isNaN(idx) && idx >= 0 && idx < existing.length) {
+                            existing.splice(idx, 1, item);
+                        } else {
+                            existing.push(item);
+                        }
+                        delete inputElem.dataset.replaceIndex;
+                    } else {
+                        existing.push(item);
+                    }
+
+                    totalSize += file.size;
                 }
 
                 saved[storageKey] = existing;
                 sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(saved));
                 renderFileList(containerId, cardId, existing, inputElem.id, storageKey);
+
                 // clear input to allow same-file reselect
                 inputElem.value = null;
             }
@@ -842,34 +915,17 @@
                     certificateTexts: Array.isArray(existing.certificateTexts) ? existing.certificateTexts : [],
                     careers: Array.isArray(existing.careers) ? existing.careers : [],
                     academicCertificates: Array.isArray(existing.academicCertificates) ? existing.academicCertificates : [],
-                    educationCertificates: Array.isArray(existing.educationCertificates) ? existing.educationCertificates : []
+                    educationCertificates: Array.isArray(existing.educationCertificates) ? existing.educationCertificates : [],
+                    certificateFiles: Array.isArray(existing.certificateFiles) ? existing.certificateFiles : []
                 };
 
-                // 파일 처리
-                const certificateFilesInput = document.getElementById('certificateFiles');
-
-                try {
-                    if (certificateFilesInput && certificateFilesInput.files.length > 0) {
-                        step2Data.certificateFiles = await filesToObjectArray(certificateFilesInput.files);
-                    } else if (Array.isArray(existing.certificateFiles)) {
-                        step2Data.certificateFiles = existing.certificateFiles;
-                    }
-                } catch (error) {
-                    console.error('파일 처리 중 오류:', error);
-                    alert('파일 처리 중 오류가 발생했습니다.');
-                    return;
-                }
-
-                // 이전 방식 데이터는 유실 방지를 위해 그대로 보존
-                if (!step2Data.certificateFiles) {
-                    const legacyFiles = [
-                        ...(Array.isArray(existing.academicCertificates) ? existing.academicCertificates : []),
-                        ...(Array.isArray(existing.educationCertificates) ? existing.educationCertificates : [])
-                    ];
-                    if (legacyFiles.length > 0) {
-                        step2Data.certificateFiles = legacyFiles;
-                    }
-                }
+                // 서버 업로드가 이미 완료된 파일이면 sessionStorage에서 그대로 가져오기
+                const joinedFiles = [
+                    ...(Array.isArray(existing.academicCertificates) ? existing.academicCertificates : []),
+                    ...(Array.isArray(existing.educationCertificates) ? existing.educationCertificates : []),
+                    ...(Array.isArray(existing.certificateFiles) ? existing.certificateFiles : [])
+                ];
+                step2Data.certificateFiles = joinedFiles;
 
                 sessionStorage.setItem('tutorRegisterStep2', JSON.stringify(step2Data));
 

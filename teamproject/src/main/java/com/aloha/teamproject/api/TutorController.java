@@ -248,7 +248,7 @@ public class TutorController {
     }
 
     @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<Void> uploadDocument(
+    public ApiResponse<String> uploadDocument(
             Authentication authentication,
             @RequestParam("docType") String docType,
             @RequestParam("file") MultipartFile file) {
@@ -283,7 +283,7 @@ public class TutorController {
                     .build();
 
             tutorDocumentService.insert(doc);
-            return ApiResponse.ok(SuccessCode.CREATED);
+            return ApiResponse.ok(doc.getId(), SuccessCode.CREATED.getMessage());
         } catch (Exception e) {
             log.error("/api/tutors/documents 업로드 실패", e);
             return ApiResponse.error("서류 업로드에 실패했습니다.");

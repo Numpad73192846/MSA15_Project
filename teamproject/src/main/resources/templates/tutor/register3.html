@@ -537,8 +537,21 @@
             }
 
             async function uploadTutorDocuments(accessToken, docs, docType) {
-                const files = normalizeBase64Files(docs);
-                for (const doc of files) {
+                if (!Array.isArray(docs) || docs.length === 0) return;
+
+                const filesToUpload = [];
+                for (const doc of docs) {
+                    if (!doc) continue;
+                    if (typeof doc === 'string' || (doc && doc.id)) {
+                        // 이미 1단계에서 서버에 업로드한 문서 id
+                        continue;
+                    }
+                    if (typeof doc === 'object' && typeof doc.data === 'string' && doc.data.startsWith('data:')) {
+                        filesToUpload.push(doc);
+                    }
+                }
+
+                for (const doc of filesToUpload) {
                     const file = base64ToFile(doc.data, doc.name);
                     const uploadForm = new FormData();
                     uploadForm.append('docType', docType);
@@ -628,14 +641,22 @@
                 formData.append('degreesJson', JSON.stringify(step2Data.degrees || []));
                 formData.append('certificateTextsJson', JSON.stringify(step2Data.certificateTexts || []));
 
-                (step2Data.academicCertificates || []).forEach(id =>
-                    formData.append('academicCertificates', id)
-                );
-                (step2Data.educationCertificates || []).forEach(id =>
-                    formData.append('educationCertificates', id)
-                );
+                // Step 2 문서 ID 전달(legacy 혹은 등록 완료 document id 객체 모두 지원)
+                (step2Data.academicCertificates || []).forEach(entry => {
+                    if (typeof entry === 'string' && entry.trim().length > 0) {
+                        formData.append('academicCertificates', entry);
+                    } else if (entry && entry.id) {
+                        formData.append('academicCertificates', entry.id);
+                    }
+                });
+                (step2Data.educationCertificates || []).forEach(entry => {
+                    if (typeof entry === 'string' && entry.trim().length > 0) {
+                        formData.append('educationCertificates', entry);
+                    } else if (entry && entry.id) {
+                        formData.append('educationCertificates', entry.id);
+                    }
+                });
 
-                
                 // Step 3
                 formData.append('lessonSubjects', step3Data.lessonSubjects || '');
                 formData.append('lessonCardsJson', JSON.stringify(step3Data.lessonCards || []));
