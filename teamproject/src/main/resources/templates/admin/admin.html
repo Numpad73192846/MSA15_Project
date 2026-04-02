@@ -326,15 +326,27 @@ function mapDoc(d) {
 }
 
 async function loadDocumentsFromServer() {
-  const response = await fetchWithAdminAuth("/api/admin/documents");
-  const result = await response.json();
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/documents");
+    const result = await response.json();
 
-  if ( !response.ok || !result?.success ) return;
+    if (!response.ok || !result?.success) {
+      console.warn("문서 목록을 가져오지 못했습니다.", result?.message || response.status);
+      STATE.docs = [];
+      renderDocs();
+      renderDashboard();
+      return;
+    }
 
-  STATE.docs = ( result.data || [] ).map(mapDoc);
-
-  renderDocs();
-  renderDashboard();
+    STATE.docs = (result.data || []).map(mapDoc);
+    renderDocs();
+    renderDashboard();
+  } catch (e) {
+    console.error("loadDocumentsFromServer error", e);
+    STATE.docs = [];
+    renderDocs();
+    renderDashboard();
+  }
 }
 
 function mapSettlement(s){
@@ -362,14 +374,27 @@ function mapSettlement(s){
 }
 
 async function loadSettlementsFromServer(){
-  const response = await fetchWithAdminAuth("/api/admin/settlements");
-  const result = await response.json();
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/settlements");
+    const result = await response.json();
 
-  if (!response.ok || !result?.success) return;
+    if (!response.ok || !result?.success) {
+      console.warn("정산 목록을 가져오지 못했습니다.", result?.message || response.status);
+      DATA.settlements = [];
+      renderSettles();
+      renderDashboard();
+      return;
+    }
 
-  DATA.settlements = (result.data || []).map(mapSettlement);
-  renderSettles();
-  renderDashboard();
+    DATA.settlements = (result.data || []).map(mapSettlement);
+    renderSettles();
+    renderDashboard();
+  } catch (e) {
+    console.error("loadSettlementsFromServer error", e);
+    DATA.settlements = [];
+    renderSettles();
+    renderDashboard();
+  }
 }
 
 function mapUser(u) {
@@ -385,13 +410,24 @@ function mapUser(u) {
 }
 
 async function loadUsersFromServer() {
-  const response = await fetchWithAdminAuth("/api/admin/users");
-  const result = await response.json();
+  try {
+    const response = await fetchWithAdminAuth("/api/admin/users");
+    const result = await response.json();
 
-  if ( !response.ok || !result?.success ) return;
+    if (!response.ok || !result?.success) {
+      console.warn("회원 목록을 가져오지 못했습니다.", result?.message || response.status);
+      STATE.users = [];
+      renderUsers();
+      return;
+    }
 
-  STATE.users = ( result.data || [] ).map(mapUser);
-  renderUsers();
+    STATE.users = (result.data || []).map(mapUser);
+    renderUsers();
+  } catch (e) {
+    console.error("loadUsersFromServer error", e);
+    STATE.users = [];
+    renderUsers();
+  }
 }
 
 /* =========================
@@ -1180,12 +1216,16 @@ async function changeTicketStatus(to){
 }
 
 function initDashboardTab(){
+  // 대시보드를 위해 필요한 데이터 선선 로딩
+  loadDocumentsFromServer();
   loadSettlementsFromServer();
+  loadUsersFromServer();
   loadAdminDashboardSummary();
 }
 
 function initSettingsTab(){
 }
+
 
 /* =========================
    9) 초기 렌더

@@ -19,10 +19,14 @@ public class AdminApiController {
     public ApiResponse<Void> approveDocument(@RequestBody Map<String, String> body, Authentication auth) {
 
         if ( auth == null || auth.getName() == null ) {
-            return ApiResponse.error("Authentication required");
+            return ApiResponse.error("로그인이 필요합니다.");
         }
 
         String id = body.get("id");
+        if (id == null || id.isBlank()) {
+            return ApiResponse.error("유효한 문서 ID가 필요합니다.");
+        }
+
         adminService.approveDocument(id, auth.getName());
         return ApiResponse.ok();
     }
@@ -31,11 +35,18 @@ public class AdminApiController {
     public ApiResponse<Void> rejectDocument(@RequestBody Map<String, String> body, Authentication auth) {
 
         if ( auth == null || auth.getName() == null ) {
-            return ApiResponse.error("Authentication required");
+            return ApiResponse.error("로그인이 필요합니다.");
         }
 
         String id = body.get("id");
         String reason = body.get("reason");
+
+        if (id == null || id.isBlank()) {
+            return ApiResponse.error("유효한 문서 ID가 필요합니다.");
+        }
+        if (reason == null || reason.isBlank()) {
+            return ApiResponse.error("반려 사유를 입력해주세요.");
+        }
 
         adminService.rejectDocument(id, auth.getName(), reason);
         return ApiResponse.ok();
